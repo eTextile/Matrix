@@ -18,7 +18,7 @@ const int controlPin[] = {
     s3_pin
 };
 
-#define sig_pin        A5      // multiplexer output "SIG" pin pin is connected to Arduino Analog5 pin
+#define sig_pin        A5      // multiplexer output "SIG" pin is connected to Arduino Analog pin 5
 
 int analogValue = 0;           // variable use to store analog inputs values
 byte value[16][16];            // 256 bytes to hold 256 analog valeus
