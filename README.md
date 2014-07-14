@@ -1,4 +1,4 @@
 Keyboard
 ========
 
-Textile keyboard : maurin.donneaud.free.fr/?-Keyboard-
+Textile keyboard : http://maurin.donneaud.free.fr/?-Keyboard-
