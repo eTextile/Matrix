@@ -125,9 +125,9 @@ int readMux(int whichRow){
     for(int i=0; i<4; i++){
       digitalWrite(controlPin[i], muxChannels[column][i]);
     }
-
+    
+    delayMicroseconds(100);                            // delay to slow down analog readings
     analogValue = analogRead(sig_pin);                 // read an analog input row
-    delayMicroseconds(5);                              // delay to slow down analog readings
     value[whichRow][column] = (byte) (analogValue/4);  // 256 byte to hold 256 analogs valeus
   }
 }
