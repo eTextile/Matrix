@@ -1,7 +1,0 @@
-<?xml version="1.0"?>
-<CODES>
-	<code  id="OAuthConsumerKey">*******************</code>
-	<code  id="OAuthConsumerSecret">*************************</code>
-	<code  id="AccessToken">****************************</code>
-	<code  id="AccessTokenSecret">*********************************</code>
-</CODES>
