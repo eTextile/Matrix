@@ -23,12 +23,12 @@ In order to get the best pressure sensitive resolution, the resistors values are
 
 To edit the programme : cd /Teensy3.1_matrix/VoltageDividerResistorCalculator.py
 
-Rc_min = the minimum resistance of one matrix intersection
-Rc Max = the maximum resistance of one matrix intersection
-Vcc = the electronic reference voltage
+ - Rc_min = the minimum resistance of one matrix intersection
+ - Rc Max = the maximum resistance of one matrix intersection
+ - Vcc = the electronic reference voltage
 
 You will also need to adjust the values of the range function to focus on the more precise resistor value
-range(4000, 10000, 100):
+ - range(4000, 10000, 100):
 
 Then you can start the programme by typing in a terminal : python VoltageDividerResistorCalculator.py
 
