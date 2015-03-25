@@ -24,13 +24,13 @@ void ConnectedComponents(){
       if( toggel[row][column] == true ){ // toggel is true : KEY IN FREE
         // if left pixel is connected with the current pixel
         if( collumn > 0 && toggel[row][column-1] == true ){
-          labels[row][column] = curentLabel; // temporary label
-          linked[row][column] = WEST;        // equivalence classe
+          labels[row][column] = labels[row][column-1]; // temporary label
+          linked[row][column] = WEST;                  // equivalence classe
         }
         // if top pixel is connected with the current pixel
         if( row > 0 && toggel[row-1][column] == true ){
-          labels[row][column] = curentLabel;  // temporary label
-          linked[row][column] = NORTH;         // equivalence classe
+          labels[row][column] = labels[row-1][column];  // take temporary neighbors label
+          linked[row][column] = NORTH;                  // equivalence classe
         }
         // if left and top pixels are not connected with the current pixel
         if( row > 0 && collumn > 0 ){
@@ -40,13 +40,13 @@ void ConnectedComponents(){
         }
 
         // Find the smallest label
+        
         L = neighbors labels
           labels[row][column] = min(L);
         for label in L
           linked[label] = union(linked[label], L)
         }
         if( toggel[row][column] == false ){
-
         }
     }
   }
@@ -54,8 +54,8 @@ void ConnectedComponents(){
   ////////////////////  Second pass
   for( int row=0; row<ROW; row++ ){
     for( int column=0; column<COLUMN; column++ ){
-      if (data[row][column] == false){       
-        labels[row][column] = find( labels[row][column] )      
+      if( data[row][column] == false ){
+        labels[row][column] = find( labels[row][column] );      
         }
       }
     }
