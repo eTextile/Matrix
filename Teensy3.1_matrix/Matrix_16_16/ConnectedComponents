@@ -10,7 +10,7 @@
 boolean toggel[ROW][COLUMN] = false;
 short int labels[ROW][COLUMN] = 0;
 short int linked[ROW][COLUMN] = 0;
-short int curentLabel = 0;
+short int curentLabel = 1;
 
 
 //////////////////// algorithm TwoPass(data)
@@ -20,15 +20,8 @@ void ConnectedComponents(){
    // First pass
     for( int row=0; row<ROW; row++ ){
       for( int column=0; column<COLUMN; column++ ){
-
-      // if value is true ( not Background )
+      // if curentValue is true
       if( toggel[row][column] == true ){ // toggel is true : KEY IN FREE
-          
-          // if left and top pixels are not connected with the current pixel
-          if( toggel[row][column-1] == false && toggel[row-1][column] == false ){
-            labels[row][column] = curentLabel++; // create a new label
-          }
-          
           // if left pixel is connected with the current pixel
           if( collumn > 0 && toggel[row][column-1] == true ){
             labels[row][column] = curentLabel; // temporary label
@@ -38,6 +31,12 @@ void ConnectedComponents(){
           if( row > 0 && toggel[row-1][column] == true ){
             labels[row][column] = curentLabel;  // temporary label
             linked[row][column] = _TOP;         // equivalence classe
+          }
+          // if left and top pixels are not connected with the current pixel
+          if( row > 0 && collumn > 0 ){
+            if( toggel[row][column-1] == false && toggel[row-1][column] == false ){
+              labels[row][column] = curentLabel++; // create a new label
+            }
           }
        
       if( values[row][column] <= THRESHOLD && toggel[row][column] == true ){
