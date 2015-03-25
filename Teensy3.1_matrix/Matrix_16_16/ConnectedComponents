@@ -2,19 +2,18 @@
 #define DEBOUNCE_TIME  220
 #define COLUMN         16
 #define ROW            16
-#define TAGS           2
 
-#define TOP            1
-#define LEFT           2
+#define _TOP           1
+#define _LEFT          2
 #define TOP_LEFT       3
 
-boolean toggel[ROW][COLUMN];
-byte labels[ROW][COLUMN];
-byte linked[ROW][COLUMN];
+boolean toggel[ROW][COLUMN] = false;
+short int labels[ROW][COLUMN] = 0;
+short int linked[ROW][COLUMN] = 0;
+short int curentLabel = 0;
 
-curentLabel = 0;
 
-// algorithm TwoPass(data)
+//////////////////// algorithm TwoPass(data)
 
 void ConnectedComponents(){
 
@@ -22,18 +21,23 @@ void ConnectedComponents(){
     for( int row=0; row<ROW; row++ ){
       for( int column=0; column<COLUMN; column++ ){
 
-      // is not Background
-      if( values[row][column] > THRESHOLD && toggel[row][column] == false && ( lastSensTime[row][column] - millis() ) > DEBOUNCE_TIME ){
-          toggel[row][column] = true; // toggel is true : KEY IN FREE
+      // if value is true ( not Background )
+      if( toggel[row][column] == true ){ // toggel is true : KEY IN FREE
           
-          // neighbors = connected elements with the current element's value
-          if ( collumn > 0 && toggel[ row ][ column-1 ] == true ){
-            linked[row][column] = LEFT;
-            labels[row][column] = curentLabel;
+          // if left and top pixels are not connected with the current pixel
+          if( toggel[row][column-1] == false && toggel[row-1][column] == false ){
+            labels[row][column] = curentLabel++; // create a new label
           }
-          if( row > 0 && toggel[ row-1 ][ column ] == true ){
-            linked[row][column] = TOP;
-            labels[row][column] = curentLabel;
+          
+          // if left pixel is connected with the current pixel
+          if( collumn > 0 && toggel[row][column-1] == true ){
+            labels[row][column] = curentLabel; // temporary label
+            linked[row][column] = _LEFT;        // equivalence classe
+          }
+          // if top pixel is connected with the current pixel
+          if( row > 0 && toggel[row-1][column] == true ){
+            labels[row][column] = curentLabel;  // temporary label
+            linked[row][column] = _TOP;         // equivalence classe
           }
        
       if( values[row][column] <= THRESHOLD && toggel[row][column] == true ){
@@ -44,6 +48,7 @@ void ConnectedComponents(){
           linked[label] = union(linked[label], L)
       }
    }
+   
    // Second pass
    
    for row in data
