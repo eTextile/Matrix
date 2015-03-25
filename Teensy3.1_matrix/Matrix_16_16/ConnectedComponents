@@ -1,0 +1,55 @@
+#define THRESHOLD      330
+#define DEBOUNCE_TIME  220
+#define COLUMN         16
+#define ROW            16
+#define TAGS           2
+
+#define TOP            1
+#define LEFT           2
+#define TOP_LEFT       3
+
+boolean toggel[ROW][COLUMN];
+byte labels[ROW][COLUMN];
+byte linked[ROW][COLUMN];
+
+// algorithm TwoPass(data)
+
+void ConnectedComponents(){
+
+   // First pass
+    for( int row=0; row<ROW; row++ ){
+      for( int column=0; column<COLUMN; column++ ){
+
+        // is not Background
+      if( values[row][column] > THRESHOLD && toggel[row][column] == false && ( lastSensTime[row][column] - millis() ) > DEBOUNCE_TIME ){
+          toggel[row][column] = true; // toggel is true : KEY IN FREE
+          
+          // neighbors = connected elements with the current element's value
+          if ( collumn > 0 && toggel[ row ][ column-1 ] == true ){
+            linked[row][column] = LEFT;
+            labels[row][column] = ;
+          }
+          if( row > 0 && toggel[ row-1 ][ column ] == true ){
+            linked[row][column] = TOP;
+          }
+       
+      if( values[row][column] <= THRESHOLD && toggel[row][column] == true ){
+        // Find the smallest label
+          L = neighbors labels
+          labels[row][column] = min(L);
+          for label in L
+          linked[label] = union(linked[label], L)
+        }
+        
+        
+   // Second pass
+   
+   for row in data
+       for column in row
+           if data[row][column] is not Background         
+               labels[row][column] = find(labels[row][column])      
+      
+   return labels;
+
+
+}
