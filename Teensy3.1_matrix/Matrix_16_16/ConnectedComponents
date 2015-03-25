@@ -3,9 +3,9 @@
 #define COLUMN         16
 #define ROW            16
 
-#define _TOP           1
-#define _LEFT          2
-#define TOP_LEFT       3
+#define NORTH           1
+#define WEST            2
+#define NORTH_WEST      3
 
 boolean toggel[ROW][COLUMN] = false;
 short int labels[ROW][COLUMN] = 0;
@@ -25,12 +25,12 @@ void ConnectedComponents(){
           // if left pixel is connected with the current pixel
           if( collumn > 0 && toggel[row][column-1] == true ){
             labels[row][column] = curentLabel; // temporary label
-            linked[row][column] = _LEFT;        // equivalence classe
+            linked[row][column] = WEST;        // equivalence classe
           }
           // if top pixel is connected with the current pixel
           if( row > 0 && toggel[row-1][column] == true ){
             labels[row][column] = curentLabel;  // temporary label
-            linked[row][column] = _TOP;         // equivalence classe
+            linked[row][column] = NORTH;         // equivalence classe
           }
           // if left and top pixels are not connected with the current pixel
           if( row > 0 && collumn > 0 ){
@@ -39,14 +39,20 @@ void ConnectedComponents(){
             }
           }
        
-      if( values[row][column] <= THRESHOLD && toggel[row][column] == true ){
         // Find the smallest label
           L = neighbors labels
           labels[row][column] = min(L);
           for label in L
           linked[label] = union(linked[label], L)
       }
+            if( toggel[row][column] == false ){
+
    }
+   
+      }
+      
+    }
+    /*
    
    // Second pass
    
@@ -55,7 +61,4 @@ void ConnectedComponents(){
            if data[row][column] is not Background         
                labels[row][column] = find(labels[row][column])      
       
-   return labels;
-
-
-}
+/*
