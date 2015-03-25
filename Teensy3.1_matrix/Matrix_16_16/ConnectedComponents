@@ -17,48 +17,46 @@ short int curentLabel = 1;
 
 void ConnectedComponents(){
 
-   // First pass
-    for( int row=0; row<ROW; row++ ){
-      for( int column=0; column<COLUMN; column++ ){
+  //////////////////// First pass
+  for( int row=0; row<ROW; row++ ){
+    for( int column=0; column<COLUMN; column++ ){
       // if curentValue is true
       if( toggel[row][column] == true ){ // toggel is true : KEY IN FREE
-          // if left pixel is connected with the current pixel
-          if( collumn > 0 && toggel[row][column-1] == true ){
-            labels[row][column] = curentLabel; // temporary label
-            linked[row][column] = WEST;        // equivalence classe
+        // if left pixel is connected with the current pixel
+        if( collumn > 0 && toggel[row][column-1] == true ){
+          labels[row][column] = curentLabel; // temporary label
+          linked[row][column] = WEST;        // equivalence classe
+        }
+        // if top pixel is connected with the current pixel
+        if( row > 0 && toggel[row-1][column] == true ){
+          labels[row][column] = curentLabel;  // temporary label
+          linked[row][column] = NORTH;         // equivalence classe
+        }
+        // if left and top pixels are not connected with the current pixel
+        if( row > 0 && collumn > 0 ){
+          if( toggel[row][column-1] == false && toggel[row-1][column] == false ){
+            labels[row][column] = curentLabel++; // create a new label
           }
-          // if top pixel is connected with the current pixel
-          if( row > 0 && toggel[row-1][column] == true ){
-            labels[row][column] = curentLabel;  // temporary label
-            linked[row][column] = NORTH;         // equivalence classe
-          }
-          // if left and top pixels are not connected with the current pixel
-          if( row > 0 && collumn > 0 ){
-            if( toggel[row][column-1] == false && toggel[row-1][column] == false ){
-              labels[row][column] = curentLabel++; // create a new label
-            }
-          }
-       
-        // Find the smallest label
-          L = neighbors labels
-          labels[row][column] = min(L);
-          for label in L
-          linked[label] = union(linked[label], L)
-      }
-            if( toggel[row][column] == false ){
+        }
 
-   }
-   
-      }
-      
+        // Find the smallest label
+        L = neighbors labels
+          labels[row][column] = min(L);
+        for label in L
+          linked[label] = union(linked[label], L)
+        }
+        if( toggel[row][column] == false ){
+
+        }
     }
-    /*
-   
-   // Second pass
-   
-   for row in data
-       for column in row
-           if data[row][column] is not Background         
-               labels[row][column] = find(labels[row][column])      
-      
-/*
+  }
+  
+  ////////////////////  Second pass
+  for( int row=0; row<ROW; row++ ){
+    for( int column=0; column<COLUMN; column++ ){
+      if (data[row][column] == false){       
+        labels[row][column] = find( labels[row][column] )      
+        }
+      }
+    }
+  }
