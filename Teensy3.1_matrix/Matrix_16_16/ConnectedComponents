@@ -12,6 +12,8 @@ boolean toggel[ROW][COLUMN];
 byte labels[ROW][COLUMN];
 byte linked[ROW][COLUMN];
 
+curentLabel = 0;
+
 // algorithm TwoPass(data)
 
 void ConnectedComponents(){
@@ -20,17 +22,18 @@ void ConnectedComponents(){
     for( int row=0; row<ROW; row++ ){
       for( int column=0; column<COLUMN; column++ ){
 
-        // is not Background
+      // is not Background
       if( values[row][column] > THRESHOLD && toggel[row][column] == false && ( lastSensTime[row][column] - millis() ) > DEBOUNCE_TIME ){
           toggel[row][column] = true; // toggel is true : KEY IN FREE
           
           // neighbors = connected elements with the current element's value
           if ( collumn > 0 && toggel[ row ][ column-1 ] == true ){
             linked[row][column] = LEFT;
-            labels[row][column] = ;
+            labels[row][column] = curentLabel;
           }
           if( row > 0 && toggel[ row-1 ][ column ] == true ){
             linked[row][column] = TOP;
+            labels[row][column] = curentLabel;
           }
        
       if( values[row][column] <= THRESHOLD && toggel[row][column] == true ){
@@ -39,9 +42,8 @@ void ConnectedComponents(){
           labels[row][column] = min(L);
           for label in L
           linked[label] = union(linked[label], L)
-        }
-        
-        
+      }
+   }
    // Second pass
    
    for row in data
