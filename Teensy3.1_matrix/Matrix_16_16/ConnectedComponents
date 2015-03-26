@@ -1,100 +1,58 @@
-#define THRESHOLD      330
-#define DEBOUNCE_TIME  220
+//////////////////// algorithm TwoPass
+
 #define COLS           16
 #define ROWS           16
 
-#define NORTH           1
-#define WEST            2
-#define NORTH_WEST      3
+boolean toggel[ROWS][COLS];
+short int labels[ROWS][COLS];
+short int linked[ROWS][COLS];
 
-boolean toggel[ROW][COLS] = false;
-short int labels[ROW][COLS] = 0;
-short int linked[ROW][COLS] = 0;
 short int curentLabel = 1;
 
-labelToggel = true;
-
-//////////////////// algorithm TwoPass(data)
-
-void loop(){
-  
+void setup(){
   for( int rows=0; rows<ROWS; rows++ ){
     for( int cols=0; cols<COLS; cols++ ){
-      labels[row][cols] = 0;
+      labels[rows][cols] = 0;
     }
   }
-  
 }
-void ConnectedComponents(){
+
+void loop(){
 
   //////////////////// First pass
-  for( int rows=1; rows<ROW; rows++ ){
+  for( int rows=1; rows<ROWS; rows++ ){
     for( int cols=1; cols<COLS; cols++ ){
 
-      if( toggel[rows][cols] == true ){             // if curentPixel is forground
-        labelToggel = true;                         // init the labelToggel
-        
-        labels[rows][cols] = curentLabel;           // temporary label
-        
-        if( labels[rows-1][cols] > 0 && labels[rows-1][cols] > labels[rows][cols] ){
-          labels[rows][cols] = min( labels[row][cols], labels[rows-1][cols] );    //
-          curentLabel = labels[rows][cols];
+      if( toggel[rows][cols] == true ){                                       // if curentPixel is forground
+
+        if( toggel[rows-1][cols] == false && toggel[rows][cols-1] == false ){ // if curentPixel do not have neighbors
+          curentLabel++;                                                      // create a new label
         }
-        if( labels[rows][cols-1] > 0 && labels[rows][cols-1] > labels[rows][cols] ){
-          labels[rows][cols] = min( labels[rows][cols], labels[rows-1][cols] );    //
-          curentLabel = labels[rows][cols];
+        if( labels[rows-1][cols] != 0 ){                                      // if the top neighbor is labelised take it's label
+          labels[rows][cols] = linked[rows-1][cols];
+        }
+        else {
+          labels[rows][cols] = curentLabel;                                   // set the curentLabel
         }
       }
-      
-      if( toggel[row][column] == false && labelToggel == true ){ // if curentPixel is background
-        labelToggel = false;
-        curentLabel++; // create a new label
+
+    }  // for loop
+  }    // for loop
+
+  //////////////////// Second pass
+  for( int rows=ROWS-1; rows>=0; rows-- ){
+    for( int cols=COLS-1; cols>=0; cols-- ){
+
+      if( toggel[rows][cols] == true ){                                       // if curentPixel is forground
+
+        if( labels[rows][cols-1] < labels[rows][cols] ){
+          labels[rows][cols] = labels[rows][cols-1];
+        }
       }
-    }
-  }
 
+    }  // for loop
+  }    // for loop
 
-  for( int row=1; row<ROW; row++ ){
-    for( int column=1; column<COLUMN; column++ ){
-
-      // if curentPixel is forground
-        if( labels[row][column] != 0 && [row - 1][column] != 0 )          // if top pixel have the same label
-          labels[row][column] = min(labels[row -1][column], labels[row][column]);    //
-        }
-              // if curentPixel is forground
-        if( labels[row][column] != 0 && [row][column-1] != 0 )          // if top pixel have the same label
-          labels[row][column] = min(labels[row][column-1], labels[row][column]);    //
-        }
-
-        if( toggel[rows][cols-1] == true ){       // if top pixel is connected with the current pixel
-          labels[rows][cols] = labels[rows-1][cols];        // take temporary neighbors label
-          linked[rows][cols] = NORTH;                        // equivalence classe
-        }
-
-
-
-
-        // Find the smallest label
-
-        L = neighbors labels;
-          labels[rows][cols] = min(L);
-        for label in L
-          linked[label] = union(linked[label], L)
-        }
-        if( toggel[row][column] == false ){
-        }
-    }
-  }
-
-  ////////////////////  Second pass
-  for( int row=0; row<ROW; row++ ){
-    for( int column=0; column<COLUMN; column++ ){
-      if( data[row][column] == false ){
-        labels[row][column] = find( labels[row][column] );      
-      }
-    }
-  }
 }
-
 
 
