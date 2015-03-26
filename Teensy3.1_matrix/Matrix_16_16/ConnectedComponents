@@ -20,27 +20,48 @@ void ConnectedComponents(){
   //////////////////// First pass
   for( int row=0; row<ROW; row++ ){
     for( int column=0; column<COLUMN; column++ ){
-      // if curentValue is true
-      if( toggel[row][column] == true ){ // toggel is true : KEY IN FREE
-        // if left pixel is connected with the current pixel
-        if( collumn > 0 && toggel[row][column-1] == true ){
-          labels[row][column] = labels[row][column-1]; // temporary label
-          linked[row][column] = WEST;                  // equivalence classe
+
+      if( toggel[row][column] == true ){            // if key is pressed
+        labelToggel = true;                         // init the labelToggel
+        
+        labels[row][column] = curentLabel;          // temporary label
+        
+        if( labels[row -1][column] < curentLabel || labels[row ][column -1] < curentLabel ){
+          labels[row][column] = min( labels[row -1][column], labels[row][column] );    //
+          curentLabel = labels[row][column];
         }
-        // if top pixel is connected with the current pixel
-        if( row > 0 && toggel[row-1][column] == true ){
-          labels[row][column] = labels[row-1][column];  // take temporary neighbors label
-          linked[row][column] = NORTH;                  // equivalence classe
+      }
+      // if curentPixel is background
+      if( toggel[row][column] == false && labelToggel == true ){
+        labelToggel = false;
+        curentLabel++; // create a new label
+      }
+    }
+  }
+
+
+  for( int row=1; row<ROW; row++ ){
+    for( int column=1; column<COLUMN; column++ ){
+
+      // if curentPixel is forground
+        if( labels[row][column] != 0 && [row - 1][column] != 0 )          // if top pixel have the same label
+          labels[row][column] = min(labels[row -1][column], labels[row][column]);    //
         }
-        // if left and top pixels are not connected with the current pixel
-        if( row > 0 && collumn > 0 ){
-          if( toggel[row][column-1] == false && toggel[row-1][column] == false ){
-            labels[row][column] = curentLabel++; // create a new label
-          }
+              // if curentPixel is forground
+        if( labels[row][column] != 0 && [row][column-1] != 0 )          // if top pixel have the same label
+          labels[row][column] = min(labels[row][column-1], labels[row][column]);    //
         }
 
+        if( toggel[row][column-1] == true ){       // if top pixel is connected with the current pixel
+          labels[row][column] = labels[row-1][column];        // take temporary neighbors label
+          linked[row][column] = NORTH;                        // equivalence classe
+        }
+
+
+
+
         // Find the smallest label
-        
+
         L = neighbors labels
           labels[row][column] = min(L);
         for label in L
@@ -50,13 +71,16 @@ void ConnectedComponents(){
         }
     }
   }
-  
+
   ////////////////////  Second pass
   for( int row=0; row<ROW; row++ ){
     for( int column=0; column<COLUMN; column++ ){
       if( data[row][column] == false ){
         labels[row][column] = find( labels[row][column] );      
-        }
       }
     }
   }
+}
+
+
+
