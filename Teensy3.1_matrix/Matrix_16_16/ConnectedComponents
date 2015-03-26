@@ -5,7 +5,7 @@
 
 boolean toggel[ROWS][COLS];
 short int labels[ROWS][COLS];
-short int linked[ROWS][COLS];
+// short int linked[ROWS][COLS];
 
 short int curentLabel = 1;
 
@@ -13,6 +13,7 @@ void setup(){
   for( int rows=0; rows<ROWS; rows++ ){
     for( int cols=0; cols<COLS; cols++ ){
       labels[rows][cols] = 0;
+      // linked[rows][cols] = 0;
     }
   }
 }
@@ -29,7 +30,7 @@ void loop(){
           curentLabel++;                                                      // create a new label
         }
         if( labels[rows-1][cols] != 0 ){                                      // if the top neighbor is labelised take it's label
-          labels[rows][cols] = linked[rows-1][cols];
+          labels[rows][cols] = labels[rows-1][cols];
         }
         else {
           labels[rows][cols] = curentLabel;                                   // set the curentLabel
@@ -54,5 +55,3 @@ void loop(){
   }    // for loop
 
 }
-
-
