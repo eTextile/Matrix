@@ -1,25 +1,30 @@
 //////////////////// algorithm TwoPass
 
-#define  COLS             16
-#define  ROWS             16
-#define  THRESHOLD        300
-#define  DEBOUNCE_TIME    100
+#define  COLS             17   // 16 + 1 for an array right ofset value 
+#define  ROWS             17   // 16 + 1 for an array top ofset value
+#define  THRESHOLD        300  // 
+#define  DEBOUNCE_TIME    80   // 
 
-boolean toggel[ROWS][COLS];
-short int labels[ROWS][COLS];
 int rawSensorValues[ROWS][COLS];
+boolean toggel[ROWS][COLS];
 long lastSensTime[ROWS][COLS];
+short int labels[ROWS][COLS];
 
-short int curentLabel = 1;
+// 000000000 00000000
+// 011111111 11111111
+// 011111111 11111111
+// 011111111 11111111
+// 011111111 11111111
+// ...
 
 // Dig pins array
-// BUG FIX : strap to 33
-const int rowPins[ROWS] = {
+// BUG FIXED : strap to 33
+const int rowPins[ROWS-1] = {
   27, 26, 25, 24, 12, 11, 10, 9, 8, 7, 6, 5, 33, 2, 1, 0
 };
 
 // Analog pins array 
-const int colPins[COLS] = {
+const int colPins[COLS-1] = {
   A17, A18, A19, A0, A20, A1, A2, A3, A4, A5, A6, A7, A11, A8, A10, A9
 };
 
@@ -44,18 +49,18 @@ void loop(){
   printOut();
 }
 
-/////////////////////// USB TRANSMIT
+/////////////////////// Scan the e-textil matrix
 void scanMatrix(){
 
-  for( int row=0; row<ROWS; row++ ){
+  for( int row=1; row<ROWS; row++ ){
 
     // Set row pin as output HIGH (+3V)
-    pinMode( rowPins[row], OUTPUT );
-    digitalWrite( rowPins[row], HIGH );
+    pinMode( rowPins[row-1], OUTPUT );
+    digitalWrite( rowPins[row-1], HIGH );
 
     for( int col=0; col<COLS; col++ ){
 
-      rawSensorValues[row][col] = analogRead( colPins[col] );
+      rawSensorValues[row][col] = analogRead( colPins[col-1] );
 
       // Is touched 
       if( rawSensorValues[row][col] >= THRESHOLD && toggel[row][col] == false && ( lastSensTime[row][col] - millis() ) > DEBOUNCE_TIME ){
@@ -72,14 +77,19 @@ void scanMatrix(){
   }
 }
 
+
+/////////////////////// Set Labels on connected components
 void connectedComponentLabeling(){
   
-  //////////////////// First pass of conneacted component labeling
+  int curentLabel = 0;
+
+  //////////////////// First pass
   for( int row=1; row<ROWS; row++ ){
     for( int col=1; col<COLS; col++ ){
       labels[row][col] = 0;                                                 // init label value
 
       if( toggel[row][col] == true ){                                       // if curentPixel is forground
+
         if( toggel[row-1][col] == false && toggel[row][col-1] == false ){   // if curentPixel do not have neighbors
           curentLabel++;                                                    // create a new labe
         }
@@ -106,7 +116,7 @@ void connectedComponentLabeling(){
 
     }  // for loop
   }    // for loop
-  curentLabel = 0;
+
 }
 
 /////////////////////// USB DEBUG
@@ -116,11 +126,12 @@ void printOut(){
     for( int col=0; col<COLS; col++ ){
 
       if( toggel[row][col] == true ){
-        Serial.print( toggel[row][col] ), Serial.print(" ");
-        // Serial.print( labels[row][col] ), Serial.print(" ");
+        // Serial.print( rawSensorValues[row][col] ), Serial.print( "\t" );
+        // Serial.print( toggel[row][col] ), Serial.print( "\t" );
+        Serial.print( labels[row][col] ), Serial.print( "\t" );
       } 
       else {
-        Serial.print("0"), Serial.print(" ");
+        Serial.print( "_" ), Serial.print( "\t" );
       }
     }
     Serial.println();
