@@ -1,39 +1,93 @@
 //////////////////// algorithm TwoPass
 
-#define COLS           16
-#define ROWS           16
+#define  COLS             16
+#define  ROWS             16
+#define  THRESHOLD        300
+#define  DEBOUNCE_TIME    100
 
 boolean toggel[ROWS][COLS];
 short int labels[ROWS][COLS];
-// short int linked[ROWS][COLS];
+int rawSensorValues[ROWS][COLS];
+long lastSensTime[ROWS][COLS];
 
 short int curentLabel = 1;
 
+// Dig pins array
+// BUG FIX : strap to 33
+const int rowPins[ROWS] = {
+  27, 26, 25, 24, 12, 11, 10, 9, 8, 7, 6, 5, 33, 2, 1, 0
+};
+
+// Analog pins array 
+const int colPins[COLS] = {
+  A17, A18, A19, A0, A20, A1, A2, A3, A4, A5, A6, A7, A11, A8, A10, A9
+};
+
+///////////////////////////////////////////////////// SETUP
 void setup(){
-  for( int rows=0; rows<ROWS; rows++ ){
-    for( int cols=0; cols<COLS; cols++ ){
-      labels[rows][cols] = 0;
-      // linked[rows][cols] = 0;
+
+  for( int row=0; row<ROWS; row++ ){
+    for( int col=0; col<COLS; col++ ){
+      toggel[row][col] = false;
+      labels[row][col] = 0;
+      rawSensorValues[row][col] = 0;
+      lastSensTime[row][col] = 0;
     }
   }
 }
 
+///////////////////////////////////////////////////// LOOP
 void loop(){
 
-  //////////////////// First pass
-  for( int rows=1; rows<ROWS; rows++ ){
-    for( int cols=1; cols<COLS; cols++ ){
+  scanMatrix();
+  connectedComponentLabeling();
+  printOut();
+}
 
-      if( toggel[rows][cols] == true ){                                       // if curentPixel is forground
+/////////////////////// USB TRANSMIT
+void scanMatrix(){
 
-        if( toggel[rows-1][cols] == false && toggel[rows][cols-1] == false ){ // if curentPixel do not have neighbors
-          curentLabel++;                                                      // create a new label
+  for( int row=0; row<ROWS; row++ ){
+
+    // Set row pin as output HIGH (+3V)
+    pinMode( rowPins[row], OUTPUT );
+    digitalWrite( rowPins[row], HIGH );
+
+    for( int col=0; col<COLS; col++ ){
+
+      rawSensorValues[row][col] = analogRead( colPins[col] );
+
+      // Is touched 
+      if( rawSensorValues[row][col] >= THRESHOLD && toggel[row][col] == false && ( lastSensTime[row][col] - millis() ) > DEBOUNCE_TIME ){
+        lastSensTime[row][col] = millis();
+        toggel[row][col] = true;
+      }
+      // Is released
+      if( rawSensorValues[row][col] < THRESHOLD && toggel[row][col] == true ){
+        toggel[row][col] = false;
+      }
+    }
+    // Set row pin in high-impedance state
+    pinMode( rowPins[row], INPUT );
+  }
+}
+
+void connectedComponentLabeling(){
+  
+  //////////////////// First pass of conneacted component labeling
+  for( int row=1; row<ROWS; row++ ){
+    for( int col=1; col<COLS; col++ ){
+      labels[row][col] = 0; // init label value
+
+      if( toggel[row][col] == true ){                                       // if curentPixel is forground
+        if( toggel[row-1][col] == false && toggel[row][col-1] == false ){   // if curentPixel do not have neighbors
+          curentLabel++;                                                    // create a new labe
         }
-        if( labels[rows-1][cols] != 0 ){                                      // if the top neighbor is labelised take it's label
-          labels[rows][cols] = labels[rows-1][cols];
+        if( labels[row-1][col] != 0 ){                                      // if the top neighbor is labelised take it's label
+          labels[row][col] = labels[row-1][col];
         }
         else {
-          labels[rows][cols] = curentLabel;                                   // set the curentLabel
+          labels[row][col] = curentLabel;                                   // set the curentLabel
         }
       }
 
@@ -41,17 +95,34 @@ void loop(){
   }    // for loop
 
   //////////////////// Second pass
-  for( int rows=ROWS-1; rows>=0; rows-- ){
-    for( int cols=COLS-1; cols>=0; cols-- ){
+  for( int row=ROWS-1; row>=0; row-- ){
+    for( int col=COLS-1; col>=0; col-- ){
 
-      if( toggel[rows][cols] == true ){                                       // if curentPixel is forground
-
-        if( labels[rows][cols-1] < labels[rows][cols] ){
-          labels[rows][cols] = labels[rows][cols-1];
+      if( toggel[row][col] == true ){                                       // if curentPixel is forground
+        if( labels[row][col-1] < labels[row][col] ){
+          labels[row][col] = labels[row][col-1];
         }
       }
 
     }  // for loop
   }    // for loop
+  curentLabel = 0;
+}
 
+/////////////////////// USB DEBUG
+void printOut(){
+
+  for( int row=0; row<ROWS; row++ ){
+    for( int col=0; col<COLS; col++ ){
+
+      if( toggel[row][col] == true ){
+        Serial.print( labels[row][col] ), Serial.print(" ");
+      } 
+      else {
+        Serial.print("0"), Serial.print(" ");
+      }
+    }
+    Serial.println();
+  }
+  Serial.println();
 }
