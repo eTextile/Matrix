@@ -77,7 +77,7 @@ void connectedComponentLabeling(){
   //////////////////// First pass of conneacted component labeling
   for( int row=1; row<ROWS; row++ ){
     for( int col=1; col<COLS; col++ ){
-      labels[row][col] = 0; // init label value
+      labels[row][col] = 0;                                                 // init label value
 
       if( toggel[row][col] == true ){                                       // if curentPixel is forground
         if( toggel[row-1][col] == false && toggel[row][col-1] == false ){   // if curentPixel do not have neighbors
@@ -95,8 +95,8 @@ void connectedComponentLabeling(){
   }    // for loop
 
   //////////////////// Second pass
-  for( int row=ROWS-1; row>=0; row-- ){
-    for( int col=COLS-1; col>=0; col-- ){
+  for( int row=ROWS; row>=1; row-- ){
+    for( int col=COLS; col>=1; col-- ){
 
       if( toggel[row][col] == true ){                                       // if curentPixel is forground
         if( labels[row][col-1] < labels[row][col] ){
@@ -116,7 +116,8 @@ void printOut(){
     for( int col=0; col<COLS; col++ ){
 
       if( toggel[row][col] == true ){
-        Serial.print( labels[row][col] ), Serial.print(" ");
+        Serial.print( toggel[row][col] ), Serial.print(" ");
+        // Serial.print( labels[row][col] ), Serial.print(" ");
       } 
       else {
         Serial.print("0"), Serial.print(" ");
