@@ -1,8 +1,8 @@
 //////////////////// algorithm TwoPass
-
+#define  LED_PIN          13
 #define  COLS             17   // 16 + 1 for an array right ofset value 
 #define  ROWS             17   // 16 + 1 for an array top ofset value
-#define  THRESHOLD        300  // 
+#define  THRESHOLD        150  // 
 #define  DEBOUNCE_TIME    80   // 
 
 int rawSensorValues[ROWS][COLS];
@@ -30,6 +30,7 @@ const int colPins[COLS-1] = {
 
 ///////////////////////////////////////////////////// SETUP
 void setup(){
+  pinMode(LED_PIN, OUTPUT);              // Set rows pins in high-impedance state
 
   for( int row=0; row<ROWS; row++ ){
     for( int col=0; col<COLS; col++ ){
@@ -39,6 +40,7 @@ void setup(){
       lastSensTime[row][col] = 0;
     }
   }
+  blinkState();
 }
 
 ///////////////////////////////////////////////////// LOOP
@@ -46,7 +48,6 @@ void loop(){
 
   scanMatrix();
   connectedComponentLabeling();
-  printOut();
 }
 
 /////////////////////// Scan the e-textil matrix
@@ -62,7 +63,7 @@ void scanMatrix(){
 
       rawSensorValues[row][col] = analogRead( colPins[col-1] );
 
-      // Is touched 
+      // Is touched
       if( rawSensorValues[row][col] >= THRESHOLD && toggel[row][col] == false && ( lastSensTime[row][col] - millis() ) > DEBOUNCE_TIME ){
         lastSensTime[row][col] = millis();
         toggel[row][col] = true;
@@ -73,14 +74,14 @@ void scanMatrix(){
       }
     }
     // Set row pin in high-impedance state
-    pinMode( rowPins[row], INPUT );
+    pinMode( rowPins[row-1], INPUT );
   }
 }
 
 
 /////////////////////// Set Labels on connected components
 void connectedComponentLabeling(){
-  
+
   int curentLabel = 0;
 
   //////////////////// First pass
@@ -104,6 +105,9 @@ void connectedComponentLabeling(){
     }  // for loop
   }    // for loop
 
+  Serial.println(" First pass ");
+  printOut();
+
   //////////////////// Second pass
   for( int row=ROWS-1; row>0; row-- ){
     for( int col=COLS-1; col>0; col-- ){
@@ -116,6 +120,9 @@ void connectedComponentLabeling(){
 
     }  // for loop
   }    // for loop
+
+  Serial.println(" Second pass ");
+  printOut();
 
 }
 
@@ -137,4 +144,16 @@ void printOut(){
     Serial.println();
   }
   Serial.println();
+  Serial.println();
 }
+
+void blinkState(){
+
+  for( int i=0; i<15; i++ ){
+    digitalWrite(LED_PIN, HIGH);
+    delay(50);
+    digitalWrite(LED_PIN, LOW);
+    delay(50);
+  }
+}
+
