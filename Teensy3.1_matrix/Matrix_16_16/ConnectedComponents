@@ -58,7 +58,7 @@ void scanMatrix(){
     pinMode( rowPins[row-1], OUTPUT );
     digitalWrite( rowPins[row-1], HIGH );
 
-    for( int col=0; col<COLS; col++ ){
+    for( int col=1; col<COLS; col++ ){
 
       rawSensorValues[row][col] = analogRead( colPins[col-1] );
 
@@ -105,11 +105,11 @@ void connectedComponentLabeling(){
   }    // for loop
 
   //////////////////// Second pass
-  for( int row=ROWS; row>=1; row-- ){
-    for( int col=COLS; col>=1; col-- ){
+  for( int row=ROWS-1; row>0; row-- ){
+    for( int col=COLS-1; col>0; col-- ){
 
       if( toggel[row][col] == true ){                                       // if curentPixel is forground
-        if( labels[row][col-1] < labels[row][col] ){
+        if( labels[row][col] > labels[row][col-1] ){
           labels[row][col] = labels[row][col-1];
         }
       }
@@ -122,8 +122,8 @@ void connectedComponentLabeling(){
 /////////////////////// USB DEBUG
 void printOut(){
 
-  for( int row=0; row<ROWS; row++ ){
-    for( int col=0; col<COLS; col++ ){
+  for( int row=1; row<ROWS; row++ ){
+    for( int col=1; col<COLS; col++ ){
 
       if( toggel[row][col] == true ){
         // Serial.print( rawSensorValues[row][col] ), Serial.print( "\t" );
