@@ -101,9 +101,8 @@ void connectedComponentLabeling(){
           labels[row][col] = curentLabel;                                   // set the curentLabel
         }
       }
-
-    }  // for loop
-  }    // for loop
+    }
+  }
 
   Serial.println(" First pass ");
   printOut();
@@ -111,15 +110,13 @@ void connectedComponentLabeling(){
   //////////////////// Second pass
   for( int row=ROWS-1; row>0; row-- ){
     for( int col=COLS-1; col>0; col-- ){
-
       if( toggel[row][col] == true ){                                       // if curentPixel is forground
         if( labels[row][col] > labels[row][col-1] ){
           labels[row][col] = labels[row][col-1];
         }
       }
-
-    }  // for loop
-  }    // for loop
+    }
+  }
 
   Serial.println(" Second pass ");
   printOut();
