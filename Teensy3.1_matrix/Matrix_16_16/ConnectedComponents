@@ -1,8 +1,8 @@
 //////////////////// algorithm TwoPass
 #define  LED_PIN          13
-#define  COLS             17   // 16 + 1 for an array right ofset value 
-#define  ROWS             17   // 16 + 1 for an array top ofset value
-#define  THRESHOLD        150  // 
+#define  COLS             18   // 16 + 2 for an array right and left ofset 
+#define  ROWS             18   // 16 + 2 for an array right and left ofset
+#define  THRESHOLD        150  // Threshold to 
 #define  DEBOUNCE_TIME    80   // 
 
 int rawSensorValues[ROWS][COLS];
@@ -22,22 +22,22 @@ short int labels[ROWS][COLS];
 const int rowPins[ROWS-1] = {
   27, 26, 25, 24, 12, 11, 10, 9, 8, 7, 6, 5, 33, 2, 1, 0
 };
-
-// Analog pins array 
+// Analog pins array
 const int colPins[COLS-1] = {
   A17, A18, A19, A0, A20, A1, A2, A3, A4, A5, A6, A7, A11, A8, A10, A9
 };
 
 ///////////////////////////////////////////////////// SETUP
 void setup(){
+
   pinMode(LED_PIN, OUTPUT);              // Set rows pins in high-impedance state
 
   for( int row=0; row<ROWS; row++ ){
     for( int col=0; col<COLS; col++ ){
-      toggel[row][col] = false;
-      labels[row][col] = 0;
       rawSensorValues[row][col] = 0;
       lastSensTime[row][col] = 0;
+      toggel[row][col] = false;
+      labels[row][col] = 0;
     }
   }
   blinkState();
@@ -53,20 +53,19 @@ void loop(){
 /////////////////////// Scan the e-textil matrix
 void scanMatrix(){
 
-  for( int row=1; row<ROWS; row++ ){
+  for( int row=1; row<ROWS-1; row++ ){
 
     // Set row pin as output HIGH (+3V)
     pinMode( rowPins[row-1], OUTPUT );
     digitalWrite( rowPins[row-1], HIGH );
 
-    for( int col=1; col<COLS; col++ ){
-
+    for( int col=1; col<COLS-1; col++ ){
       rawSensorValues[row][col] = analogRead( colPins[col-1] );
 
       // Is touched
       if( rawSensorValues[row][col] >= THRESHOLD && toggel[row][col] == false && ( lastSensTime[row][col] - millis() ) > DEBOUNCE_TIME ){
-        lastSensTime[row][col] = millis();
         toggel[row][col] = true;
+        lastSensTime[row][col] = millis();
       }
       // Is released
       if( rawSensorValues[row][col] < THRESHOLD && toggel[row][col] == true ){
@@ -85,65 +84,65 @@ void connectedComponentLabeling(){
   int curentLabel = 0;
 
   //////////////////// First pass
-  for( int row=1; row<ROWS; row++ ){
-    for( int col=1; col<COLS; col++ ){
-      labels[row][col] = 0;                                                 // init label value
-
-      if( toggel[row][col] == true ){                                       // if curentPixel is forground
-
-        if( toggel[row-1][col] == false && toggel[row][col-1] == false ){   // if curentPixel do not have neighbors
-          curentLabel++;                                                    // create a new labe
+  for( int row=1; row<ROWS-1; row++ ){
+    for( int col=1; col<COLS-1; col++ ){
+      if( toggel[row][col] == true ){                                       // if a pixel is forground
+        if( toggel[row][col-1] == false ){
+          curentLabel++;                                                    // increse the curent label
         }
-        if( labels[row-1][col] != 0 ){                                      // if the top neighbor is labelised take it's label
-          labels[row][col] = labels[row-1][col];
+        labels[row][col] = curentLabel;                                     // set the curentLabel
+          if( labels[row-1][col] != 0 ){                                    // if the top neighbor is smaler than the curent label
+          labels[row][col] = min( labels[row-1][col], curentLabel );        // take the right neighbor value
         }
-        else {
-          labels[row][col] = curentLabel;                                   // set the curentLabel
+        if( labels[row][col-1] != 0 ){                                      // if the right neighbor is smaler than the curent label
+          labels[row][col] = min( labels[row][col-1], curentLabel );        // take the right neighbor value
         }
+      }
+      else {                                                                // toggel[row][col] == false
+        labels[row][col] = 0;                                               // init label value
       }
     }
   }
-
   Serial.println(" First pass ");
   printOut();
 
   //////////////////// Second pass
   for( int row=ROWS-1; row>0; row-- ){
     for( int col=COLS-1; col>0; col-- ){
-      if( toggel[row][col] == true ){                                       // if curentPixel is forground
-        if( labels[row][col] > labels[row][col-1] ){
-          labels[row][col] = labels[row][col-1];
+      if( labels[row][col] != 0 ){                                       // if curentPixel is forground
+        if( labels[row][col+1] > labels[row][col] ){                     // if the right neighbor is smaler than the curent label
+          labels[row][col] = labels[row][col+1];                         // take the right neighbor value
+        }
+        if( labels[row+1][col] > labels[row][col] ){                     // if the bottom neighbor is smaler than the curent label
+          labels[row][col] = labels[row+1][col];                         // take the bottom neighbor value
         }
       }
     }
   }
-
   Serial.println(" Second pass ");
   printOut();
-
 }
 
 /////////////////////// USB DEBUG
 void printOut(){
 
-  for( int row=1; row<ROWS; row++ ){
-    for( int col=1; col<COLS; col++ ){
-
+  for( int row=1; row<ROWS-1; row++ ){
+    for( int col=1; col<COLS-1; col++ ){
       if( toggel[row][col] == true ){
         // Serial.print( rawSensorValues[row][col] ), Serial.print( "\t" );
         // Serial.print( toggel[row][col] ), Serial.print( "\t" );
         Serial.print( labels[row][col] ), Serial.print( "\t" );
       } 
       else {
-        Serial.print( "_" ), Serial.print( "\t" );
+        Serial.print( "\t" );
       }
     }
     Serial.println();
   }
   Serial.println();
-  Serial.println();
 }
 
+/////////////////////// Blink LED
 void blinkState(){
 
   for( int i=0; i<15; i++ ){
@@ -153,4 +152,3 @@ void blinkState(){
     delay(50);
   }
 }
-
