@@ -55,7 +55,7 @@ void scanMatrix(){
 
   for( int row=1; row<ROWS-1; row++ ){
 
-    // Set row pin as output HIGH (+3V)
+    // Set row pin as output HIGH (+3.3V)
     pinMode( rowPins[row-1], OUTPUT );
     digitalWrite( rowPins[row-1], HIGH );
 
@@ -86,12 +86,14 @@ void connectedComponentLabeling(){
   //////////////////// First pass
   for( int row=1; row<ROWS-1; row++ ){
     for( int col=1; col<COLS-1; col++ ){
+
       if( toggel[row][col] == true ){                                       // if a pixel is forground
-        if( toggel[row][col-1] == false ){
+        // if( toggel[row][col-1] == false ){
+        if( toggel[row][col-1] == false && toggel[row-1][col] == false ){
           curentLabel++;                                                    // increse the curent label
         }
         labels[row][col] = curentLabel;                                     // set the curentLabel
-          if( labels[row-1][col] != 0 ){                                    // if the top neighbor is smaler than the curent label
+        if( labels[row-1][col] != 0 ){                                      // if the top neighbor is smaler than the curent label
           labels[row][col] = min( labels[row-1][col], curentLabel );        // take the right neighbor value
         }
         if( labels[row][col-1] != 0 ){                                      // if the right neighbor is smaler than the curent label
@@ -109,7 +111,7 @@ void connectedComponentLabeling(){
   //////////////////// Second pass
   for( int row=ROWS-1; row>0; row-- ){
     for( int col=COLS-1; col>0; col-- ){
-      if( labels[row][col] != 0 ){                                       // if curentPixel is forground
+      if( labels[row][col] != 0 ){                                       //
         if( labels[row][col+1] > labels[row][col] ){                     // if the right neighbor is smaler than the curent label
           labels[row][col] = labels[row][col+1];                         // take the right neighbor value
         }
@@ -150,5 +152,42 @@ void blinkState(){
     delay(50);
     digitalWrite(LED_PIN, LOW);
     delay(50);
+  }
+}
+
+///////////////////////////////// SELECTOR
+void selector(){
+
+  if ( value >= THRESHOLD ) {
+    // Send OSC messages
+    if ( ( toggel[row][column] == false ) && ( synthCount <= SYNTH ) ) {
+      toggel[row][column] = true;
+      // Select a free synthesizer
+      for ( int i=0; i<SYNTH; i++ ) {
+        if ( allSynth[i] -> state == false ) {     // State is false : synth is FREE
+          allSynth[i] -> state = true;             // State is true : synth is BUSY
+          allSynth[i] -> endToggel = true;         //
+          allSynth[i] -> sensor = sensorID;        // Remind the sensor id
+          synthCount++;
+          break;
+        }
+      }
+    }
+  }
+  else { // value < THRESHOLD
+    if ( toggel[row][column] == true ) {
+      toggel[row][column] = false;
+      // Free the synth
+      for ( int i=0; i<SYNTH; i++ ) {
+        if ( allSynth[i] -> sensor == sensorID ) {
+          message.addIntArg( i );                     // add OSC synth ID
+          message.addIntArg( allSynth[i] -> sensor ); // add OSC sensor ID
+          message.addIntArg( -1 );                    // Set the sensor value to -1
+          allSynth[i] -> state = false;               // state is true : SYNTH IS FREE
+          synthCount--;
+          break;
+        }
+      }
+    }
   }
 }
