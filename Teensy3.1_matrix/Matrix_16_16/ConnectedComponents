@@ -5,10 +5,12 @@
 #define  THRESHOLD        150  // Threshold to 
 #define  DEBOUNCE_TIME    80   // 
 
-int rawSensorValues[ROWS][COLS];
+int rawSensorValue[ROWS][COLS];
 boolean toggel[ROWS][COLS];
+
 long lastSensTime[ROWS][COLS];
-short int labels[ROWS][COLS];
+short int label[ROWS][COLS];
+short int lastLabel[ROWS][COLS];
 
 // 000000000 00000000
 // 011111111 11111111
@@ -34,10 +36,10 @@ void setup(){
 
   for( int row=0; row<ROWS; row++ ){
     for( int col=0; col<COLS; col++ ){
-      rawSensorValues[row][col] = 0;
+      rawSensorValue[row][col] = 0;
       lastSensTime[row][col] = 0;
       toggel[row][col] = false;
-      labels[row][col] = 0;
+      label[row][col] = 0;
     }
   }
   blinkState();
@@ -60,15 +62,15 @@ void scanMatrix(){
     digitalWrite( rowPins[row-1], HIGH );
 
     for( int col=1; col<COLS-1; col++ ){
-      rawSensorValues[row][col] = analogRead( colPins[col-1] );
+      rawSensorValue[row][col] = analogRead( colPins[col-1] );
 
       // Is touched
-      if( rawSensorValues[row][col] >= THRESHOLD && toggel[row][col] == false && ( lastSensTime[row][col] - millis() ) > DEBOUNCE_TIME ){
+      if( rawSensorValue[row][col] >= THRESHOLD && toggel[row][col] == false && ( lastSensTime[row][col] - millis() ) > DEBOUNCE_TIME ){
         toggel[row][col] = true;
         lastSensTime[row][col] = millis();
       }
       // Is released
-      if( rawSensorValues[row][col] < THRESHOLD && toggel[row][col] == true ){
+      if( rawSensorValue[row][col] < THRESHOLD && toggel[row][col] == true ){
         toggel[row][col] = false;
       }
     }
@@ -78,7 +80,7 @@ void scanMatrix(){
 }
 
 
-/////////////////////// Set Labels on connected components
+/////////////////////// Set label on connected components
 void connectedComponentLabeling(){
 
   int curentLabel = 0;
@@ -87,21 +89,28 @@ void connectedComponentLabeling(){
   for( int row=1; row<ROWS-1; row++ ){
     for( int col=1; col<COLS-1; col++ ){
 
-      if( toggel[row][col] == true ){                                       // if a pixel is forground
+      if( toggel[row][col] == true ){                                       // if the curent pixel is forground
         // if( toggel[row][col-1] == false ){
-        if( toggel[row][col-1] == false && toggel[row-1][col] == false ){
+        if( toggel[row][col-1] == false && toggel[row-1][col] == false ){   // If the left and top neighbor pixels are background
           curentLabel++;                                                    // increse the curent label
         }
-        labels[row][col] = curentLabel;                                     // set the curentLabel
-        if( labels[row-1][col] != 0 ){                                      // if the top neighbor is smaler than the curent label
-          labels[row][col] = min( labels[row-1][col], curentLabel );        // take the right neighbor value
+        
+        lastLabel[row][col] = label[row][col];                              // Remember the last pixel label
+        label[row][col] = curentLabel;                                      // Get the curent pixel label
+        
+        if( curentLabel != lastLabel[row][col] ){                           // 
+          label[row][col] = min( lastLabel[row][col], curentLabel );        //
         }
-        if( labels[row][col-1] != 0 ){                                      // if the right neighbor is smaler than the curent label
-          labels[row][col] = min( labels[row][col-1], curentLabel );        // take the right neighbor value
+        
+        if( label[row-1][col] != 0 ){                                       // If the top neighbor pixel is smaler than the curent label
+          label[row][col] = min( label[row-1][col], curentLabel );          // Take the right neighbor label pixiel value
+        }
+        if( label[row][col-1] != 0 ){                                       // If the right neighbor pixel is smaler than the curent label
+          label[row][col] = min( label[row][col-1], curentLabel );          // Take the right neighbor label pixel value
         }
       }
-      else {                                                                // toggel[row][col] == false
-        labels[row][col] = 0;                                               // init label value
+      else {                                                                // If the curent pixel is background
+        label[row][col] = 0;                                                // Raz pixel label value
       }
     }
   }
@@ -111,12 +120,12 @@ void connectedComponentLabeling(){
   //////////////////// Second pass
   for( int row=ROWS-1; row>0; row-- ){
     for( int col=COLS-1; col>0; col-- ){
-      if( labels[row][col] != 0 ){                                       //
-        if( labels[row][col+1] > labels[row][col] ){                     // if the right neighbor is smaler than the curent label
-          labels[row][col] = labels[row][col+1];                         // take the right neighbor value
+      if( label[row][col] != 0 ){                                      // If the pixel label value in different than 0
+        if( label[row][col+1] > label[row][col] ){                     // If the right neighbor pixel is smaler than the curent label
+          label[row][col] = label[row][col+1];                         // Take the right neighbor pixel label value
         }
-        if( labels[row+1][col] > labels[row][col] ){                     // if the bottom neighbor is smaler than the curent label
-          labels[row][col] = labels[row+1][col];                         // take the bottom neighbor value
+        if( label[row+1][col] > label[row][col] ){                     // If the bottom neighbor pixel label is smaler than the curent pixel label
+          label[row][col] = label[row+1][col];                         // Take the bottom neighbor label pixel value
         }
       }
     }
@@ -131,9 +140,9 @@ void printOut(){
   for( int row=1; row<ROWS-1; row++ ){
     for( int col=1; col<COLS-1; col++ ){
       if( toggel[row][col] == true ){
-        // Serial.print( rawSensorValues[row][col] ), Serial.print( "\t" );
+        // Serial.print( rawSensorValue[row][col] ), Serial.print( "\t" );
         // Serial.print( toggel[row][col] ), Serial.print( "\t" );
-        Serial.print( labels[row][col] ), Serial.print( "\t" );
+        Serial.print( label[row][col] ), Serial.print( "\t" );
       } 
       else {
         Serial.print( "\t" );
@@ -152,42 +161,5 @@ void blinkState(){
     delay(50);
     digitalWrite(LED_PIN, LOW);
     delay(50);
-  }
-}
-
-///////////////////////////////// SELECTOR
-void selector(){
-
-  if ( value >= THRESHOLD ) {
-    // Send OSC messages
-    if ( ( toggel[row][column] == false ) && ( synthCount <= SYNTH ) ) {
-      toggel[row][column] = true;
-      // Select a free synthesizer
-      for ( int i=0; i<SYNTH; i++ ) {
-        if ( allSynth[i] -> state == false ) {     // State is false : synth is FREE
-          allSynth[i] -> state = true;             // State is true : synth is BUSY
-          allSynth[i] -> endToggel = true;         //
-          allSynth[i] -> sensor = sensorID;        // Remind the sensor id
-          synthCount++;
-          break;
-        }
-      }
-    }
-  }
-  else { // value < THRESHOLD
-    if ( toggel[row][column] == true ) {
-      toggel[row][column] = false;
-      // Free the synth
-      for ( int i=0; i<SYNTH; i++ ) {
-        if ( allSynth[i] -> sensor == sensorID ) {
-          message.addIntArg( i );                     // add OSC synth ID
-          message.addIntArg( allSynth[i] -> sensor ); // add OSC sensor ID
-          message.addIntArg( -1 );                    // Set the sensor value to -1
-          allSynth[i] -> state = false;               // state is true : SYNTH IS FREE
-          synthCount--;
-          break;
-        }
-      }
-    }
   }
 }
