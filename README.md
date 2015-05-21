@@ -10,7 +10,7 @@ This project is part of electronic textiles research on IHM gesture interaction.
 
 E-textile materials and assembling technics have been experimented in colaboration with Hannah and Mika from kobakant: http://www.kobakant.at during them Electronic Textiles Live Workshops 11-21 September 2014, at the Schmiede festival in Hallein near Salzburg, Austria.
 
-This matrix is made out of rows and columns conductive fabric fused onto a basic cotton fabric. In between the e-textile matrix a 20K Eeonyx piezoresistive fabric allow pressure detection. The rows and columns are connected to a Teensy microcontroller which parses the rows and columns to measure pressure and location on the surface of the fabric matrix. Sensor data is read into a PD patch that synthesizes sound.
+This matrix is made out of rows and columns conductive fabric fused onto a basic cotton fabric. In between the e-textile matrix a 20K Eeonyx piezoresistive fabric allow pressure detection. The rows and columns are connected to a Teensy microcontroller to scan and measure the positions of pressures on the fabric surface. All values are send to an application that show all analogs values in 3D and produs OSC messages that can be used in audio application such PureData, etc.
 
 The Teensy firmware is arduino IDE compatible
 see : http://www.pjrc.com/teensy/teensyduino.html
