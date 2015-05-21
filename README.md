@@ -3,7 +3,7 @@ Textile matrix 1.0
  - Date : 21/09/2014
  - Credit : Maurin Donneaud http://maurin.donneaud.free.fr/
  - Project : http://maurin.donneaud.free.fr/?-Keyboard-/
- - Repository : https://github.com/MaurinElectroTextile/
+ - Repository : https://github.com/MaurinElectroTextile/Keyboard
  
 ![alt tag](https://c4.staticflickr.com/8/7637/16464397214_b98a5b9cde.jpg)
 
