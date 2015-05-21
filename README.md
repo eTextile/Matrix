@@ -4,6 +4,8 @@ Textile matrix 1.0
  - Credit : Maurin Donneaud http://maurin.donneaud.free.fr/
  - Project : http://maurin.donneaud.free.fr/?-Keyboard-/
  - Repository : https://github.com/MaurinElectroTextile/
+ 
+![alt tag](https://c4.staticflickr.com/8/7637/16464397214_b98a5b9cde.jpg)
 
 This project is part of my electronic textiles research for gesture interaction.
 
