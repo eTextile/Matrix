@@ -1,6 +1,6 @@
 Textile matrix 1.0
 =========
-This project is part of my electronic textiles research for gesture interaction.
+This project is part of electronic textiles research on IHM gesture interaction.
  - Date : 21/09/2014
  - Credit : Maurin Donneaud http://maurin.donneaud.free.fr/
  - Project : http://maurin.donneaud.free.fr/?-Keyboard-/
