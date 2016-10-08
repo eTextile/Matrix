@@ -19,14 +19,14 @@ All values are sent to an application that shows a real time 3D model that produ
 
 Project content
 ===============
- - the Arduino firmware (source files)
- - the Eagle PCP (source files)
- - the openframeworks software (source files)
+ - Arduino firmware
+ - Eagle PCB
+ - openframeworks software
 
 Docs
 ====
- - http://www.kobakant.at/DIY/?p=4305/
- - https://www.flickr.com/photos/maurin/15378383106/
+ - A video made at Schmiede 2014 : http://www.kobakant.at/DIY/?p=4305/
+ - Pictures of the project and context : https://www.flickr.com/photos/maurin/15378383106/
 
 TODO
 ====
