@@ -12,3 +12,7 @@ This Program requires the following addons :
  - ofxOsc
  - ofxGui
  - ofxOpenCv
+
+TODO
+=========
+ - add persistent blobs IDs
