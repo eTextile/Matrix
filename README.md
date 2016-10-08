@@ -6,6 +6,7 @@ This project is part of electronic textiles research on HCI gesture interaction.
  - Credit : Maurin Donneaud
  - Project : http://eTextile.org
  - Repository : https://github.com/MaurinElectroTextile/eTextile_matrix_sensor
+ - Tutorial : http://wiki.datapaulette.org/doku.php/atelier/projets/matrice_textile
 
 ![alt tag](https://c4.staticflickr.com/8/7637/16464397214_b98a5b9cde.jpg)
 
