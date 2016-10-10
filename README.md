@@ -22,7 +22,7 @@ All values are sent to an application that shows a real time 3D model that produ
 
 ## Docs
  - A video made at Schmiede 2014 : http://www.kobakant.at/DIY/?p=4305/
- - Pictures of the project and context : ttps://www.flickr.com/photos/maurin/albums/72157673740361510
+ - Pictures of the project and context : https://www.flickr.com/photos/maurin/albums/72157673740361510
 
 ##TODO
  - See the README inside the project content files
