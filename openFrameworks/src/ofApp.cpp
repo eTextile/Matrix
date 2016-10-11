@@ -94,6 +94,7 @@ void ofApp::onSerialBuffer(const SerialBufferEventArgs& args) {
         uint8_t msb = serialData[index+1];      // Get highByte
         uint16_t value = (msb<<8)|lsb;          // Concatenate high & low bytes
         int sensorID = int (index/2);
+        // Do this in the Arduino code to reduce the communication stream (512 bytes to 256 bytes)
         if (value>600) value = 600;
         storedValueRast[sensorID] = ofMap(value, 0, 600, 0, 255); // 1D array
         // cout << "SENSOR_ID : " << sensorID << " ROW :" << value << " MAP : " << int(storedValueRast[sensorID]) << endl;
