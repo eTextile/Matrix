@@ -1,6 +1,6 @@
 obj/linux64/Release/src/ofApp.o: \
- /home/chevrette/Documents/Administratif/Maison_des_artistes/2016/Blackboxe/Textile_matrix/Teensy3.1_e-textile_matrix/openFrameworks_host/Textile_XYZ_OSC_packet_blob/src/ofApp.cpp \
- /home/chevrette/Documents/Administratif/Maison_des_artistes/2016/Blackboxe/Textile_matrix/Teensy3.1_e-textile_matrix/openFrameworks_host/Textile_XYZ_OSC_packet_blob/src/ofApp.h \
+ /home/chevrette/Documents/GitHub_MaurinElectroTextile/eTextile_matrix_sensor/openFrameworks/src/ofApp.cpp \
+ /home/chevrette/Documents/GitHub_MaurinElectroTextile/eTextile_matrix_sensor/openFrameworks/src/ofApp.h \
  /home/chevrette/Applications/of_v0.9.3/libs/openFrameworks/ofMain.h \
  /home/chevrette/Applications/of_v0.9.3/libs/openFrameworks/utils/ofConstants.h \
  /home/chevrette/Applications/of_v0.9.3/libs/tess2/include/tesselator.h \
@@ -440,7 +440,7 @@ obj/linux64/Release/src/ofApp.o: \
  /home/chevrette/Applications/of_v0.9.3/addons/ofxOpenCv/src/ofxCvBlob.h \
  /home/chevrette/Applications/of_v0.9.3/addons/ofxOpenCv/src/ofxCvContourFinder.h
 
-/home/chevrette/Documents/Administratif/Maison_des_artistes/2016/Blackboxe/Textile_matrix/Teensy3.1_e-textile_matrix/openFrameworks_host/Textile_XYZ_OSC_packet_blob/src/ofApp.h:
+/home/chevrette/Documents/GitHub_MaurinElectroTextile/eTextile_matrix_sensor/openFrameworks/src/ofApp.h:
 
 /home/chevrette/Applications/of_v0.9.3/libs/openFrameworks/ofMain.h:
 

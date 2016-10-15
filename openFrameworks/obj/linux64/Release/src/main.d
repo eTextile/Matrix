@@ -1,5 +1,5 @@
 obj/linux64/Release/src/main.o: \
- /home/chevrette/Documents/Administratif/Maison_des_artistes/2016/Blackboxe/Textile_matrix/Teensy3.1_e-textile_matrix/openFrameworks_host/Textile_XYZ_OSC_packet_blob/src/main.cpp \
+ /home/chevrette/Documents/GitHub_MaurinElectroTextile/eTextile_matrix_sensor/openFrameworks/src/main.cpp \
  /home/chevrette/Applications/of_v0.9.3/libs/openFrameworks/ofMain.h \
  /home/chevrette/Applications/of_v0.9.3/libs/openFrameworks/utils/ofConstants.h \
  /home/chevrette/Applications/of_v0.9.3/libs/tess2/include/tesselator.h \
@@ -347,7 +347,7 @@ obj/linux64/Release/src/main.o: \
  /home/chevrette/Applications/of_v0.9.3/libs/openFrameworks/video/ofGstVideoPlayer.h \
  /home/chevrette/Applications/of_v0.9.3/libs/openFrameworks/3d/ofCamera.h \
  /home/chevrette/Applications/of_v0.9.3/libs/openFrameworks/3d/ofEasyCam.h \
- /home/chevrette/Documents/Administratif/Maison_des_artistes/2016/Blackboxe/Textile_matrix/Teensy3.1_e-textile_matrix/openFrameworks_host/Textile_XYZ_OSC_packet_blob/src/ofApp.h \
+ /home/chevrette/Documents/GitHub_MaurinElectroTextile/eTextile_matrix_sensor/openFrameworks/src/ofApp.h \
  /home/chevrette/Applications/of_v0.9.3/libs/openFrameworks/communication/ofxSerial.h \
  /home/chevrette/Applications/of_v0.9.3/addons/ofxSerial/libs/serial/include/serial/serial.h \
  /home/chevrette/Applications/of_v0.9.3/addons/ofxSerial/libs/serial/include/serial/v8stdint.h \
@@ -1168,7 +1168,7 @@ obj/linux64/Release/src/main.o: \
 
 /home/chevrette/Applications/of_v0.9.3/libs/openFrameworks/3d/ofEasyCam.h:
 
-/home/chevrette/Documents/Administratif/Maison_des_artistes/2016/Blackboxe/Textile_matrix/Teensy3.1_e-textile_matrix/openFrameworks_host/Textile_XYZ_OSC_packet_blob/src/ofApp.h:
+/home/chevrette/Documents/GitHub_MaurinElectroTextile/eTextile_matrix_sensor/openFrameworks/src/ofApp.h:
 
 /home/chevrette/Applications/of_v0.9.3/libs/openFrameworks/communication/ofxSerial.h:
 
