@@ -1,6 +1,4 @@
 # eTextile matrix sensor 1.1
-
-This project is part of electronic textiles research on IHM gesture interaction.
  - Credit : Maurin Donneaud <maurin@datapaulette.org>
  - Repository : https://github.com/MaurinElectroTextile/eTextile_matrix_sensor
  - Project web page : http://eTextile.org
