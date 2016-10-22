@@ -13,5 +13,13 @@
  - ofxGui
  - ofxOpenCv
 
+
+##Compiling
+...
+###Linux
+...
+###Mac
+
+
 ## TODO
 - add persistent blobs IDs
