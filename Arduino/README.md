@@ -18,7 +18,7 @@ This Arduino Sketch requires :
  - Keyboard Layout: US English
  
 ## Program Synopsis
-To get each sensor value, the microcontrôleur performs lines and columns sweeping. To do these measurements, the lines of the matrix are connected to digital IO pins and the columns are connected to analog input pins. The lines and columns sweeping activate a digital pin and measure each of the analog inputs pins. The digital pins that are not in use are set in the high impedance state.
+To get each sensor value, the microcontrôleur performs rows and columns sweeping. To do these measurements, the matrix rows are connected to digital IO pins and the columns are connected to analog input pins. The rows and columns sweeping activate a digital pin and measure each of the analog inputs pins. The digital pins that are not in use are set in the high impedance state.
 
 ![alt tag](http://etextile-summercamp.org/swatch-exchange/wp-content/uploads/2015/05/Matrix_011.png)
 
