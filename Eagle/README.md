@@ -1,16 +1,11 @@
-E-TEXTILE MATRIX SENSOR
-=========
+# e-Textile matrix sensor
 
- - Purpose: 16x16 e-textile matrix sensors
- - Copyright (c) 2014 Maurin Donneaud : http://etextile.org
- - Licence : GNU GENERAL PUBLIC LICENSE
+- Purpose: 16x16 e-textile matrix sensors
+- Copyright (c) 2014 Maurin Donneaud
+- Licence: GNU GENERAL PUBLIC LICENSE
+- Site web: http://etextile.org
 
-
-The only components essential with the Teesy board are 10K resistor ladder.
-To make a voltage divider for each column, every resistor are connected between an analog input pins and VCC (3.3V).
-
-Partslist
-=====
+## Partslist
 
 | Part        |    Value                     |     Device              |          Package     |
 |-------------|:-----------------------------|:------------------------|:---------------------|
