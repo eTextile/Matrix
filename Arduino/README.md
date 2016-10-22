@@ -1,4 +1,4 @@
-#E-TEXTILE MATRIX SENSOR
+# eTextile matrix sensor
 
 - Purpose: 16x16 e-textile matrix sensors
 - Copyright (c) 2014 Maurin Donneaud
@@ -19,6 +19,8 @@ This Arduino Sketch requires :
  
 ## Program Synopsis
 To get each sensor value, the microcontrôleur performs lines and columns sweeping. To do these measurements, the lines of the matrix are connected to digital IO pins and the columns are connected to analog input pins. The lines and columns sweeping activate a digital pin and measure each of the analog inputs pins. The digital pins that are not in use are set in the high impedance state.
+
+![alt tag](http://etextile-summercamp.org/swatch-exchange/wp-content/uploads/2015/05/Matrix_011.png)
 
 ## TODO
 - Add 
