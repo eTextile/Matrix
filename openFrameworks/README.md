@@ -1,18 +1,17 @@
-E-TEXTILE MATRIX SENSOR
-=========
+# eTextile matrix sensor
+- Purpose: 16x16 e-textile matrix sensors
+- Copyright (c) 2014 Maurin Donneaud
+- Licence: GNU GENERAL PUBLIC LICENSE
+- Site web: http://etextile.org
 
- - Purpose: 16x16 e-textile matrix sensors
- - Copyright (c) 2014 Maurin Donneaud : http://etextile.org
- - Licence : GNU GENERAL PUBLIC LICENSE
-
-Programed with openFrameworks : http://openframeworks.cc/
-This Program requires the following addons :
+## Requirements
+- Programed with openFrameworks: http://openframeworks.cc/
+- This software requires the following addons:
  - ofxIO
  - ofxSerial
  - ofxOsc
  - ofxGui
  - ofxOpenCv
 
-TODO
-=========
- - add persistent blobs IDs
+## TODO
+- add persistent blobs IDs
