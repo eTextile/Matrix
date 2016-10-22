@@ -18,14 +18,14 @@ On the software side we can visualise a representation of the eTextile matrix se
 This 3D real time model analyse the touch to trigger OSC messages that can be used in audio application such as PureData, SuperCollider, etc.
 
 ## Project content
- - Arduino firmware
- - Eagle PCB
- - openframeworks software
+- Arduino firmware
+- Eagle PCB
+- openframeworks software
 
 ## Docs
- - A video made at Schmiede 2014 : http://www.kobakant.at/DIY/?p=4305/
- - Pictures of the project and context : https://www.flickr.com/photos/maurin/albums/72157673740361510
- - The tutorial on the DataPaulette eTextile hakerspace wiki : http://wiki.datapaulette.org/doku.php/atelier/projets/matrice_textile
+- [A video made at Schmiede 2014](http://www.kobakant.at/DIY/?p=4305/)
+- [Pictures of the project and context](https://www.flickr.com/photos/maurin/albums/72157673740361510)
+- [The tutorial on the DataPaulette eTextile hakerspace wiki](http://wiki.datapaulette.org/doku.php/atelier/projets/matrice_textile)
 
 ##TODO
  - See the README inside the project content files
