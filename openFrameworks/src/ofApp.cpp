@@ -7,6 +7,8 @@ Also the multiconductors ribbon (16 lignes) do not exist yet as a market product
 #include <cmath>
 #include "ofApp.h"
 
+#define DEBUG_PRINT 0
+
 void ofApp::setup() {
 
     // 1. Upload the PacketSerialReverseEcho.ino sketch (in this example's
@@ -91,7 +93,8 @@ void ofApp::onSerialBuffer(const SerialBufferEventArgs& args) {
     // Copy the frame buffer (512 values) into serialData array.
     std::copy(args.getBuffer().begin(), args.getBuffer().end(), serialData );
 
-    // cout << "NEW packet : ";
+    if (DEBUG_PRINT)
+        cout << "NEW packet : ";
     for (int index=0; index<DATAS; index=index+2) {
         uint8_t lsb = serialData[index];        // Get lowByte
         uint8_t msb = serialData[index+1];      // Get highByte
@@ -100,7 +103,8 @@ void ofApp::onSerialBuffer(const SerialBufferEventArgs& args) {
         // Do this in the Arduino code to reduce the communication stream (512 bytes to 256 bytes)
         if (value>600) value = 600;
         storedValueRast[sensorID] = ofMap(value, 0, 600, 0, 255); // 1D array
-        // cout << "SENSOR_ID : " << sensorID << " ROW :" << value << " MAP : " << int(storedValueRast[sensorID]) << endl;
+        if (DEBUG_PRINT)
+            cout << "SENSOR_ID : " << sensorID << " ROW :" << value << " MAP : " << int(storedValueRast[sensorID]) << endl;
     }
     device.send(buffer); // Request a frame from the Teensy matrix sensor
     newFrame = true;
@@ -134,13 +138,15 @@ void ofApp::update() {
         int musicMask = 512;
 
         for (std::vector<ofxCvBlob>::iterator it = contourFinder.blobs.begin() ; it != contourFinder.blobs.end(); ++it){
-            cout << "zic :  ["<< &(*it) <<"] " <<  (*it).musicValue  << endl;
+            if (DEBUG_PRINT)
+                cout << "zic :  ["<< &(*it) <<"] " <<  (*it).musicValue  << endl;
             if( (*it).musicValue >= 0 ){
                 musicMask |= 1 << (*it).musicValue;
             }
         }
 
-        cout << musicMask << endl;
+        if (DEBUG_PRINT)
+            cout << musicMask << endl;
 
         for (std::vector<ofxCvBlob>::iterator it = contourFinder.blobs.begin() ; it != contourFinder.blobs.end(); ++it){
             // std::cout << ' ' << *it;
@@ -159,14 +165,16 @@ void ofApp::update() {
                 (*it).musicValue = newMusicValue;
                 musicMask |= 1 << newMusicValue;
             }
-            cout << (*it).musicValue << endl;
+            if (DEBUG_PRINT)
+                cout << (*it).musicValue << endl;
 
             // message.addIntArg(posX);    // Send X blob pos
             // message.addIntArg(posY);    // Send Y blob pos
             // message.addIntArg(posZ);    // Send Z blob pos
 
         }
-        cout << "........................." << endl;
+        if (DEBUG_PRINT)
+            cout << "........................." << endl;
 
         /*
         for (int i=0; i<contourFinder.blobs.size(); i++){
@@ -180,7 +188,8 @@ void ofApp::update() {
             message.addIntArg(posX);    // Send X blob pos
             message.addIntArg(posY);    // Send Y blob pos
             message.addIntArg(posZ);    // Send Z blob pos
-            // cout << "BlobID : " << ID << " posX : " << int(posX) << " posY : " << int(posY) << " posZ : " << posZ << endl;
+            if (DEBUG_PRINT)
+                cout << "BlobID : " << ID << " posX : " << int(posX) << " posY : " << int(posY) << " posZ : " << posZ << endl;
         }
 */
         if (contourFinder.nBlobs>0) sender.sendMessage(message, false);
