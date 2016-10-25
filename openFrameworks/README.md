@@ -1,25 +1,49 @@
 # eTextile matrix sensor
+
 - Purpose: 16x16 e-textile matrix sensors
 - Copyright (c) 2014 Maurin Donneaud
 - Licence: GNU GENERAL PUBLIC LICENSE
 - Site web: http://etextile.org
 
 ## Requirements
-- Programed with openFrameworks: http://openframeworks.cc/
-- This software requires the following addons:
+
+OpenFrameworks:
+
+    http://openframeworks.cc/
+
+To compile the code, you need to set the following variable in your ~/.bashrc, ~/.zshrc or other equivalent:
+
+    # UPDATE WITH YOUR OWN OPEN FRAMEWORKS PATH:
+    export OF_ROOT=/opt/openFrameworks/
+
+This Program requires the following addons:
  - ofxIO
  - ofxSerial
  - ofxOsc
  - ofxGui
  - ofxOpenCv
 
+The two 1st addons don't come by default with oFx but you can install them:
 
-##Compiling
-...
-###Linux
-...
-###Mac
+    cd $OF_ROOT/addons
+    git clone https://github.com/bakercp/ofxIO
+    git clone https://github.com/bakercp/ofxSerial
+
+
+## Compiling
+
+    make
+
+If you have 4 cores, it's recommended to use them all as it's long:
+
+    make -j4 
+
+
+### Running (at least Linux & Mac)
+
+    make RunRelease
 
 
 ## TODO
+
 - add persistent blobs IDs
