@@ -29,11 +29,5 @@ This 3D real time model analyses the touch to trigger OSC messages that can be u
 - [Pictures of the project and context](https://www.flickr.com/photos/maurin/albums/72157673740361510)
 - [The tutorial on the DataPaulette eTextile hakerspace wiki](http://wiki.datapaulette.org/doku.php/atelier/projets/matrice_textile)
 
-## USING OSC FOR DEVELOPPMENT
-You can test the openframework program without the textile device nor arduino.
-To do so, simply send an OSC message on port 1234 (defined as UDP_INPUT_PORT in ofApp.h).
-The message should be something like (/point (x,y,z) ) where x,y and z are floats between 0 and 1.
-you can send a /reset message to clear the map (remove all points).
-
 ##TODO
  - See the README inside the project content files
