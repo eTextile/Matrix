@@ -233,10 +233,6 @@ void ofApp::handleOSC()
         receiver.getNextMessage(m);
         if(m.getAddress() == "/point")
         {
-            for(int i = 0 ; i < ROWS*COLS; i++)//should be done with memset
-            {
-                storedValueRast[i] = 0;
-            }
             int row = m.getArgAsFloat(0)*ROWS;
             int col = m.getArgAsFloat(1)*COLS;
             int startIndex = col * COLS + row;
@@ -245,6 +241,11 @@ void ofApp::handleOSC()
             {
                 cout << "NEW VIRTUAL POINT [ "<< row <<","<< col <<","<< unsigned(storedValueRast[startIndex]) << "]"<<endl;
             }
+            newFrame = true;
+        }
+        else if( m.getAddress() == "/reset" )
+        {
+            memset(storedValueRast,0,ROWS*COLS);
             newFrame = true;
         }
     }
