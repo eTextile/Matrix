@@ -41,9 +41,9 @@ void ofApp::setup() {
     else {
         ofLogNotice("ofApp::setup") << "No devices connected.";
     }
-
-    sender.setup(HOST, UDP_PORT); // OSC - UDP config
-
+    
+    sender.setup(HOST, UDP_OUTPUT_PORT); // OSC - UDP config
+    receiver.setup(UDP_INPUT_PORT);
     toggleDsp.addListener(this, &ofApp::toggleDspPressed);
     sliderVolume.addListener(this, &ofApp::sliderVolumeValue);
     sliderTransposition.addListener(this, &ofApp::sliderTranspositionValue);
@@ -163,6 +163,7 @@ void ofApp::update() {
         mesh.setVertex(index, p);                      // Set the new coordinates
         mesh.setColor(index, ofColor(grayImageCopy[index], 0, 255));    // Change vertex color
     }
+    handleOSC();
 }
 
 
@@ -176,7 +177,8 @@ void ofApp::draw() {
     std::stringstream ss;
     ss << "         FPS : " << (int) ofGetFrameRate() << std::endl;
     ss << "Connected to : " << device.getPortName() << std::endl;
-    ss << "    OSC port : " << UDP_PORT << std::endl;
+    ss << "OSC out port : " << UDP_OUTPUT_PORT << std::endl;
+    ss << " OSC in port : " << UDP_INPUT_PORT << std::endl;
     ss << "       Blobs : " << contourFinder.nBlobs << std::endl;
 
     ofDrawBitmapString(ss.str(), ofVec2f(20, 200)); // Draw the GUI menu
@@ -223,8 +225,33 @@ void ofApp::onSerialError(const SerialBufferErrorEventArgs& args) {
     cout << args.getException().displayText() << endl;
 }
 
-void ofApp::exit() {
+void ofApp::handleOSC()
+{
+    while(receiver.hasWaitingMessages())
+    {
+        ofxOscMessage m;
+        receiver.getNextMessage(m);
+        if(m.getAddress() == "/point")
+        {
+            for(int i = 0 ; i < ROWS*COLS; i++)//should be done with memset
+            {
+                storedValueRast[i] = 0;
+            }
+            int row = m.getArgAsFloat(0)*ROWS;
+            int col = m.getArgAsFloat(1)*COLS;
+            int startIndex = col * COLS + row;
+            storedValueRast[startIndex] = (uint8_t)ofMap(m.getArgAsFloat(2), 0, 1, 0, 255);
+            if (DEBUG_PRINT)
+            {
+                cout << "NEW VIRTUAL POINT [ "<< row <<","<< col <<","<< unsigned(storedValueRast[startIndex]) << "]"<<endl;
+            }
+            newFrame = true;
+        }
+    }
+}
 
+void ofApp::exit() {
+    
     device.unregisterAllEvents(this);
 
     toggleDsp.removeListener(this, &ofApp::toggleDspPressed);

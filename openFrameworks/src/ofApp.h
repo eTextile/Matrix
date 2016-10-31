@@ -17,7 +17,8 @@
 
 #define HOST            "localhost"
 //#define HOST 		"10.42.0.255"
-#define UDP_PORT        7771
+#define UDP_OUTPUT_PORT 7771
+#define UDP_INPUT_PORT  1234
 #define SYNTH           8
 
 using namespace ofx::IO;
@@ -32,6 +33,7 @@ public:
     void                    exit();
     void                    onSerialBuffer(const SerialBufferEventArgs& args);
     void                    onSerialError(const SerialBufferErrorEventArgs& args);
+    void                    handleOSC();
     PacketSerialDevice      device;
     ByteBuffer              buffer;  // Create a byte buffer.
     int16_t                 highBit;
@@ -63,6 +65,7 @@ public:
     ofxButton               buttonModeC;    // Select audio mode
     ofMesh                  mesh;
     ofxOscSender            sender;
+    ofxOscReceiver          receiver;
     ofTrueTypeFont	        font;
 
 };
