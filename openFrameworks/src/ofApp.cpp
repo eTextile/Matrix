@@ -11,6 +11,7 @@ Also the multiconductors ribbon (16 lignes) do not exist yet as a market product
 
 void ofApp::setup() {
 
+    ofSetFrameRate(60);
     // 1. Upload the PacketSerialReverseEcho.ino sketch (in this example's
     //    Arduino/ folder) to an Arduino board.  This sketch requires
     //    the Arduino PacketSerial library https://github.com/bakercp/PacketSerial.
@@ -214,7 +215,7 @@ void ofApp::draw() {
     gui.draw();
 
     std::stringstream ss;
-    ss << "         FPS : " << ofGetFrameRate() << std::endl;
+    ss << "         FPS : " << (int) ofGetFrameRate() << std::endl;
     ss << "Connected to : " << device.getPortName() << std::endl;
     ss << "    OSC port : " << UDP_PORT << std::endl;
     ss << "       Blobs : " << contourFinder.nBlobs << std::endl;
