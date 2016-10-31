@@ -136,63 +136,19 @@ void ofApp::update() {
         ofxOscMessage message;
         message.setAddress("/sensor");
 
-        int musicMask = 512;
-
-        for (std::vector<ofxCvBlob>::iterator it = contourFinder.blobs.begin() ; it != contourFinder.blobs.end(); ++it){
-            if (DEBUG_PRINT)
-                cout << "zic :  ["<< &(*it) <<"] " <<  (*it).musicValue  << endl;
-            if( (*it).musicValue >= 0 ){
-                musicMask |= 1 << (*it).musicValue;
-            }
-        }
-
-        if (DEBUG_PRINT)
-            cout << musicMask << endl;
-
-        for (std::vector<ofxCvBlob>::iterator it = contourFinder.blobs.begin() ; it != contourFinder.blobs.end(); ++it){
-            // std::cout << ' ' << *it;
-            // ofxCvBlob* blob = it;
-            float posX = (*it).centroid.x;
-            float posY = (*it).centroid.y;
-            int index = int(posY) * X_NEWSIZE + int(posX);
-            int posZ = grayImageCopy[index];
-
-            if ((*it).musicValue == -1){
-                int invMusicMask = ~musicMask;
-
-                invMusicMask++;
-                int zeroMask = musicMask & invMusicMask;
-                int newMusicValue = log2(zeroMask);
-                (*it).musicValue = newMusicValue;
-                musicMask |= 1 << newMusicValue;
-            }
-            if (DEBUG_PRINT)
-                cout << (*it).musicValue << endl;
-
-            // message.addIntArg(posX);    // Send X blob pos
-            // message.addIntArg(posY);    // Send Y blob pos
-            // message.addIntArg(posZ);    // Send Z blob pos
-
-        }
-        if (DEBUG_PRINT)
-            cout << "........................." << endl;
-
-        /*
-        for (int i=0; i<contourFinder.blobs.size(); i++){
-            //int ID = contourFinder.blobs[i];                   // Get blob ID
+        for (int i=0; i<contourFinder.blobs.size(); i++)
+        {
             float posX = contourFinder.blobs[i].centroid.x;    // Get blob posX
             float posY = contourFinder.blobs[i].centroid.y;    // Get blob posY
             int index = int(posY) * X_NEWSIZE + int(posX);     // Calculate the index
             int posZ = grayImageCopy[index];                   // Get the Z coordinate
-
-            //message.addIntArg(ID);      // Send blob ID
             message.addIntArg(posX);    // Send X blob pos
             message.addIntArg(posY);    // Send Y blob pos
             message.addIntArg(posZ);    // Send Z blob pos
             if (DEBUG_PRINT)
                 cout << "BlobID : " << ID << " posX : " << int(posX) << " posY : " << int(posY) << " posZ : " << posZ << endl;
         }
-*/
+        
         if (contourFinder.nBlobs>0) sender.sendMessage(message, false);
     }
 
