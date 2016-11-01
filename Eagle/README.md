@@ -31,5 +31,6 @@ U1            | MCP73831                     | MCP73831                     | SO
 U3            |                              | AUDIO-JACKSMD2               | AUDIO-JACK-3.5MM-SMD |
 
 ## TODO
-- Replace the Teensy With an other chip 
+- Replace the Teensy With an other chip
+  - keep compatibility with the Teensy audo lib : http://www.pjrc.com/teensy/td_libs_Audio.html
 - Make the design with Upverter
