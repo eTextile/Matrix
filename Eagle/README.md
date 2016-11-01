@@ -1,9 +1,9 @@
 # e-Textile matrix sensor
 
-- Purpose: 16x16 e-textile matrix sensors
+- Purpose : 16x16 e-textile matrix sensors
 - Copyright (c) 2014 Maurin Donneaud
-- Licence: GNU GENERAL PUBLIC LICENSE
-- Site web: http://etextile.org
+- Licence : GNU GENERAL PUBLIC LICENSE
+- Web site : http://etextile.org
 
 ## Partslist
 
