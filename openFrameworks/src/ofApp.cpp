@@ -11,6 +11,7 @@ Also the multiconductors ribbon (16 lignes) do not exist yet as a market product
 
 void ofApp::setup() {
 
+    ofSetWindowTitle("eTextile matrix sensor");
     ofSetFrameRate(60);
     // 1. Upload the PacketSerialReverseEcho.ino sketch (in this example's
     //    Arduino/ folder) to an Arduino board.  This sketch requires
@@ -41,7 +42,7 @@ void ofApp::setup() {
     else {
         ofLogNotice("ofApp::setup") << "No devices connected.";
     }
-    
+
     sender.setup(HOST, UDP_OUTPUT_PORT); // OSC - UDP config
     receiver.setup(UDP_INPUT_PORT);
     toggleDsp.addListener(this, &ofApp::toggleDspPressed);
@@ -82,7 +83,7 @@ void ofApp::setup() {
 
     // Initialize buffer
     ofLogNotice("ofApp::setup") << "Ping the Teensy";
-    buffer.writeByte(65); //"A"
+    buffer.writeByte(65); // "A"
     device.send(buffer);  // Request a frame from the Teensy matrix sensor
     bLearnBakground = true;
 }
@@ -93,7 +94,7 @@ void ofApp::onSerialBuffer(const SerialBufferEventArgs& args) {
     // Copy the frame buffer (512 values) into serialData array.
     std::copy(args.getBuffer().begin(), args.getBuffer().end(), serialData );
 
-    if (DEBUG_PRINT){
+    if (DEBUG_PRINT) {
         cout << "NEW packet : ";
     }
     for (int index=0; index<DATAS; index=index+2) {
@@ -102,9 +103,10 @@ void ofApp::onSerialBuffer(const SerialBufferEventArgs& args) {
         uint16_t value = (msb<<8)|lsb;          // Concatenate high & low bytes
         int sensorID = int (index/2);
         // Do this in the Arduino code to reduce the communication stream (512 bytes to 256 bytes)
+        // Add exponential to have à better response
         if (value>600) value = 600;
-        storedValueRast[sensorID] = ofMap(value, 0, 600, 0, 255); // 1D array
-        if (DEBUG_PRINT){
+            storedValueRast[sensorID] = ofMap(value, 0, 600, 0, 255); // 1D array
+        if (DEBUG_PRINT) {
             cout << "SENSOR_ID : " << sensorID << " ROW :" << value << " MAP : " << int(storedValueRast[sensorID]) << endl;
         }
     }
@@ -115,7 +117,7 @@ void ofApp::onSerialBuffer(const SerialBufferEventArgs& args) {
 //////////////////////////////////////////// UPDATE ////////////////////////////////////////////
 void ofApp::update() {
 
-    if (newFrame){
+    if (newFrame) {
 
         newFrame = false;
         /////////////////// INTERPOLATE
@@ -123,7 +125,7 @@ void ofApp::update() {
         interpolatedFrame.resize(X_NEWSIZE, Y_NEWSIZE, OF_INTERPOLATE_BICUBIC);
         grayImage.setFromPixels(interpolatedFrame.getData(), X_NEWSIZE, Y_NEWSIZE);
 
-        if (bLearnBakground){
+        if (bLearnBakground) {
             grayBg = grayImage; // the = sign copys the pixels from grayImage into grayBg (operator overloading)
             bLearnBakground = false;
         }
@@ -135,10 +137,9 @@ void ofApp::update() {
         contourFinder.findContours(grayDiff, 9, 300, 8, false, true);
 
         ofxOscMessage message;
-        message.setAddress("/sensor");
+        message.setAddress("/point");
 
-        for (int i=0; i<contourFinder.blobs.size(); i++)
-        {
+        for (int i=0; i<contourFinder.blobs.size(); i++){
             float posX = contourFinder.blobs[i].centroid.x;    // Get blob posX
             float posY = contourFinder.blobs[i].centroid.y;    // Get blob posY
             int index = int(posY) * X_NEWSIZE + int(posX);     // Calculate the index
@@ -146,12 +147,11 @@ void ofApp::update() {
             message.addIntArg(posX);    // Send X blob pos
             message.addIntArg(posY);    // Send Y blob pos
             message.addIntArg(posZ);    // Send Z blob pos
-            if (DEBUG_PRINT)
-            {
+            if (DEBUG_PRINT) {
                 cout << "BlobID : "<< " posX : " << int(posX) << " posY : " << int(posY) << " posZ : " << posZ << endl;
             }
         }
-        
+
         if (contourFinder.nBlobs>0) sender.sendMessage(message, false);
     }
 
@@ -201,10 +201,10 @@ void ofApp::draw() {
     ofSetLineWidth(3);
     ofSetColor(255, 0, 0);
 
-    for (int i=0; i<contourFinder.nBlobs; i++){
+    for (int i=0; i<contourFinder.nBlobs; i++) {
         blob = contourFinder.blobs[i];
         ofBeginShape();
-        for (int i=0; i<blob.nPts; i++){
+        for (int i=0; i<blob.nPts; i++) {
             ofVertex(x+k*blob.pts[i].x, y+k*blob.pts[i].y);
         }
         ofEndShape(true);
@@ -225,34 +225,30 @@ void ofApp::onSerialError(const SerialBufferErrorEventArgs& args) {
     cout << args.getException().displayText() << endl;
 }
 
-void ofApp::handleOSC()
-{
-    while(receiver.hasWaitingMessages())
-    {
+void ofApp::handleOSC() {
+
+    while(receiver.hasWaitingMessages()) {
         ofxOscMessage m;
         receiver.getNextMessage(m);
-        if(m.getAddress() == "/point")
-        {
+        if(m.getAddress() == "/point") {
             int row = m.getArgAsFloat(0)*ROWS;
             int col = m.getArgAsFloat(1)*COLS;
             int startIndex = col * COLS + row;
             storedValueRast[startIndex] = (uint8_t)ofMap(m.getArgAsFloat(2), 0, 1, 0, 255);
-            if (DEBUG_PRINT)
-            {
+            if (DEBUG_PRINT) {
                 cout << "NEW VIRTUAL POINT [ "<< row <<","<< col <<","<< unsigned(storedValueRast[startIndex]) << "]"<<endl;
             }
             newFrame = true;
         }
-        else if( m.getAddress() == "/reset" )
-        {
-            memset(storedValueRast,0,ROWS*COLS);
+        else if( m.getAddress() == "/reset" ) {
+            memset(storedValueRast, 0, ROWS*COLS);
             newFrame = true;
         }
     }
 }
 
 void ofApp::exit() {
-    
+
     device.unregisterAllEvents(this);
 
     toggleDsp.removeListener(this, &ofApp::toggleDspPressed);
@@ -266,7 +262,7 @@ void ofApp::toggleDspPressed(bool & toggleState) {
 
     ofxOscMessage message;
     message.setAddress("/dsp");
-    if ( toggleState ) {
+    if (toggleState) {
         message.addIntArg(1);
     } else {
         message.addIntArg(0);
@@ -276,7 +272,7 @@ void ofApp::toggleDspPressed(bool & toggleState) {
 //--------------------------------------------------------------
 void ofApp::sliderVolumeValue(float & sliderValue_A) {
     ofxOscMessage message;
-    message.setAddress("/volume" );
+    message.setAddress("/volume");
     message.addFloatArg(sliderValue_A);
     sender.sendMessage(message);
 }
