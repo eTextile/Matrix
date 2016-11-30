@@ -21,6 +21,16 @@
 #define UDP_INPUT_PORT  1234
 #define SYNTH           8
 
+struct centroid
+{
+    ofVec2f position;
+    uint8_t pressure;
+    int UID;
+    bool isDead;
+};
+
+
+
 using namespace ofx::IO;
 
 
@@ -67,6 +77,6 @@ public:
     ofxOscSender            sender;
     ofxOscReceiver          receiver;
     ofTrueTypeFont	        font;
-
+    vector<centroid>        centroids;
 };
 
