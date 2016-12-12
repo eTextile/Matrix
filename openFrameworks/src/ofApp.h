@@ -60,7 +60,7 @@ public:
     ofxCvContourFinder      contourFinder;
     bool                    bLearnBakground;
     ofxCvBlob               blob;
-    unsigned char*          grayImageCopy;
+    ofPixels                grayImageCopy;
     //uint8_t               higerValuePos;
     void                    toggleDspPressed(bool & toggleState);
     void                    sliderVolumeValue(float & sliderValue_A);
