@@ -1,5 +1,5 @@
--ofxIO
--ofxSerial
--ofxOsc
--ofxGui
--ofxOpenCv
+ofxIO
+ofxSerial
+ofxOsc
+ofxGui
+ofxOpenCv
