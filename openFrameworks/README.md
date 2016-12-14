@@ -38,6 +38,11 @@ If you have 4 cores, it's recommended to use them all as it's long:
 
     make -j4 
 
+To accelerate the compilation we use ccache, you can get it with:
+
+    apt-get install ccache  # debian-like OS
+    brew install ccache     # OSX
+
 
 ### Running (at least Linux & Mac)
 

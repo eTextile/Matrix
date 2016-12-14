@@ -138,5 +138,5 @@
 #		(default) PROJECT_CC = (blank)
 #   Note: Leave a leading space when adding list items with the += operator
 ################################################################################
-# PROJECT_CXX = 
-# PROJECT_CC = 
+PROJECT_CXX = ccache g++
+PROJECT_CC = ccache g++
