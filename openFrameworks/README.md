@@ -36,7 +36,7 @@ The two 1st addons don't come by default with oFx but you can install them:
 
 If you have 4 cores, it's recommended to use them all as it's long:
 
-    make -j4 
+    make -j4
 
 To accelerate the compilation we use ccache, you can get it with:
 
@@ -57,5 +57,6 @@ you can send a /reset message to clear the map (remove all points).
 
 
 ## TODO
-
-- add persistent blobs IDs
+- Add OSCBundle
+- Update openFrameworks TUIO wrapper : https://github.com/arturoc/ofxTuioWrapper
+- add TUIO
