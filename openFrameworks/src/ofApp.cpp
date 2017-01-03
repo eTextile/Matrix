@@ -90,24 +90,14 @@ void ofApp::setup() {
 
 /////////////////////// SERIAL EVENT ///////////////////////
 void ofApp::onSerialBuffer(const SerialBufferEventArgs& args) {
-    
-    // Copy the frame buffer (512 values) into serialData array.
-    std::copy(args.getBuffer().begin(), args.getBuffer().end(), serialData );
-    
-    if (DEBUG_PRINT) {
-        cout << "NEW packet : ";
-    }
-    for (int index=0; index<DATAS; index=index+2) {
-        uint8_t lsb = serialData[index];        // Get lowByte
-        uint8_t msb = serialData[index+1];      // Get highByte
-        uint16_t value = (msb<<8)|lsb;          // Concatenate high & low bytes
-        int sensorID = int (index/2);
-        // Do this in the Arduino code to reduce the communication stream (512 bytes to 256 bytes)
-        // Add exponential to have à better response
-        if (value>600) value = 600;
-        storedValueRast[sensorID] = ofMap(value, 0, 600, 0, 255); // 1D array
-        if (DEBUG_PRINT) {
-            cout << "SENSOR_ID : " << sensorID << " ROW :" << value << " MAP : " << int(storedValueRast[sensorID]) << endl;
+
+    // Copy the frame buffer (256 values) into serialData array.
+    std::copy(args.getBuffer().begin(), args.getBuffer().end(), serialData);
+
+    if (DEBUG_SERIAL) {
+    cout << "NEW packet : ";
+        for (int index=0; index<DATAS; index++) {
+            cout << "SENSOR_ID: " << sensorID << " VALUE: " << serialData[index] << endl;
         }
     }
     device.send(buffer); // Request a frame from the Teensy matrix sensor
