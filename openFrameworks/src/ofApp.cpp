@@ -378,3 +378,14 @@ void ofApp::buttonModePressedA() {
     centroids.clear();
 }
 
+//--------------------------------------------------------------
+void ofApp::keyPressed(int key) {
+    switch(key) {
+        case 'f':
+            ofToggleFullscreen();
+            break;
+        default:
+            break;
+    }
+}
+

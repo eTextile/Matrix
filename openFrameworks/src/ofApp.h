@@ -64,6 +64,7 @@ public:
     void                    sliderVolumeValue(float & sliderValue_A);
     void                    sliderTranspositionValue(float & sliderValue_B);
     void                    buttonModePressedA();
+	void                    keyPressed(int key);
     ofxPanel                gui;
     ofxToggle               toggleDsp;      // Switch DSP ON/OFF
     ofxFloatSlider          sliderVolume;   // Set the audio volume
