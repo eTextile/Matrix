@@ -14,8 +14,8 @@ Also the multiconductors ribbon (16 lignes) do not exist yet as a market product
 
 void ofApp::setup() {
 
+    ofSetVerticalSync(true);
     ofSetWindowTitle("eTextile matrix sensor");
-    ofSetFrameRate(60);
     // 1. Upload the PacketSerialReverseEcho.ino sketch (in this example's
     //    Arduino/ folder) to an Arduino board.  This sketch requires
     //    the Arduino PacketSerial library https://github.com/bakercp/PacketSerial
