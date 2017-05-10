@@ -2,10 +2,10 @@
 
 ### Transforming textiles into an intuitive way to interact with computers. This project is part of an electronic textiles research on HCI gesture interaction that was started in 2005.
 
-- Credit: Maurin Donneaud <maurin@datapaulette.org>
-- Contributions :
-    - Cedric Honnet <cedric@datapaulette.org>
-    - Antoine Messonier [ameisso.fr](http://ameisso.fr)
+- Author: Maurin Donneaud <maurin@datapaulette.org> - Industrial designer
+- Contributors:
+    - Cedric Honnet <cedric@datapaulette.org> - Electronic engineering 
+    - Antoine Messonier <ameisso@gmail.com> - Software developer
 - Repository: https://github.com/eTextile/resistiveMatrix
 - Project web page: http://eTextile.org
 
