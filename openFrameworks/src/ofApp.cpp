@@ -10,7 +10,7 @@ Also the multiconductors ribbon (16 lignes) do not exist yet as a market product
 
 #define DEBUG_SERIAL 0
 #define DEBUG_PRINT 0
-#define DEBUG_OSC 1
+#define DEBUG_OSC 0
 
 void ofApp::setup() {
 
@@ -275,13 +275,13 @@ void ofApp::draw() {
 
     ofPushMatrix();
 
-    ofTranslate(400, 50);
-    //ofRotate(30, 1, 0, 0);
+    ofTranslate(240, 50);
+    ofRotate(24, 1, 0, 0);
 
     //////////////////////// DRAW BLOBS
     const int x = 0;   // X ofset
     const int y = -50; // Y ofset
-    const int k = 10;  // Scale
+    const int k = 9;  // Scale
 
     ofNoFill();
     ofSetLineWidth(3);
@@ -297,7 +297,7 @@ void ofApp::draw() {
     }
 
     ofSetLineWidth(1);    // set line width to 1
-    ofScale(10, 9);
+    ofScale(k, k);
 
     mesh.drawWireframe(); // draws lines
 
