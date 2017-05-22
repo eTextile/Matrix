@@ -8,6 +8,7 @@
     - Antoine Messonier <ameisso@gmail.com> - Software developer
 - Repository: https://github.com/eTextile/resistiveMatrix
 - Project web page: http://eTextile.org
+- License : CC-BY-SA (see the License file)
 
 ![alt tag](https://farm6.staticflickr.com/5572/30306414062_22bba76566_z_d.jpg)
 
