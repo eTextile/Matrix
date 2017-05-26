@@ -7,7 +7,7 @@
 
 ## Requirements
 
-OpenFrameworks:
+OpenFrameworks 0.9.4 (it's not currently supported with newer versions):
 
     http://openframeworks.cc/
 
@@ -26,8 +26,8 @@ This Program requires the following addons:
 The two 1st addons don't come by default with oFx but you can install them:
 
     cd $OF_ROOT/addons
-    git clone https://github.com/bakercp/ofxIO
-    git clone https://github.com/bakercp/ofxSerial
+    git clone -b stable https://github.com/bakercp/ofxIO # tested with commit ef09791
+    git clone https://github.com/bakercp/ofxSerial       # tested with commit 8086059
 
 
 ## Compiling
