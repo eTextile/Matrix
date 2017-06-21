@@ -5,22 +5,22 @@
 - Site web : : http://etextile.org
 
 ## Requirements
-- Programed with Arduino IDE ans Teensy 3.1 support
+- Programed with Arduino IDE
 - This Arduino Sketch require:
- - Teensyduino : http://pjrc.com/teensy/teensyduino.html
  - PacketSerial : https://github.com/bakercp/PacketSerial
 
 ### Settings for Arduino IDE
-- Board:           Teensy 3.2 / 3.1
+- Board:           Arduino UNO
 - USB Type:        Serial
-- CPU Speed:       72 MHz
-- Keyboard Layout: US English
  
 ## Program Synopsis
-To get each sensor value, the microcontrôleur performs rows and columns sweeping. To do these measurements, the matrix rows are connected to digital IO pins and the columns are connected to analog input pins. The rows and columns sweeping activate a digital pin and measure each of the analog inputs pins. The digital pins that are not in use are set in the high impedance state.
+Yhe eTextile matrix rows and columns are connected to the E256 PCB.
+To get each sensor value, the Arduino communicate with the E256 PCB via a fast  parallelised data transfer.
+
 
 ## Data Transmission
-The datas are then sent through frames. Each frame is an array of ROW*COL = 256 values. 
+The datas are then sent through frames.
+Each frame is an array of ROW*COL = 256 values. 
 The values are ordered by rows (the first values corrsponds to the first collumn then all the collumns of the second row ...);
 For now, the values are encoded on two bytes.
 As an example here is how a 4*4 frame would be encoded : 
