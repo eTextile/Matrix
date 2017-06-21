@@ -35,3 +35,4 @@ This 3D real time model analyses the touch to trigger OSC messages that can be u
 
 ##TODO
 - See the README inside the project content files
+- https://github.com/openframeworks/openFrameworks/issues/5607 FIXME (add ofJson.h to OF_ROOT/addons/ofxIO/src/ofxIO.h ?)
