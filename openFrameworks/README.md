@@ -60,3 +60,4 @@ you can send a /reset message to clear the map (remove all points).
 - Add OSCBundle
 - Update openFrameworks TUIO wrapper : https://github.com/arturoc/ofxTuioWrapper
 - add TUIO
+- https://github.com/openframeworks/openFrameworks/issues/5607 FIXME (add ofJson.h to OF_ROOT/addons/ofxIO/src/ofxIO.h ?)
