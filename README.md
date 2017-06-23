@@ -4,7 +4,7 @@
 
 - Author: Maurin Donneaud <maurin@datapaulette.org> - Industrial designer
 - Contributors:
-    - Cedric Honnet <cedric@datapaulette.org> - Electronic engineering 
+    - Cedric Honnet <cedric@datapaulette.org> - Electronic engineering
     - Antoine Messonier <ameisso@gmail.com> - Software developer
 - Repository: https://github.com/eTextile/resistiveMatrix
 - Project web page: http://eTextile.org
@@ -25,7 +25,7 @@ This 3D real time model analyses the touch to trigger OSC messages that can be u
 
 ## Project content
 - Arduino firmware
-- Eagle PCB
+- Upverter PCB
 - openframeworks software
 
 ## Docs
