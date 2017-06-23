@@ -13,7 +13,7 @@ PacketSerial serial;
   to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
   copies of the Software, and to permit persons to whom the Software is
   furnished to do so, subject to the following conditions:
-
+* 
   The above copyright notice and this permission notice shall be included in
   all copies or substantial portions of the Software.
 
@@ -38,7 +38,7 @@ PacketSerial serial;
 #define  BAUD_RATE            230400
 #define  COLS                 16
 #define  ROWS                 16
-#define  DATAS                256
+#define  FRAME_DATAS          256
 #define  CALIBRATION_CYCLES   4
 
 // Control pins to send values to the 8-BITs shift registers used on the E-256 PCB
@@ -51,11 +51,8 @@ PacketSerial serial;
 #define A0_PIN        A0  // The output of multiplexerA (SIG pin) is connected to Arduino Analog pin 0
 #define A1_PIN        A1  // The output of multiplexerB (SIG pin) is connected to Arduino Analog pin 1
 
-byte value[ROWS][COLS];        // Array to store 256 analog valeus
-unsigned int columnBitPos = 0; // variable to store column bit positionoutput
-
-int minVal[DATAS] = {0};
-uint8_t myPacket[DATAS] = {0};
+int minVals[FRAME_DATAS] = {0};      // Array to store all smalest valeus
+uint8_t myPacket[FRAME_DATAS] = {0}; // Array to store valeus to transmit
 
 boolean scan = true;
 boolean calibration = true;
@@ -64,17 +61,18 @@ byte byteC;
 byte byteB;
 byte byteA;
 
+// Array to store all parameters used to configure the two shift registers
 const byte setCols[COLS] = {
   0x80, 0x40, 0x20, 0x10, 0x8, 0x4, 0x2, 0x1,
   0x80, 0x40, 0x20, 0x10, 0x8, 0x4, 0x2, 0x1
 };
 
-const byte setRows[COLS] = {
+// Array to store all parameters used to configure the two analog multiplexeurs
+const byte setRows[ROWS] = {
   0x85, 0x87, 0x83, 0x81, 0x82, 0x84, 0x80, 0x86,
   0x58, 0x78, 0x38, 0x18, 0x28, 0x48, 0x8, 0x68
 };
 
-boolean DEBUG = false;          // true for arduino debuging, false for processing.
 ////////////////////////////////////// SETUP
 void setup() {
 
@@ -116,14 +114,14 @@ void loop() {
           digitalWrite(SS, HIGH); // set latchPin HIGH
         }
 
-        int value = analogRead(A0_PIN);  // Reding use to store analog inputs values
-        int sensorID = col * COLS + row; // Calculate the index of the unidimensional array
+        int rowValue = analogRead(A0_PIN);  // Reding use to store analog inputs values
+        byte sensorID = col * COLS + row; // Calculate the index of the unidimensional array
 
         if (calibration) {
-          calibrate(sensorID, value);
+          calibrate(sensorID, rowValue, *minVals);
         } else {
-          value = map(value, minVal[sensorID], 1024, 0, 255);
-          myPacket[sensorID] = (byte)value;
+          byte value = map(rowValue, minVals[sensorID], 1024, 0, 255);
+          myPacket[sensorID] = value;
         }
         
       }
@@ -138,16 +136,15 @@ void loop() {
   serial.update();
 }
 
-
-void calibrate( byte id, int val ) {
+void calibrate( byte id, int val, int frame[] ) {
 
   static int calibrationCounter = 0;
 
-  minVal[id] += val;
+  frame[id] += val;
   calibrationCounter++;
-  if (calibrationCounter >= CALIBRATION_CYCLES * DATAS) {
-    for (int i = 0; i < DATAS; i++) {
-      minVal[i] = minVal[i] / CALIBRATION_CYCLES;
+  if (calibrationCounter >= CALIBRATION_CYCLES * FRAME_DATAS) {
+    for (int i = 0; i < FRAME_DATAS; i++) {
+      frame[i] = frame[i] / CALIBRATION_CYCLES;
     }
     calibrationCounter = 0;
   }
@@ -160,7 +157,7 @@ void calibrate( byte id, int val ) {
 void onPacket(const uint8_t* buffer, size_t size) {
   // The send() method will encode the buffer
   // as a packet, set packet markers, etc.
-  serial.send(myPacket, DATAS);
+  serial.send(myPacket, FRAME_DATAS);
   scan = true;
 }
 
