@@ -25,8 +25,8 @@ This 3D real time model analyses the touch to trigger OSC messages that can be u
 
 ## Project content
 - Arduino firmware
-- Upverter PCB
-- openframeworks software
+- Open Hardware PCB made with [Upverter](https://upverter.com/)
+- OpenFrameworks software
 
 ## Docs
 - [A video made at Schmiede 2014](http://www.kobakant.at/DIY/?p=4305/)
