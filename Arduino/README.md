@@ -130,4 +130,7 @@ ROWS = One 8_Bits shift register connected to two analog multiplexers that sens 
 
 
 ## TODO
-- Add 
+- Add blob detection
+ - Fork OpenMV
+ - ...
+- Add TUIO serveur
