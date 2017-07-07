@@ -31,7 +31,6 @@ As an example here is how a 4*4 frame would be encoded :
 
 ![alt tag](http://etextile-summercamp.org/swatch-exchange/wp-content/uploads/2015/05/Matrix_011.png)
 
-
 # E256 PIN MAPPING
 
 COLS = Two 8_Bits shift registers connected directly to the matrix columns
@@ -131,6 +130,6 @@ ROWS = One 8_Bits shift register connected to two analog multiplexers that sens 
 
 ## TODO
 - Add blob detection
- - Fork OpenMV
+ - Fork OpenMV : https://github.com/openmv/openmv
  - ...
 - Add TUIO serveur
