@@ -1,4 +1,4 @@
-# eTextile matrix sensor - E256
+# eTextile matrix sensor - E256 / Arduino
 
 ### Transforming textiles into an intuitive way to interact with computers. This project is part of an electronic textiles research on HCI gesture interaction that was started in 2005.
 
