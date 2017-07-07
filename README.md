@@ -1,4 +1,4 @@
-# eTextile matrix sensor
+# eTextile matrix sensor - E256
 
 ### Transforming textiles into an intuitive way to interact with computers. This project is part of an electronic textiles research on HCI gesture interaction that was started in 2005.
 
@@ -26,10 +26,10 @@ From the beginning this project stimulates the development of technologies in ar
 ## Project content
 - Arduino firmware: work with all Arduino boards and Teensy!
 - OpenFrameworks software: real time 3D visualization and OSC communication
-- Open Hardware PCB made with [Upverter](https://upverter.com/): GERBER files to produce the PCB
-- Open Hardware DIY eTextile sensor: see the HOWTO.pdf
+- Open Hardware PCB made with Upverter: GERBER files to produce the PCB
+- Open Hardware DIY eTextile sensor: see the Etching file
 
-## E256 kit Ordering
+## Kit Ordering
 If you want a sensor just drop me an eMail at contact@eTextile.org
 I make all sensors bay hand. It take one or two days to make it and send it by post.
 All sensors are tested before shipping.
