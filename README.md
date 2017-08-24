@@ -2,11 +2,6 @@
 
 ### Transforming textiles into an intuitive way to interact with computers. This project is part of an electronic textiles research on HCI gesture interaction that was started in 2005.
 
-- Author/developer: Maurin Donneaud <maurin@etextile.org> - Industrial designer
-- Repository: https://github.com/eTextile/resistiveMatrix/tree/E256
-- Project web page: www.eTextile.org
-- License: CC-BY-SA (see the License file)
-
 ![alt tag](https://farm6.staticflickr.com/5572/30306414062_22bba76566_z_d.jpg)
 
 ## About The project
@@ -24,16 +19,33 @@ This software analyses the touch to trigger OSC messages that can be used in aud
 From the beginning this project stimulates the development of technologies in artistic use cases: playing music, combine graphics and sound, imagine objects that can have tactile properties, etc.
 
 ## Project content
-- Arduino firmware: work with all Arduino boards and Teensy!
+- DIY eTextile sensor: see the Etching file tutorial
+- PCB/shield that can connect with all Arduino compatible boards: see the Upverter file
+- Arduino firmware: work with all Arduino compatible boards and Teensy!
 - OpenFrameworks software: real time 3D visualization and OSC communication
-- Open Hardware PCB made with Upverter: GERBER files to produce the PCB
-- Open Hardware DIY eTextile sensor: see the Etching file
+
+## Publications
+- [NIME17](http://www.nime2017.org/) - Designing a Multi-Touch eTextile for Music Performances.
+  - [Paper](https://etextile.github.io/resistiveMatrix/publications/NIME17-eTextile.pdf) - [Video](https://vimeo.com/217690743)
+- [MOCO17](http://moco17.movementcomputing.org/) - Music Skin: Fabric Interface for Expressive Music Control.
+  - [Paper](https://etextile.github.io/resistiveMatrix/publications/MOCO17-MusicSkin.pdf)
 
 ## Kit Ordering
 If you want a sensor just drop me an eMail at contact@eTextile.org
 I make all sensors bay hand. It take one or two days to make it and send it by post.
 All sensors are tested before shipping.
-If you have any mistake I will help you to fix it or replace it.
+If you have any mistake I will help you to fix it or replace the eTextile sensor.
+
+## Copyright
+Except as otherwise noted, all files in the resistiveMatrix project folder
+
+    Copyright (c) 2005-2017 Maurin Donneaud and others.
+
+For information on usage and redistribution, and for a DISCLAIMER OF ALL
+WARRANTIES, see LICENSE.txt included in the resistiveMatrix project folder.
+
+## Acknowledgements
+Thanks to Vincent Roudaut, Hannah Perner Willson, Cedric Honnet, Antoine Meisso, Paul Strohmeier
 
 ## Docs
 - [A video made at Schmiede 2014](http://www.kobakant.at/DIY/?p=4305/)

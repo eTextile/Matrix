@@ -1,5 +1,6 @@
 // E-256 eTextile matrix sensor shield V2.0
 
+#include "E256.h"
 #include <SPI.h>
 #include <PacketSerial.h>
 
@@ -13,7 +14,7 @@ PacketSerial serial;
   to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
   copies of the Software, and to permit persons to whom the Software is
   furnished to do so, subject to the following conditions:
-* 
+
   The above copyright notice and this permission notice shall be included in
   all copies or substantial portions of the Software.
 
@@ -35,12 +36,6 @@ PacketSerial serial;
 // Additionally the user should not use the serialEvent()
 // callbacks.
 
-#define  BAUD_RATE            230400
-#define  COLS                 16
-#define  ROWS                 16
-#define  FRAME_DATAS          256
-#define  CALIBRATION_CYCLES   4
-
 // Control pins to send values to the 8-BITs shift registers used on the E-256 PCB
 // shiftOut using SPI library : https://forum.arduino.cc/index.php?topic=52383.0
 // Arduino UNO - SPI PINS
@@ -48,18 +43,17 @@ PacketSerial serial;
 // CLOCK_PIN -> SPI:SCK -> D13 // Pin connected to clock pin (SH_CP) of the first 74HC595 8-BIT shift register
 // LATCH_PIN -> SPI:SS -> D10  // Pin connected to latch pin (ST_CP) of the first 74HC595 8-BIT shift register
 
-#define A0_PIN        A0  // The output of multiplexerA (SIG pin) is connected to Arduino Analog pin 0
-#define A1_PIN        A1  // The output of multiplexerB (SIG pin) is connected to Arduino Analog pin 1
 
-int minVals[FRAME_DATAS] = {0};      // Array to store all smalest valeus
-uint8_t myPacket[FRAME_DATAS] = {0}; // Array to store valeus to transmit
+int minVals[FRAME / SCALE] = {0};           // Array to store smallest values
+int8_t bilinearInterp[FRAME * SCALE] = {0}; // Array to store Interpolated values
+uint8_t myPacket[FRAME] = {0};              // Array to store values to transmit
 
 boolean scan = true;
 boolean calibration = true;
 
-byte byteC;
-byte byteB;
-byte byteA;
+uint8_t byteC;
+uint8_t byteB;
+uint8_t byteA;
 
 // Array to store all parameters used to configure the two shift registers
 const byte setCols[COLS] = {
@@ -73,6 +67,9 @@ const byte setRows[ROWS] = {
   0x58, 0x78, 0x38, 0x18, 0x28, 0x48, 0x8, 0x68
 };
 
+arm_bilinear_interp_instance_q7 S;
+
+
 ////////////////////////////////////// SETUP
 void setup() {
 
@@ -84,6 +81,9 @@ void setup() {
   SPI.transfer(0xFFFFFF);   // All OFF
   digitalWrite(SS, LOW);    // set latchPin LOW
   digitalWrite(SS, HIGH);   // set latchPin HIGH
+  S.numRows = ROWS * SCALE;
+  S.numCols = COLS * SCALE;
+  S.pData = bilinearInterp;
 }
 
 ////////////////////////////////////// LOOP
@@ -116,14 +116,17 @@ void loop() {
 
         int rowValue = analogRead(A0_PIN);  // Reding use to store analog inputs values
         byte sensorID = col * COLS + row; // Calculate the index of the unidimensional array
+        
+        arm_bilinear_interp_q7(&S, col, row);
+
 
         if (calibration) {
-          calibrate(sensorID, rowValue, *minVals);
+          Calibrate(sensorID, rowValue, minVals);
         } else {
-          byte value = map(rowValue, minVals[sensorID], 1024, 0, 255);
+          uint8_t value = map(rowValue, minVals[sensorID], 1024, 0, 255);
           myPacket[sensorID] = value;
         }
-        
+
       }
     }
     scan = false;
@@ -134,16 +137,18 @@ void loop() {
   // method registered with the setPacketHandler() method.
   // The update() method should be called at the end of the loop().
   serial.update();
+
+
 }
 
-void calibrate( byte id, int val, int frame[] ) {
 
+void Calibrate( uint8_t id, int val, int frame[] ) {
   static int calibrationCounter = 0;
 
   frame[id] += val;
   calibrationCounter++;
-  if (calibrationCounter >= CALIBRATION_CYCLES * FRAME_DATAS) {
-    for (int i = 0; i < FRAME_DATAS; i++) {
+  if (calibrationCounter >= CALIBRATION_CYCLES * FRAME / SCALE) {
+    for (int i = 0; i < FRAME / SCALE; i++) {
       frame[i] = frame[i] / CALIBRATION_CYCLES;
     }
     calibrationCounter = 0;
@@ -157,7 +162,7 @@ void calibrate( byte id, int val, int frame[] ) {
 void onPacket(const uint8_t* buffer, size_t size) {
   // The send() method will encode the buffer
   // as a packet, set packet markers, etc.
-  serial.send(myPacket, FRAME_DATAS);
+  serial.send(myPacket, FRAME / SCALE);
   scan = true;
 }
 

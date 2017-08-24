@@ -54,8 +54,8 @@ void ofApp::setup() {
 
     gui.setup("Parameters");
     gui.add(toggleDsp.setup(" Dsp ", true ));
-    gui.add(sliderVolume.setup(" Volume ", 170, 0, 180));
-    gui.add(sliderTreshold.setup(" Threshold ", 15, 0, 150));
+    gui.add(sliderVolume.setup(" Volume ", 30, 0, 50));
+    gui.add(sliderTreshold.setup(" Threshold ", 12, 0, 100));
 
     ofBackground(0);
 
@@ -123,9 +123,9 @@ void ofApp::update() {
         // Take the abs value of the difference between background and incoming and then threshold:
         grayDiff.absDiff(grayBg, grayImage);
         grayDiff.threshold(threshold);
-        // Find contours which are between the size of 9 pixels ($1) and 500 pixels ($2).
+        // Find contours which are between the size of 5 pixels ($1) and 1500 pixels ($2).
         // Also, find holes is set to false ($4) so it will not get interior contours.
-        contourFinder.findContours(grayDiff, 9, 500, 8, false, true);
+        contourFinder.findContours(grayDiff, 5, 1500, 8, false, true);
 
 
         vector<centroid> currentCentroids;

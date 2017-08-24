@@ -1,4 +1,4 @@
-# eTextile matrix sensor - E256 / Arduino
+# eTextile-matrix-sensor / E256-Blob / Arduino
 
 ### Transforming textiles into an intuitive way to interact with computers. This project is part of an electronic textiles research on HCI gesture interaction that was started in 2005.
 
@@ -8,29 +8,31 @@
 - License: CC-BY-SA (see the License file)
 
 ## Requirements
-- Programed with Arduino IDE
-- This Arduino Sketch require:
- - PacketSerial : https://github.com/bakercp/PacketSerial
+- E256 eTextile-matrix-sensor
+- Arduino IDE
+- Arduino library
+  - PacketSerial: https://github.com/bakercp/PacketSerial
+  - LinkedList: https://github.com/ivanseidel/LinkedList
 
 ### Settings for Arduino IDE
 - Board:           Arduino UNO
 - USB Type:        Serial
- 
+
 ## Program Synopsis
-Yhe eTextile matrix rows and columns are connected to the E256 PCB.
-To get each sensor value, the Arduino communicate with the E256 PCB via a fast  parallelised data transfer.
+The Arduino communicate with the eTextile-matrix-sensor via SPI.
+The sketch implemant rows and columns scaning algorithm.
+The 16*16 matrix is interpolated to 64*64 with bicubic algorithm.
+The blob tracking is apayed on to the interpolated matrix.
+The blobs coordinates are transmit via OSC/
+
+// Control pins to send values to the 8-BITs shift registers used on the E-256 PCB
+// ShiftOut using SPI library : https://forum.arduino.cc/index.php?topic=52383.0
+// Arduino UNO - SPI PINS
+// DATA_PIN -> SPI:MOSI -> D11 // Pin connected to Data in (DS) of the firdt 74HC595 8-BIT shift register
+// CLOCK_PIN -> SPI:SCK -> D13 // Pin connected to clock pin (SH_CP) of the first 74HC595 8-BIT shift register
+// LATCH_PIN -> SPI:SS -> D10  // Pin connected to latch pin (ST_CP) of the first 74HC595 8-BIT shift register
 
 ## Data Transmission
-The datas are then sent through frames.
-Each frame is an array of ROW*COL = 256 values. 
-The values are ordered by rows (the first values corrsponds to the first collumn then all the collumns of the second row ...);
-For now, the values are encoded on two bytes.
-As an example here is how a 4*4 frame would be encoded : 
-
-(R0 C0 LSB) (R0 C0 MSB) (R0 C1 LSB) (R0 C1 MSB) (R0 C2 LSB) (R0 C2 MSB) (R0 C3 LSB) (R0 C3 MSB)
-(R1 C0 LSB) (R1 C0 MSB) (R1 C1 LSB) (R1 C1 MSB) (R1 C2 LSB) (R1 C2 MSB) (R1 C3 LSB) (R1 C3 MSB)
-(R2 C0 LSB) (R2 C0 MSB) (R2 C1 LSB) (R2 C1 MSB) (R2 C2 LSB) (R2 C2 MSB) (R2 C3 LSB) (R2 C3 MSB)
-(R3 C0 LSB) (R3 C0 MSB) (R3 C1 LSB) (R3 C1 MSB) (R3 C2 LSB) (R3 C2 MSB) (R3 C3 LSB) (R3 C3 MSB)
 
 ![alt tag](http://etextile-summercamp.org/swatch-exchange/wp-content/uploads/2015/05/Matrix_011.png)
 
@@ -90,7 +92,6 @@ ROWS = One 8_Bits shift register connected to two analog multiplexers that sens 
 - Q7 -> COL_8   // Pin Q7 connected to column 8
 
 ## Bytes to achieve the matrix scanning
-
 ### Byte_C
 - COL_8 ->  Q7 : 10000000 -> HEX 0x80
 - COL_9 ->  Q6 : 01000000 -> HEX 0x40
@@ -120,7 +121,7 @@ ROWS = One 8_Bits shift register connected to two analog multiplexers that sens 
 - ROW_5 -> Y1 : 10000100 -> HEX 0x84
 - ROW_6 -> Y0 : 10000000 -> HEX 0x80
 - ROW_7 -> Y3 : 10000110 -> HEX 0x86
-
+- /
 - ROW_8  -> Y5 : 01011000 -> HEX 0x58
 - ROW_9  -> Y7 : 01111000 -> HEX 0x78
 - ROW_10 -> Y6 : 00111000 -> HEX 0x38
