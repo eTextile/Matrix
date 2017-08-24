@@ -14,8 +14,6 @@ float32_t bilinIntOutput[NEW_FRAME] = {0}; // Output buffer calculated from bili
 
 arm_bilinear_interp_instance_f32 S;
 
-int pos = 0;
-
 void setup() {
   S.numRows = ROWS;
   S.numCols = COLS;
@@ -25,13 +23,13 @@ void setup() {
 void loop() {
 
   float32_t posX, posY;
+  int pos = 0;
 
-  for (posX = 0; posX < ROWS; posX + 0.25) {
-    for (posY = 0; posY < COLS; posY + 0.25) {
-      pos++;
-      bilinIntOutput[pos] = arm_bilinear_interp_f32(&S, posX, posY);
+  for (posX = 0; posX < ROWS; posX += .25) {
+    for (posY = 0; posY < COLS; posY += .25) {
+      bilinIntOutput[pos++] = arm_bilinear_interp_f32(&S, posX, posY);
     }
   }
-  pos = 0;
+  // pos = 0;
 }
 
