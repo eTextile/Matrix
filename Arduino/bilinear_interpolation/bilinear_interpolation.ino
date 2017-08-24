@@ -1,5 +1,4 @@
-// https://github.com/ARM-software/CMSIS/blob/master/CMSIS/Include/arm_math.h
-// https://www.keil.com/pack/doc/CMSIS/DSP/html/arm_linear_interp_example_f32_8c-example.html
+// https://www.keil.com/pack/doc/CMSIS/DSP/html/group__BilinearInterpolate.html
 
 #include <arm_math.h>
 
