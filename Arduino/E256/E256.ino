@@ -47,7 +47,7 @@ void loop() {
         }
 
         int rowValue = analogRead(A0_PIN);  // Reding use to store analog inputs values
-        byte sensorID = col * COLS + row; // Calculate the index of the unidimensional array
+        byte sensorID = col * COLS + row;   // Calculate the unidimensional array index
 
         if (calibration) {
           Calibrate(sensorID, rowValue, minVals);
