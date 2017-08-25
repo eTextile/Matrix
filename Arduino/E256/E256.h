@@ -4,9 +4,9 @@
 #include <arm_math.h>
 #include <SPI.h>
 #include <PacketSerial.h>
+#include "imlib.h" // Part of the OpenMV project : 
 
 PacketSerial serial;
-
 /*
   PACKET SERIAL : Copyright (c) 2012-2014 Christopher Baker <http://christopherbaker.net>
   Permission is hereby granted, free of charge, to any person obtaining a copy
@@ -60,11 +60,10 @@ PacketSerial serial;
 
 float32_t inputVals[ROW_FRAME] = {0};      // Array to store row input values
 int minVals[ROW_FRAME] = {0};              // Array to store smallest values
-float32_t bilinIntOutput[NEW_FRAME] = {0}; // Output buffer calculated from bilinear interpolation
-uint8_t myPacket[NEW_FRAME] = {0};              // Array to store values to transmit
+uint8_t myPacket[ROW_FRAME] = {0};         // Array to store values to transmit
+float32_t bilinIntOutput[NEW_FRAME] = {0}; // Bilinear interpolation Output buffer
 
 arm_bilinear_interp_instance_f32 S;
-
 
 void onPacket(const uint8_t* buffer, size_t size);
 void calibrate(uint8_t* id, int val, int frame);

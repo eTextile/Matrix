@@ -2,13 +2,14 @@
    Copyright (c) 2013-2017 Ibrahim Abdelkader <iabdalkader@openmv.io> & Kwabena W. Agyeman <kwagyeman@openmv.io>
    This work is licensed under the MIT license, see the file LICENSE for details.
 */
-
+#include "collections.h"
 #include "imlib.h"
+
 #define CHAR_BITS (sizeof(char) * 8)
 #define CHAR_MASK (CHAR_BITS - 1)
 #define CHAR_SHIFT IM_LOG2(CHAR_MASK)
 
-////////////// Bitmap
+////////////// Bitmap //////////////
 
 void bitmap_alloc(bitmap_t *ptr, size_t size) {
   ptr->size = size;
@@ -29,7 +30,7 @@ bool bitmap_bit_get(bitmap_t *ptr, size_t index) {
   return (ptr->data[index >> CHAR_SHIFT] >> (index & CHAR_MASK)) & 1;
 }
 
-////////////// Lifo
+////////////// Lifo //////////////
 
 void lifo_alloc_all(lifo_t *ptr, size_t *size, size_t data_len) {
   uint32_t tmp_size;
@@ -63,7 +64,7 @@ void lifo_dequeue(lifo_t *ptr, void *data) {
 }
 
 
-////////////// List
+////////////// List //////////////
 
 void list_init(list_t *ptr, size_t data_len) {
   ptr->head_ptr = NULL;
@@ -110,7 +111,7 @@ void list_pop_front(list_t *ptr, void *data) {
   xfree(tmp);
 }
 
-////////////// Iterators
+////////////// Iterators //////////////
 
 list_lnk_t *iterator_start_from_head(list_t *ptr) {
   return ptr->head_ptr;

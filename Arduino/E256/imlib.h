@@ -16,7 +16,7 @@ typedef struct point {
     int16_t y;
 } point_t;
 
-///////////////////// Rectangle Stuff
+////////////// Rectangle Stuff //////////////
 
 typedef struct rectangle {
   int16_t x;
@@ -28,9 +28,7 @@ typedef struct rectangle {
 bool rectangle_overlap(rectangle_t *ptr0, rectangle_t *ptr1);
 void rectangle_united(rectangle_t *dst, rectangle_t *src);
 
-/////////////////
-// Color Stuff //
-/////////////////
+////////////// Color Stuff //////////////
 
 typedef struct color_thresholds_list_lnk_data {
   uint8_t LMin, LMax; // or grayscale
@@ -49,9 +47,7 @@ typedef struct color_thresholds_list_lnk_data {
 #define COLOR_GRAYSCALE_MIN 0
 #define COLOR_GRAYSCALE_MAX 255
 
-/////////////////
-// Image Stuff //
-/////////////////
+////////////// Image Stuff //////////////
 
 typedef struct image {
   int w;
@@ -71,7 +67,7 @@ typedef struct image {
     ((uint8_t *) _image->data)[(_image->w * _y) + _x]; \
   })
 
-// Fast Stuff //
+////////////// Fast Stuff //////////////
 
 #define IMAGE_COMPUTE_GRAYSCALE_PIXEL_ROW_PTR(image, y) \
   ({ \
@@ -80,8 +76,6 @@ typedef struct image {
     ((uint8_t *) _image->data) + (_image->w * _y); \
   })
 
-#define IMAGE_GET_GRAYS
-
 #define IMAGE_GET_GRAYSCALE_PIXEL_FAST(row_ptr, x) \
   ({ \
     __typeof__ (row_ptr) _row_ptr = (row_ptr); \
@@ -89,7 +83,7 @@ typedef struct image {
     _row_ptr[_x]; \
   })
 
-  ///////////// Blob Tracking
+////////////// Blob Tracking //////////////
 
   typedef struct find_blobs_list_lnk_data {
     rectangle_t rect;
@@ -102,7 +96,7 @@ typedef struct image {
   void find_blobs(
     list_t *out, image_t *ptr, rectangle_t *roi, unsigned int x_stride, unsigned int y_stride,
     list_t *thresholds, bool invert, unsigned int area_threshold, unsigned int pixels_threshold,
-    bool merge, int margin,#endif //
+    bool merge, int margin,
     bool (*threshold_cb)(void*, find_blobs_list_lnk_data_t*), void *threshold_cb_arg,
     bool (*merge_cb)(void*, find_blobs_list_lnk_data_t*, find_blobs_list_lnk_data_t*), void *merge_cb_arg
   );

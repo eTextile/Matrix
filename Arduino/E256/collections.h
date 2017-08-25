@@ -2,16 +2,13 @@
    Copyright (c) 2013-2017 Ibrahim Abdelkader <iabdalkader@openmv.io> & Kwabena W. Agyeman <kwagyeman@openmv.io>
    This work is licensed under the MIT license, see the file LICENSE for details.
 */
-
 #ifndef __COLLECTIONS_H__
 #define __COLLECTIONS_H__
 
 #include <stdbool.h>
 #include <stddef.h>
 
-////////////
-// bitmap //
-////////////
+////////////// Bitmap //////////////
 
 typedef struct bitmap {
   size_t size;
@@ -25,9 +22,7 @@ bool bitmap_bit_get(bitmap_t *ptr, size_t index);
 #define BITMAP_COMPUTE_ROW_INDEX(image, y) (((image)->w)*(y))
 #define BITMAP_COMPUTE_INDEX(row_index, x) ((row_index)+(x))
 
-//////////
-// lifo //
-//////////
+////////////// Lifo //////////////
 
 typedef struct lifo {
   size_t len, size, data_len;
@@ -40,9 +35,7 @@ size_t lifo_size(lifo_t *ptr);
 void lifo_enqueue(lifo_t *ptr, void *data);
 void lifo_dequeue(lifo_t *ptr, void *data);
 
-//////////
-// list //
-//////////
+////////////// list //////////////
 
 typedef struct list_lnk {
   struct list_lnk *next_ptr, *prev_ptr;
@@ -60,9 +53,7 @@ size_t list_size(list_t *ptr);
 void list_push_back(list_t *ptr, void *data);
 void list_pop_front(list_t *ptr, void *data);
 
-//////////////
-// iterator //
-//////////////
+////////////// iterator //////////////
 
 list_lnk_t *iterator_start_from_head(list_t *ptr);
 list_lnk_t *iterator_next(list_lnk_t *lnk);

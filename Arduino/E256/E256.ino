@@ -23,8 +23,8 @@ void loop() {
 
   if (scan) {
 
-    for (byte col = 0; col < COLS; col++) {
-      for (byte row = 0; row < ROWS; row++) {
+    for (byte row = 0; row < ROWS; row++) {
+      for (byte col = 0; col < COLS; col++) {
 
         if (row < 8) {
           byteA = setRows[row];
@@ -61,8 +61,9 @@ void loop() {
     scan = false;
   }
 
-  bilinearInterpolation();
-  
+  bilinearInterpolation(1/SCALE); 
+  // imlib_find_blobs();
+
   // The update() method attempts to read in
   // any incoming serial data and emits packets via
   // the user's onPacket(const uint8_t* buffer, size_t size)
@@ -95,12 +96,12 @@ void onPacket(const uint8_t* buffer, size_t size) {
   scan = true;
 }
 
-void bilinearInterpolation() {
+void bilinearInterpolation(float inc) {
   float32_t posX, posY;
   int pos = 0;
 
-  for (posX = 0; posX < ROWS; posX += .25) {
-    for (posY = 0; posY < COLS; posY += .25) {
+  for (posX = 0; posX < ROWS; posX += inc) {
+    for (posY = 0; posY < COLS; posY += inc) {
       bilinIntOutput[pos++] = arm_bilinear_interp_f32(&S, posX, posY);
     }
   }

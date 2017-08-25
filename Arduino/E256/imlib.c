@@ -9,7 +9,7 @@
 
 #include "imlib.h"
 
-///////////////////// Rectangle Stuff
+////////////// Rectangle Stuff //////////////
 
 bool rectangle_overlap(rectangle_t *ptr0, rectangle_t *ptr1) {
   int x0 = ptr0->x;

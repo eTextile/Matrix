@@ -4,20 +4,17 @@
 */
 #include "imlib.h"
 
-#define IMAGE_BPP_GRAYSCALE 1
-
-typedef struct xylf
-{
+typedef struct xylf {
   int16_t x, y, l, r;
-}
-xylf_t;
+} xylf_t;
 
-void imlib_find_blobs(list_t *out, image_t *ptr, rectangle_t *roi, unsigned int x_stride, unsigned int y_stride,
-                      list_t *thresholds, bool invert, unsigned int area_threshold, unsigned int pixels_threshold,
-                      bool merge, int margin,
-                      bool (*threshold_cb)(void*, find_blobs_list_lnk_data_t*), void *threshold_cb_arg,
-                      bool (*merge_cb)(void*, find_blobs_list_lnk_data_t*, find_blobs_list_lnk_data_t*), void *merge_cb_arg)
-{
+void imlib_find_blobs(
+  list_t *out, image_t *ptr, rectangle_t *roi, unsigned int x_stride, unsigned int y_stride,
+  list_t *thresholds, bool invert, unsigned int area_threshold, unsigned int pixels_threshold,
+  bool merge, int margin,
+  bool (*threshold_cb)(void*, find_blobs_list_lnk_data_t*), void *threshold_cb_arg,
+  bool (*merge_cb)(void*, find_blobs_list_lnk_data_t*, find_blobs_list_lnk_data_t*), void *merge_cb_arg) {
+
   bitmap_t bitmap; // Same size as the image so we don't have to translate.
   bitmap_alloc(&bitmap, ptr->w * ptr->h);
 
@@ -32,181 +29,177 @@ void imlib_find_blobs(list_t *out, image_t *ptr, rectangle_t *roi, unsigned int 
     color_thresholds_list_lnk_data_t lnk_data;
     iterator_get(thresholds, it, &lnk_data);
 
-    switch (ptr->bpp) {
-      case IMAGE_BPP_GRAYSCALE: {
-          for (int y = roi->y, yy = roi->y + roi->h; y < yy; y += y_stride) {
-            uint8_t *row_ptr = IMAGE_COMPUTE_GRAYSCALE_PIXEL_ROW_PTR(ptr, y);
-            size_t row_index = BITMAP_COMPUTE_ROW_INDEX(ptr, y);
-            for (int x = roi->x + (y % x_stride), xx = roi->x + roi->w; x < xx; x += x_stride) {
-              if ((!bitmap_bit_get(&bitmap, BITMAP_COMPUTE_INDEX(row_index, x)))
-                  && COLOR_THRESHOLD_GRAYSCALE(IMAGE_GET_GRAYSCALE_PIXEL_FAST(row_ptr, x), &lnk_data, invert)) {
-                int old_x = x;
-                int old_y = y;
+    for (int y = roi->y, yy = roi->y + roi->h; y < yy; y += y_stride) {
+      
+      uint8_t *row_ptr = IMAGE_COMPUTE_GRAYSCALE_PIXEL_ROW_PTR(ptr, y);
+      
+      size_t row_index = BITMAP_COMPUTE_ROW_INDEX(ptr, y);
+      
+      for (int x = roi->x + (y % x_stride), xx = roi->x + roi->w; x < xx; x += x_stride) {
+        
+        if ((!bitmap_bit_get(&bitmap, BITMAP_COMPUTE_INDEX(row_index, x)))
+            && COLOR_THRESHOLD_GRAYSCALE(IMAGE_GET_GRAYSCALE_PIXEL_FAST(row_ptr, x), &lnk_data, invert)) {
+          int old_x = x;
+          int old_y = y;
 
-                int blob_x1 = x;
-                int blob_y1 = y;
-                int blob_x2 = x;
-                int blob_y2 = y;
-                int blob_pixels = 0;
-                int blob_cx = 0;
-                int blob_cy = 0;
-                long long blob_a = 0;
-                long long blob_b = 0;
-                long long blob_c = 0;
+          int blob_x1 = x;
+          int blob_y1 = y;
+          int blob_x2 = x;
+          int blob_y2 = y;
+          int blob_pixels = 0;
+          int blob_cx = 0;
+          int blob_cy = 0;
+          long long blob_a = 0;
+          long long blob_b = 0;
+          long long blob_c = 0;
 
-                // Scanline Flood Fill Algorithm //
+          // Scanline Flood Fill Algorithm //
 
-                for (;;) {
-                  int left = x, right = x;
-                  uint8_t *row = IMAGE_COMPUTE_GRAYSCALE_PIXEL_ROW_PTR(ptr, y);
-                  size_t index = BITMAP_COMPUTE_ROW_INDEX(ptr, y);
+          for (;;) {
+            int left = x, right = x;
+            uint8_t *row = IMAGE_COMPUTE_GRAYSCALE_PIXEL_ROW_PTR(ptr, y);
+            size_t index = BITMAP_COMPUTE_ROW_INDEX(ptr, y);
 
-                  while ((left > roi->x)
-                         && (!bitmap_bit_get(&bitmap, BITMAP_COMPUTE_INDEX(index, left - 1)))
-                         && COLOR_THRESHOLD_GRAYSCALE(IMAGE_GET_GRAYSCALE_PIXEL_FAST(row, left - 1), &lnk_data, invert)) {
-                    left--;
-                  }
+            while ((left > roi->x)
+                   && (!bitmap_bit_get(&bitmap, BITMAP_COMPUTE_INDEX(index, left - 1)))
+                   && COLOR_THRESHOLD_GRAYSCALE(IMAGE_GET_GRAYSCALE_PIXEL_FAST(row, left - 1), &lnk_data, invert)) {
+              left--;
+            }
 
-                  while ((right < (roi->x + roi->w - 1))
-                         && (!bitmap_bit_get(&bitmap, BITMAP_COMPUTE_INDEX(index, right + 1)))
-                         && COLOR_THRESHOLD_GRAYSCALE(IMAGE_GET_GRAYSCALE_PIXEL_FAST(row, right + 1), &lnk_data, invert)) {
-                    right++;
-                  }
+            while ((right < (roi->x + roi->w - 1))
+                   && (!bitmap_bit_get(&bitmap, BITMAP_COMPUTE_INDEX(index, right + 1)))
+                   && COLOR_THRESHOLD_GRAYSCALE(IMAGE_GET_GRAYSCALE_PIXEL_FAST(row, right + 1), &lnk_data, invert)) {
+              right++;
+            }
 
-                  blob_x1 = IM_MIN(blob_x1, left);
-                  blob_y1 = IM_MIN(blob_y1, y);
-                  blob_x2 = IM_MAX(blob_x2, right);
-                  blob_y2 = IM_MAX(blob_y2, y);
+            blob_x1 = IM_MIN(blob_x1, left);
+            blob_y1 = IM_MIN(blob_y1, y);
+            blob_x2 = IM_MAX(blob_x2, right);
+            blob_y2 = IM_MAX(blob_y2, y);
+            for (int i = left; i <= right; i++) {
+              bitmap_bit_set(&bitmap, BITMAP_COMPUTE_INDEX(index, i));
+              blob_pixels += 1;
+              blob_cx += i;
+              blob_cy += y;
+              blob_a += i * i;
+              blob_b += i * y;
+              blob_c += y * y;
+            }
+
+            bool break_out = false;
+            for (;;) {
+              if (lifo_size(&lifo) < lifo_len) {
+
+                if (y > roi->y) {
+                  row = IMAGE_COMPUTE_GRAYSCALE_PIXEL_ROW_PTR(ptr, y - 1);
+                  index = BITMAP_COMPUTE_ROW_INDEX(ptr, y - 1);
+
+                  bool recurse = false;
                   for (int i = left; i <= right; i++) {
-                    bitmap_bit_set(&bitmap, BITMAP_COMPUTE_INDEX(index, i));
-                    blob_pixels += 1;
-                    blob_cx += i;
-                    blob_cy += y;
-                    blob_a += i * i;
-                    blob_b += i * y;
-                    blob_c += y * y;
-                  }
-
-                  bool break_out = false;
-                  for (;;) {
-                    if (lifo_size(&lifo) < lifo_len) {
-
-                      if (y > roi->y) {
-                        row = IMAGE_COMPUTE_GRAYSCALE_PIXEL_ROW_PTR(ptr, y - 1);
-                        index = BITMAP_COMPUTE_ROW_INDEX(ptr, y - 1);
-
-                        bool recurse = false;
-                        for (int i = left; i <= right; i++) {
-                          if ((!bitmap_bit_get(&bitmap, BITMAP_COMPUTE_INDEX(index, i)))
-                              && COLOR_THRESHOLD_GRAYSCALE(IMAGE_GET_GRAYSCALE_PIXEL_FAST(row, i), &lnk_data, invert)) {
-                            xylf_t context;
-                            context.x = x;
-                            context.y = y;
-                            context.l = left;
-                            context.r = right;
-                            lifo_enqueue(&lifo, &context);
-                            x = i;
-                            y = y - 1;
-                            recurse = true;
-                            break;
-                          }
-                        }
-                        if (recurse) {
-                          break;
-                        }
-                      }
-
-                      if (y < (roi->y + roi->h - 1)) {
-                        row = IMAGE_COMPUTE_GRAYSCALE_PIXEL_ROW_PTR(ptr, y + 1);
-                        index = BITMAP_COMPUTE_ROW_INDEX(ptr, y + 1);
-
-                        bool recurse = false;
-                        for (int i = left; i <= right; i++) {
-                          if ((!bitmap_bit_get(&bitmap, BITMAP_COMPUTE_INDEX(index, i)))
-                              && COLOR_THRESHOLD_GRAYSCALE(IMAGE_GET_GRAYSCALE_PIXEL_FAST(row, i), &lnk_data, invert)) {
-                            xylf_t context;
-                            context.x = x;
-                            context.y = y;
-                            context.l = left;
-                            context.r = right;
-                            lifo_enqueue(&lifo, &context);
-                            x = i;
-                            y = y + 1;
-                            recurse = true;
-                            break;
-                          }
-                        }
-                        if (recurse) {
-                          break;
-                        }
-                      }
-                    }
-
-                    if (!lifo_size(&lifo)) {
-                      break_out = true;
+                    if ((!bitmap_bit_get(&bitmap, BITMAP_COMPUTE_INDEX(index, i)))
+                        && COLOR_THRESHOLD_GRAYSCALE(IMAGE_GET_GRAYSCALE_PIXEL_FAST(row, i), &lnk_data, invert)) {
+                      xylf_t context;
+                      context.x = x;
+                      context.y = y;
+                      context.l = left;
+                      context.r = right;
+                      lifo_enqueue(&lifo, &context);
+                      x = i;
+                      y = y - 1;
+                      recurse = true;
                       break;
                     }
-
-                    xylf_t context;
-                    lifo_dequeue(&lifo, &context);
-                    x = context.x;
-                    y = context.y;
-                    left = context.l;
-                    right = context.r;
                   }
-
-                  if (break_out) {
+                  if (recurse) {
                     break;
                   }
                 }
 
-                // http://www.cse.usf.edu/~r1k/MachineVisionBook/MachineVision.files/MachineVision_Chapter2.pdf
-                // https://www.strchr.com/standard_deviation_in_one_pass
-                //
-                // a = sigma(x*x) + (mx*sigma(x)) + (mx*sigma(x)) + (sigma()*mx*mx)
-                // b = sigma(x*y) + (mx*sigma(y)) + (my*sigma(x)) + (sigma()*mx*my)
-                // c = sigma(y*y) + (my*sigma(y)) + (my*sigma(y)) + (sigma()*my*my)
-                //
-                // blob_a = sigma(x*x)
-                // blob_b = sigma(x*y)
-                // blob_c = sigma(y*y)
-                // blob_cx = sigma(x)
-                // blob_cy = sigma(y)
-                // blob_pixels = sigma()
+                if (y < (roi->y + roi->h - 1)) {
+                  row = IMAGE_COMPUTE_GRAYSCALE_PIXEL_ROW_PTR(ptr, y + 1);
+                  index = BITMAP_COMPUTE_ROW_INDEX(ptr, y + 1);
 
-                int mx = blob_cx / blob_pixels; // x centroid
-                int my = blob_cy / blob_pixels; // y centroid
-                int small_blob_a = blob_a - ((mx * blob_cx) + (mx * blob_cx)) + (blob_pixels * mx * mx);
-                int small_blob_b = blob_b - ((mx * blob_cy) + (my * blob_cx)) + (blob_pixels * mx * my);
-                int small_blob_c = blob_c - ((my * blob_cy) + (my * blob_cy)) + (blob_pixels * my * my);
-
-                find_blobs_list_lnk_data_t lnk_blob;
-                lnk_blob.rect.x = blob_x1;
-                lnk_blob.rect.y = blob_y1;
-                lnk_blob.rect.w = blob_x2 - blob_x1;
-                lnk_blob.rect.h = blob_y2 - blob_y1;
-                lnk_blob.pixels = blob_pixels;
-                lnk_blob.centroid.x = mx;
-                lnk_blob.centroid.y = my;
-                lnk_blob.rotation = (small_blob_a != small_blob_c) ? (fast_atan2f(2 * small_blob_b, small_blob_a - small_blob_c) / 2.0f) : 0.0f;
-                lnk_blob.code = 1 << code;
-                lnk_blob.count = 1;
-
-                if (((lnk_blob.rect.w * lnk_blob.rect.h) >= area_threshold) && (lnk_blob.pixels >= pixels_threshold)
-                    && ((threshold_cb_arg == NULL) || threshold_cb(threshold_cb_arg, &lnk_blob))) {
-                  list_push_back(out, &lnk_blob);
+                  bool recurse = false;
+                  for (int i = left; i <= right; i++) {
+                    if ((!bitmap_bit_get(&bitmap, BITMAP_COMPUTE_INDEX(index, i)))
+                        && COLOR_THRESHOLD_GRAYSCALE(IMAGE_GET_GRAYSCALE_PIXEL_FAST(row, i), &lnk_data, invert)) {
+                      xylf_t context;
+                      context.x = x;
+                      context.y = y;
+                      context.l = left;
+                      context.r = right;
+                      lifo_enqueue(&lifo, &context);
+                      x = i;
+                      y = y + 1;
+                      recurse = true;
+                      break;
+                    }
+                  }
+                  if (recurse) {
+                    break;
+                  }
                 }
-
-                x = old_x;
-                y = old_y;
               }
+
+              if (!lifo_size(&lifo)) {
+                break_out = true;
+                break;
+              }
+
+              xylf_t context;
+              lifo_dequeue(&lifo, &context);
+              x = context.x;
+              y = context.y;
+              left = context.l;
+              right = context.r;
+            }
+
+            if (break_out) {
+              break;
             }
           }
-          break;
+
+          // http://www.cse.usf.edu/~r1k/MachineVisionBook/MachineVision.files/MachineVision_Chapter2.pdf
+          // https://www.strchr.com/standard_deviation_in_one_pass
+          //
+          // a = sigma(x*x) + (mx*sigma(x)) + (mx*sigma(x)) + (sigma()*mx*mx)
+          // b = sigma(x*y) + (mx*sigma(y)) + (my*sigma(x)) + (sigma()*mx*my)
+          // c = sigma(y*y) + (my*sigma(y)) + (my*sigma(y)) + (sigma()*my*my)
+          //
+          // blob_a = sigma(x*x)
+          // blob_b = sigma(x*y)
+          // blob_c = sigma(y*y)
+          // blob_cx = sigma(x)
+          // blob_cy = sigma(y)
+          // blob_pixels = sigma()
+
+          int mx = blob_cx / blob_pixels; // x centroid
+          int my = blob_cy / blob_pixels; // y centroid
+          int small_blob_a = blob_a - ((mx * blob_cx) + (mx * blob_cx)) + (blob_pixels * mx * mx);
+          int small_blob_b = blob_b - ((mx * blob_cy) + (my * blob_cx)) + (blob_pixels * mx * my);
+          int small_blob_c = blob_c - ((my * blob_cy) + (my * blob_cy)) + (blob_pixels * my * my);
+
+          find_blobs_list_lnk_data_t lnk_blob;
+          lnk_blob.rect.x = blob_x1;
+          lnk_blob.rect.y = blob_y1;
+          lnk_blob.rect.w = blob_x2 - blob_x1;
+          lnk_blob.rect.h = blob_y2 - blob_y1;
+          lnk_blob.pixels = blob_pixels;
+          lnk_blob.centroid.x = mx;
+          lnk_blob.centroid.y = my;
+          lnk_blob.rotation = (small_blob_a != small_blob_c) ? (fast_atan2f(2 * small_blob_b, small_blob_a - small_blob_c) / 2.0f) : 0.0f;
+          lnk_blob.code = 1 << code;
+          lnk_blob.count = 1;
+
+          if (((lnk_blob.rect.w * lnk_blob.rect.h) >= area_threshold) && (lnk_blob.pixels >= pixels_threshold)
+              && ((threshold_cb_arg == NULL) || threshold_cb(threshold_cb_arg, &lnk_blob))) {
+            list_push_back(out, &lnk_blob);
+          }
+
+          x = old_x;
+          y = old_y;
         }
-      default: {
-          break;
-        }
+      }
     }
 
     code += 1;
