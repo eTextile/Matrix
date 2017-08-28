@@ -7,6 +7,7 @@
 
 #include <stdbool.h>
 #include <stddef.h>
+#include "fb_alloc.h"
 
 ////////////// Bitmap //////////////
 
@@ -53,7 +54,7 @@ size_t list_size(list_t *ptr);
 void list_push_back(list_t *ptr, void *data);
 void list_pop_front(list_t *ptr, void *data);
 
-////////////// iterator //////////////
+////////////// Iterators //////////////
 
 list_lnk_t *iterator_start_from_head(list_t *ptr);
 list_lnk_t *iterator_next(list_lnk_t *lnk);

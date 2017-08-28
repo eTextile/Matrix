@@ -3,7 +3,6 @@
    This work is licensed under the MIT license, see the file LICENSE for details.
 */
 #include "collections.h"
-#include "imlib.h"
 
 #define CHAR_BITS (sizeof(char) * 8)
 #define CHAR_MASK (CHAR_BITS - 1)

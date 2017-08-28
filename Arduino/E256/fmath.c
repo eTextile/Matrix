@@ -6,7 +6,7 @@
    Fast approximate math functions.
 
 */
-#include "fmath.h"
+// #include "fmath.h"
 
 #define M_PI    3.14159265f
 #define M_PI_2  1.57079632f
@@ -19,25 +19,20 @@ inline float fast_atanf(float xx) {
   x = xx;
 
   /* make argument positive and save the sign */
-  if ( xx < 0.0f )
-  {
+  if ( xx < 0.0f ) {
     sign = -1;
     x = -xx;
   }
-  else
-  {
+  else {
     sign = 1;
     x = xx;
   }
   /* range reduction */
-  if ( x > 2.414213562373095f ) /* tan 3pi/8 */
-  {
+  if ( x > 2.414213562373095f ) { /* tan 3pi/8 */
     y = M_PI_2;
     x = -( 1.0f / x );
   }
-
-  else if ( x > 0.4142135623730950f ) /* tan pi/8 */
-  {
+  else if ( x > 0.4142135623730950f ) { /* tan pi/8 */
     y = M_PI_4;
     x = (x - 1.0f) / (x + 1.0f);
   }
@@ -45,14 +40,11 @@ inline float fast_atanf(float xx) {
     y = 0.0f;
 
   z = x * x;
-  y +=
-    ((( 8.05374449538e-2f  * z
-        - 1.38776856032E-1f) * z
-      + 1.99777106478E-1f) * z
-     - 3.33329491539E-1f) * z * x + x;
+  y += ((( 8.05374449538e-2f  * z - 1.38776856032E-1f) * z + 1.99777106478E-1f) * z - 3.33329491539E-1f) * z * x + x;
 
-  if ( sign < 0 )
+  if ( sign < 0 ) {
     y = -y;
+  }
 
   return ( y );
 }

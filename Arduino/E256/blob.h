@@ -12,8 +12,8 @@
 #define IM_MIN(a,b) ({ __typeof__ (a) _a = (a); __typeof__ (b) _b = (b); _a < _b ? _a : _b; })
 
 typedef struct point {
-    int16_t x;
-    int16_t y;
+  int16_t x;
+  int16_t y;
 } point_t;
 
 ////////////// Rectangle Stuff //////////////
@@ -58,7 +58,7 @@ typedef struct image {
     uint8_t *data;
   };
 } image_t;
-IMLIB
+
 #define IMAGE_GET_GRAYSCALE_PIXEL(image, x, y) \
   ({ \
     __typeof__ (image) _image = (image); \
@@ -85,20 +85,20 @@ IMLIB
 
 ////////////// Blob Tracking //////////////
 
-  typedef struct find_blobs_list_lnk_data {
-    rectangle_t rect;
-    uint32_t pixels;
-    point_t centroid;
-    float rotation;
-    uint16_t code, count;
-  } find_blobs_list_lnk_data_t;
+typedef struct find_blobs_list_lnk_data {
+  rectangle_t rect;
+  uint32_t pixels;
+  point_t centroid;
+  float rotation;
+  uint16_t code, count;
+} find_blobs_list_lnk_data_t;
 
-  void find_blobs(
-    list_t *out, image_t *ptr, rectangle_t *roi, unsigned int x_stride, unsigned int y_stride,
-    list_t *thresholds, bool invert, unsigned int area_threshold, unsigned int pixels_threshold,
-    bool merge, int margin,
-    bool (*threshold_cb)(void*, find_blobs_list_lnk_data_t*), void *threshold_cb_arg,
-    bool (*merge_cb)(void*, find_blobs_list_lnk_data_t*, find_blobs_list_lnk_data_t*), void *merge_cb_arg
-  );
+void find_blobs(
+  list_t *out, image_t *ptr, rectangle_t *roi, unsigned int x_stride, unsigned int y_stride,
+  list_t *thresholds, bool invert, unsigned int area_threshold, unsigned int pixels_threshold,
+  bool merge, int margin,
+  bool (*threshold_cb)(void*, find_blobs_list_lnk_data_t*), void *threshold_cb_arg,
+  bool (*merge_cb)(void*, find_blobs_list_lnk_data_t*, find_blobs_list_lnk_data_t*), void *merge_cb_arg
+);
 
 #endif // __BLOB_H__

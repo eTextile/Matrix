@@ -2,6 +2,8 @@
 
 #include "E256.h"
 
+list_t blobOut;
+
 ////////////////////////////////////// SETUP
 void setup() {
 
@@ -61,8 +63,8 @@ void loop() {
     scan = false;
   }
 
-  bilinearInterpolation(1/SCALE); 
-  // imlib_find_blobs();
+  bilinearInterpolation(1 / SCALE);
+  // imlib_find_blobs(&blobOut, );
 
   // The update() method attempts to read in
   // any incoming serial data and emits packets via

@@ -4,7 +4,7 @@
 #include <arm_math.h>
 #include <SPI.h>
 #include <PacketSerial.h>
-#include "imlib.h" // Part of the OpenMV project : 
+#include "blob.h" // Part of the OpenMV project : https://github.com/openmv/openmv
 
 PacketSerial serial;
 /*
@@ -67,7 +67,7 @@ arm_bilinear_interp_instance_f32 S;
 
 void onPacket(const uint8_t* buffer, size_t size);
 void calibrate(uint8_t* id, int val, int frame);
-void bilinearInterpolation();
+void bilinearInterpolation(float inc);
 
 boolean scan = true;
 boolean calibration = true;
