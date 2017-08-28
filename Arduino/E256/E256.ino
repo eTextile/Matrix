@@ -8,15 +8,17 @@ rectangle_t roi;
 
 ////////////////////////////////////// SETUP
 void setup() {
+  analogReadRes(10);                     // Set the ADC converteur resolution to 10 bit
+  pinMode(LED_PIN, OUTPUT);              // Set rows pins in high-impedance state
+  pinMode(BUTTON_PIN, INPUT_PULLUP);     // Set button pins as input and activate the input pullup resistor
+  attachInterrupt(BUTTON_PIN, pushButton, RISING); // interrrupt 1 is data ready
 
   serial.setPacketHandler(&onPacket); // We must specify a packet handler method so that
   serial.begin(BAUD_RATE);  // Start the serial module
 
-  SPI.begin();              // Start the SPI module
-  pinMode(SS, OUTPUT);      // Set up slave mode
-  SPI.transfer(0xFFFFFF);   // All OFF
-  digitalWrite(SS, LOW);    // set latchPin LOW
-  digitalWrite(SS, HIGH);   // set latchPin HIGH
+  for (int i = 0; i < ROWS; i++) {
+    pinMode(rowPins[ROWS], INPUT);        // Set rows pins in high-impedance state
+  }
 
   S.numCols = COLS;
   S.numRows = ROWS;
@@ -25,38 +27,25 @@ void setup() {
   image.w = COLS * SCALE;
   image.h = ROWS * SCALE;
   image.pixels = &bilinIntOutput[0];
+  bootBlink(9);
+
+  // while (!Serial.dtr());                   // wait for user to start the serial monitor
+  bootBlink(6);
+  delay(500);
 }
 
-////////////////////////////////////// LOOP
+/////////////////////////////////// LOOP
 void loop() {
 
   if (scan) {
-
-    for (byte row = 0; row < ROWS; row++) {
-      for (byte col = 0; col < COLS; col++) {
-
-        if (row < 8) {
-          byteA = setRows[row];
-          byteB = setCols[col];
-          byteC = 0x0;
-          SPI.transfer(byteA);    // shift out the first byte
-          SPI.transfer(byteB);    // shift out the secound byte
-          SPI.transfer(byteC);    // shift out the terird byte
-          digitalWrite(SS, LOW);  // set latchPin LOW
-          digitalWrite(SS, HIGH); // set latchPin HIGH
-        } else {
-          byteA = setRows[row];
-          byteB = 0x0;
-          byteC = setCols[col];
-          SPI.transfer(byteA);    // shift out the first byte
-          SPI.transfer(byteB);    // shift out the secound byte
-          SPI.transfer(byteC);    // shift out the terird byte
-          digitalWrite(SS, LOW);  // set latchPin LOW
-          digitalWrite(SS, HIGH); // set latchPin HIGH
-        }
-
-        int rowValue = analogRead(A0_PIN);  // Reding use to store analog inputs values
-        byte sensorID = col * COLS + row;   // Calculate the unidimensional array index
+    for (int row = 0; row < ROWS; row++) {
+      // Set row pin as output + 3.3V
+      pinMode(rowPins[row], OUTPUT);
+      digitalWrite(rowPins[row], HIGH);
+      
+      for (int column = 0; column < COLS; column++) {
+        int rowValue = analogRead(columnPins[column]); // Read the sensor value
+        int sensorID = row * ROWS + column; // Calculate the index of the unidimensional array
 
         if (calibration) {
           Calibrate(sensorID, rowValue, minVals);
@@ -64,12 +53,12 @@ void loop() {
           uint8_t value = map(rowValue, minVals[sensorID], 1024, 0, 255);
           myPacket[sensorID] = value;
         }
-
       }
+      // Set row pin in high-impedance state
+      pinMode(rowPins[row], INPUT);
     }
     scan = false;
   }
-
   bilinearInterpolation(1 / SCALE);
 
   // list_t *out, image_t *ptr, rectangle_t *roi, unsigned int x_stride, unsigned int y_stride,
@@ -90,7 +79,6 @@ void loop() {
   // method registered with the setPacketHandler() method.
   // The update() method should be called at the end of the loop().
   serial.update();
-
 }
 
 void Calibrate( uint8_t id, int val, int frame[] ) {
@@ -124,5 +112,24 @@ void bilinearInterpolation(float inc) {
     for (posY = 0; posY < COLS; posY += inc) {
       bilinIntOutput[pos++] = arm_bilinear_interp_q7(&S, posX, posY);
     }
+  }
+}
+
+/////////// Called with interrupt triggered with push button attached to I/O pin 32
+void pushButton() {
+  cli();
+  calibrationCounter = 0;
+  calibration = true; // Activate the calibration process
+  bootBlink(3);
+  sei();
+}
+
+/////////// Blink fonction
+void bootBlink(int flash) {
+  for (int i = 0; i < flash; i++) {
+    digitalWrite(LED_PIN, HIGH);
+    delay(50);
+    digitalWrite(LED_PIN, LOW);
+    delay(50);
   }
 }

@@ -2,7 +2,6 @@
 #define __E256_H__
 
 #include <arm_math.h>
-#include <SPI.h>
 #include <PacketSerial.h>
 #include "blob.h" // Part of the OpenMV project : https://github.com/openmv/openmv
 
@@ -37,6 +36,8 @@ PacketSerial serial;
 
 // Teensy - SPI PINS https://www.pjrc.com/teensy/td_libs_SPI.html
 
+#define  LED_PIN              13    // Teensy  built-in LED
+#define  BUTTON_PIN           32    // 
 #define  BAUD_RATE            230400
 #define  COLS                 16
 #define  ROWS                 16
@@ -46,7 +47,17 @@ PacketSerial serial;
 #define  CALIBRATION_CYCLES   4
 #define  MIN_BLOB_PIX         4   // Only blobs that with more pixels than 4
 #define  A0_PIN               A0  // The output of multiplexerA (SIG pin) is connected to Arduino Analog pin 0
-#define  A1_PIN               A1  // The output of multiplexerB (SIG pin) is connected to Arduino Analog pin 1
+
+// Digital pins array
+// See the attached home made PCB (Eagle file) to understand the Digital and Analog pin mapping
+const int rowPins[ROWS] = {
+  27, 26, 25, 24, 12, 11, 10, 9, 8, 7, 6, 5, 33, 2, 1, 0
+};
+
+// Analog pins array
+const int columnPins[COLS] = {
+  A17, A18, A19, A0, A20, A1, A2, A3, A4, A5, A6, A7, A11, A8, A10, A9
+};
 
 q7_t inputVals[ROW_FRAME] = {0};           // Array to store row input values
 int minVals[ROW_FRAME] = {0};              // Array to store smallest values
@@ -61,21 +72,5 @@ void bilinearInterpolation(float inc);
 
 boolean scan = true;
 boolean calibration = true;
-
-uint8_t byteC;
-uint8_t byteB;
-uint8_t byteA;
-
-// Array to store all parameters used to configure the two shift registers
-const byte setCols[COLS] = {
-  0x80, 0x40, 0x20, 0x10, 0x8, 0x4, 0x2, 0x1,
-  0x80, 0x40, 0x20, 0x10, 0x8, 0x4, 0x2, 0x1
-};
-
-// Array to store all parameters used to configure the two analog multiplexeurs
-const byte setRows[ROWS] = {
-  0x85, 0x87, 0x83, 0x81, 0x82, 0x84, 0x80, 0x86,
-  0x58, 0x78, 0x38, 0x18, 0x28, 0x48, 0x8, 0x68
-};
 
 #endif // __E256_H__
