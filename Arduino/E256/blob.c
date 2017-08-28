@@ -39,7 +39,8 @@ void imlib_find_blobs(
   list_t *thresholds, bool invert, unsigned int area_threshold, unsigned int pixels_threshold,
   bool merge, int margin,
   bool (*threshold_cb)(void*, find_blobs_list_lnk_data_t*), void *threshold_cb_arg,
-  bool (*merge_cb)(void*, find_blobs_list_lnk_data_t*, find_blobs_list_lnk_data_t*), void *merge_cb_arg) {
+  bool (*merge_cb)(void*, find_blobs_list_lnk_data_t*, find_blobs_list_lnk_data_t*), void *merge_cb_arg
+) {
 
   bitmap_t bitmap; // Same size as the image so we don't have to translate.
   bitmap_alloc(&bitmap, ptr->w * ptr->h);
@@ -241,14 +242,19 @@ void imlib_find_blobs(
       bool merge_occured = false;
 
       list_t out_temp;
+      
       list_init(&out_temp, sizeof(find_blobs_list_lnk_data_t));
 
       while (list_size(out)) {
+        
         find_blobs_list_lnk_data_t lnk_blob;
+        
         list_pop_front(out, &lnk_blob);
 
         for (size_t k = 0, l = list_size(out); k < l; k++) {
+          
           find_blobs_list_lnk_data_t tmp_blob;
+          
           list_pop_front(out, &tmp_blob);
 
           rectangle_t temp;
@@ -257,14 +263,13 @@ void imlib_find_blobs(
           temp.w = IM_MAX(IM_MIN(tmp_blob.rect.w + (margin * 2), INT16_MAX), 0);
           temp.h = IM_MAX(IM_MIN(tmp_blob.rect.h + (margin * 2), INT16_MAX), 0);
 
-          if (rectangle_overlap(&(lnk_blob.rect), &temp)
-              && ((merge_cb_arg == NULL) || merge_cb(merge_cb_arg, &lnk_blob, &tmp_blob))) {
+          if (rectangle_overlap(&(lnk_blob.rect), &temp) && ((merge_cb_arg == NULL) || merge_cb(merge_cb_arg, &lnk_blob, &tmp_blob))) {
             rectangle_united(&(lnk_blob.rect), &(tmp_blob.rect));
             lnk_blob.centroid.x = ((lnk_blob.centroid.x * lnk_blob.pixels) + (tmp_blob.centroid.x * tmp_blob.pixels)) / (lnk_blob.pixels + tmp_blob.pixels);
             lnk_blob.centroid.y = ((lnk_blob.centroid.y * lnk_blob.pixels) + (tmp_blob.centroid.y * tmp_blob.pixels)) / (lnk_blob.pixels + tmp_blob.pixels);
-            float sin_mean = ((sinf(lnk_blob.rotation) * lnk_blob.pixels) + (sinf(tmp_blob.rotation) * tmp_blob.pixels)) / (lnk_blob.pixels + tmp_blob.pixels);
-            float cos_mean = ((cosf(lnk_blob.rotation) * lnk_blob.pixels) + (cosf(tmp_blob.rotation) * tmp_blob.pixels)) / (lnk_blob.pixels + tmp_blob.pixels);
-            lnk_blob.rotation = fast_atan2f(sin_mean, cos_mean);
+            // float sin_mean = ((sinf(lnk_blob.rotation) * lnk_blob.pixels) + (sinf(tmp_blob.rotation) * tmp_blob.pixels)) / (lnk_blob.pixels + tmp_blob.pixels);
+            // float cos_mean = ((cosf(lnk_blob.rotation) * lnk_blob.pixels) + (cosf(tmp_blob.rotation) * tmp_blob.pixels)) / (lnk_blob.pixels + tmp_blob.pixels);
+            // lnk_blob.rotation = fast_atan2f(sin_mean, cos_mean);
             lnk_blob.pixels += tmp_blob.pixels; // won't overflow
             lnk_blob.code |= tmp_blob.code;
             lnk_blob.count = IM_MAX(IM_MIN(lnk_blob.count + tmp_blob.count, UINT16_MAX), 0);

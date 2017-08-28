@@ -1,5 +1,5 @@
-// #ifndef __E256_H__
-// #define __E256_H__
+#ifndef __E256_H__
+#define __E256_H__
 
 #include <arm_math.h>
 #include <SPI.h>
@@ -28,15 +28,6 @@ PacketSerial serial;
   THE SOFTWARE.
 */
 
-// The PacketSerial object.
-// It cleverly wraps one of the Serial objects.
-// While it is still possible to use the Serial object
-// directly, it is recommended that the user let the
-// PacketSerial object manage all serial communication.
-// Thus the user should not call Serial.write(), etc.
-// Additionally the user should not use the serialEvent()
-// callbacks.
-
 // Control pins to send values to the 8-BITs shift registers used on the E-256 PCB
 // shiftOut using SPI library : https://forum.arduino.cc/index.php?topic=52383.0
 // Arduino UNO - SPI PINS
@@ -44,6 +35,7 @@ PacketSerial serial;
 // CLOCK_PIN -> SPI:SCK -> D13 // Pin connected to clock pin (SH_CP) of the first 74HC595 8-BIT shift register
 // LATCH_PIN -> SPI:SS -> D10  // Pin connected to latch pin (ST_CP) of the first 74HC595 8-BIT shift register
 
+// Teensy - SPI PINS https://www.pjrc.com/teensy/td_libs_SPI.html
 
 #define  BAUD_RATE            230400
 #define  COLS                 16
@@ -52,18 +44,16 @@ PacketSerial serial;
 #define  ROW_FRAME            COLS*ROWS
 #define  NEW_FRAME            COLS*ROWS*SCALE
 #define  CALIBRATION_CYCLES   4
+#define  MIN_BLOB_PIX         4   // Only blobs that with more pixels than 4
+#define  A0_PIN               A0  // The output of multiplexerA (SIG pin) is connected to Arduino Analog pin 0
+#define  A1_PIN               A1  // The output of multiplexerB (SIG pin) is connected to Arduino Analog pin 1
 
-#define MIN_BLOB_PIX          4 // Only blobs that with more pixels than 4
-
-#define A0_PIN                A0  // The output of multiplexerA (SIG pin) is connected to Arduino Analog pin 0
-#define A1_PIN                A1  // The output of multiplexerB (SIG pin) is connected to Arduino Analog pin 1
-
-float32_t inputVals[ROW_FRAME] = {0};      // Array to store row input values
+q7_t inputVals[ROW_FRAME] = {0};           // Array to store row input values
 int minVals[ROW_FRAME] = {0};              // Array to store smallest values
 uint8_t myPacket[ROW_FRAME] = {0};         // Array to store values to transmit
-float32_t bilinIntOutput[NEW_FRAME] = {0}; // Bilinear interpolation Output buffer
+uint8_t bilinIntOutput[NEW_FRAME] = {0};   // Bilinear interpolation Output buffer
 
-arm_bilinear_interp_instance_f32 S;
+arm_bilinear_interp_instance_q7 S;
 
 void onPacket(const uint8_t* buffer, size_t size);
 void calibrate(uint8_t* id, int val, int frame);
@@ -88,3 +78,4 @@ const byte setRows[ROWS] = {
   0x58, 0x78, 0x38, 0x18, 0x28, 0x48, 0x8, 0x68
 };
 
+#endif // __E256_H__

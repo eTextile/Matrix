@@ -52,7 +52,7 @@ typedef struct color_thresholds_list_lnk_data {
 typedef struct image {
   int w;
   int h;
-  int bpp;
+  // int bpp;
   union {
     uint8_t *pixels;
     uint8_t *data;
@@ -89,7 +89,7 @@ typedef struct find_blobs_list_lnk_data {
   rectangle_t rect;
   uint32_t pixels;
   point_t centroid;
-  float rotation;
+  // float rotation;
   uint16_t code, count;
 } find_blobs_list_lnk_data_t;
 
