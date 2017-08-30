@@ -1,5 +1,5 @@
-#ifndef __E256_H__
-#define __E256_H__
+#ifndef __ETEXTILE_MATRIX_SENSOR_BLOB_H__
+#define __ETEXTILE_MATRIX_SENSOR_BLOB_H__
 
 #include <arm_math.h>
 #include <PacketSerial.h>
@@ -72,5 +72,6 @@ void bilinearInterpolation(float inc);
 
 boolean scan = true;
 boolean calibration = true;
+int calibrationCounter = 0;
 
-#endif // __E256_H__
+#endif // __ETEXTILE_MATRIX_SENSOR_BLOB_H__

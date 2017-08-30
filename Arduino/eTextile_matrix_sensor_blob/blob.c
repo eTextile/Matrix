@@ -52,9 +52,10 @@ void imlib_find_blobs(
   list_init(out, sizeof(find_blobs_list_lnk_data_t));
 
   size_t code = 0;
-
+  
+  // Je ne comprend pas pourquoi utiliser une liste chainée pour memoriser une sucecion de seuils ?
+  // Avons-nous besoin de cette fonctionnalité dans notre application qui fonctionne uniquement en viveaux de gris ?
   for (list_lnk_t *it = iterator_start_from_head(thresholds); it; it = iterator_next(it)) {
-
     color_thresholds_list_lnk_data_t lnk_data;
     iterator_get(thresholds, it, &lnk_data);
 
@@ -105,6 +106,7 @@ void imlib_find_blobs(
             blob_y1 = IM_MIN(blob_y1, y);
             blob_x2 = IM_MAX(blob_x2, right);
             blob_y2 = IM_MAX(blob_y2, y);
+            
             for (int i = left; i <= right; i++) {
               bitmap_bit_set(&bitmap, BITMAP_COMPUTE_INDEX(index, i));
               blob_pixels += 1;
@@ -149,6 +151,7 @@ void imlib_find_blobs(
                   index = BITMAP_COMPUTE_ROW_INDEX(ptr, y + 1);
 
                   bool recurse = false;
+                  
                   for (int i = left; i <= right; i++) {
                     if ((!bitmap_bit_get(&bitmap, BITMAP_COMPUTE_INDEX(index, i)))
                         && COLOR_THRESHOLD_GRAYSCALE(IMAGE_GET_GRAYSCALE_PIXEL_FAST(row, i), &lnk_data, invert)) {

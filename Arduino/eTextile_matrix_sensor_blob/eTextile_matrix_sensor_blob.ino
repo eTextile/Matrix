@@ -1,10 +1,11 @@
 // E-256 eTextile matrix sensor shield V2.0
 
-#include "E256.h"
+#include "eTextile_matrix_sensor_blob.h"
 
 image_t image;
 list_t blobOut;
 rectangle_t roi;
+list_t thresholds[] = { 128, 128 }; // Middle grayscale values
 
 ////////////////////////////////////// SETUP
 void setup() {
@@ -27,11 +28,8 @@ void setup() {
   image.w = COLS * SCALE;
   image.h = ROWS * SCALE;
   image.pixels = &bilinIntOutput[0];
+  
   bootBlink(9);
-
-  // while (!Serial.dtr());                   // wait for user to start the serial monitor
-  bootBlink(6);
-  delay(500);
 }
 
 /////////////////////////////////// LOOP
@@ -61,16 +59,21 @@ void loop() {
   }
   bilinearInterpolation(1 / SCALE);
 
-  // list_t *out, image_t *ptr, rectangle_t *roi, unsigned int x_stride, unsigned int y_stride,
-  // list_t *thresholds, bool invert, unsigned int area_threshold, unsigned int pixels_threshold,
-  // bool merge, int margin,
-  // bool (*threshold_cb)(void*, find_blobs_list_lnk_data_t*), void *threshold_cb_arg,
-  // bool (*merge_cb)(void*, find_blobs_list_lnk_data_t*, find_blobs_list_lnk_data_t*), void *merge_cb_arg
   imlib_find_blobs(
-    &blobOut, &image, &roi, 1, 1,
-    //thresholds, 0, 6, 4,
-    //0, 0,
-    //...
+    &blobOut,      // list_t *out
+    &image,        // image_t *ptr
+    &roi,          // rectangle_t *roi
+    1, 1,          // unsigned int x_stride, unsigned int y_stride
+    &thresholds,   // list_t *thresholds
+    false,         // bool invert
+    6,             // unsigned int area_threshold
+    4,             // unsigned int pixels_threshold
+    true,          // bool merge
+    10,            // int margin
+    ?              // bool (*threshold_cb)(void*, find_blobs_list_lnk_data_t*) 
+    ?              // void *threshold_cb_arg
+    ?              // bool (*merge_cb)(void*, find_blobs_list_lnk_data_t*, find_blobs_list_lnk_data_t*)
+    ?              // void *merge_cb_arg
   );
 
   // The update() method attempts to read in
@@ -82,7 +85,6 @@ void loop() {
 }
 
 void Calibrate( uint8_t id, int val, int frame[] ) {
-  static int calibrationCounter = 0;
 
   frame[id] += val;
   calibrationCounter++;
