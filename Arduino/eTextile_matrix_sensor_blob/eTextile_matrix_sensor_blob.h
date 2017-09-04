@@ -36,12 +36,13 @@ PacketSerial serial;
 
 // Teensy - SPI PINS https://www.pjrc.com/teensy/td_libs_SPI.html
 
-#define  LED_PIN              13    // Teensy  built-in LED
-#define  BUTTON_PIN           32    // 
+#define  BUTTON_PIN           32      // Teensy 
 #define  BAUD_RATE            230400
 #define  COLS                 16
 #define  ROWS                 16
 #define  SCALE                4
+
+#define  INC                  1/SCALE
 #define  ROW_FRAME            COLS*ROWS
 #define  NEW_FRAME            COLS*ROWS*SCALE
 #define  CALIBRATION_CYCLES   4
@@ -59,12 +60,15 @@ const int columnPins[COLS] = {
   A17, A18, A19, A0, A20, A1, A2, A3, A4, A5, A6, A7, A11, A8, A10, A9
 };
 
-q7_t inputVals[ROW_FRAME] = {0};           // Array to store row input values
 int minVals[ROW_FRAME] = {0};              // Array to store smallest values
-uint8_t myPacket[ROW_FRAME] = {0};         // Array to store values to transmit
+q7_t frameValues[ROW_FRAME] = {0};         // Array to store ofset input values
 uint8_t bilinIntOutput[NEW_FRAME] = {0};   // Bilinear interpolation Output buffer
+uint8_t myPacket[ROW_FRAME] = {0};         // Array to store values to transmit
 
 arm_bilinear_interp_instance_q7 S;
+image_t image;
+list_t blobOut;
+rectangle_t roi;
 
 void onPacket(const uint8_t* buffer, size_t size);
 void calibrate(uint8_t* id, int val, int frame);

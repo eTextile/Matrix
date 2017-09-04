@@ -94,11 +94,12 @@ typedef struct find_blobs_list_lnk_data {
 } find_blobs_list_lnk_data_t;
 
 void find_blobs(
-  list_t *out, image_t *ptr, rectangle_t *roi, unsigned int x_stride, unsigned int y_stride,
+  list_t *out, image_t *ptr, rectangle_t *roi,
+  // unsigned int x_stride, unsigned int y_stride,
   list_t *thresholds, bool invert, unsigned int area_threshold, unsigned int pixels_threshold,
-  bool merge, int margin,
-  bool (*threshold_cb)(void*, find_blobs_list_lnk_data_t*), void *threshold_cb_arg,
-  bool (*merge_cb)(void*, find_blobs_list_lnk_data_t*, find_blobs_list_lnk_data_t*), void *merge_cb_arg
+  bool merge, int margin
+  // bool (*threshold_cb)(void*, find_blobs_list_lnk_data_t*), void *threshold_cb_arg,
+  // bool (*merge_cb)(void*, find_blobs_list_lnk_data_t*, find_blobs_list_lnk_data_t*), void *merge_cb_arg
 );
 
 #endif // __BLOB_H__

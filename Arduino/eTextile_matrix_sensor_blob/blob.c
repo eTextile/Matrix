@@ -34,12 +34,13 @@ void rectangle_united(rectangle_t *dst, rectangle_t *src) {
   dst->h = bottomY - topY;
 }
 
-void imlib_find_blobs(
-  list_t *out, image_t *ptr, rectangle_t *roi, unsigned int x_stride, unsigned int y_stride,
+void find_blobs(
+  list_t *out, image_t *ptr, rectangle_t *roi, 
+  // unsigned int x_stride, unsigned int y_stride,
   list_t *thresholds, bool invert, unsigned int area_threshold, unsigned int pixels_threshold,
-  bool merge, int margin,
-  bool (*threshold_cb)(void*, find_blobs_list_lnk_data_t*), void *threshold_cb_arg,
-  bool (*merge_cb)(void*, find_blobs_list_lnk_data_t*, find_blobs_list_lnk_data_t*), void *merge_cb_arg
+  bool merge, int margin
+  // bool (*threshold_cb)(void*, find_blobs_list_lnk_data_t*), void *threshold_cb_arg,
+  // bool (*merge_cb)(void*, find_blobs_list_lnk_data_t*, find_blobs_list_lnk_data_t*), void *merge_cb_arg
 ) {
 
   bitmap_t bitmap; // Same size as the image so we don't have to translate.
@@ -48,27 +49,30 @@ void imlib_find_blobs(
   lifo_t lifo;
   size_t lifo_len;
   lifo_alloc_all(&lifo, &lifo_len, sizeof(xylf_t));
-
   list_init(out, sizeof(find_blobs_list_lnk_data_t));
 
   size_t code = 0;
-  
+
   // Je ne comprend pas pourquoi utiliser une liste chainée pour memoriser une sucecion de seuils ?
   // Avons-nous besoin de cette fonctionnalité dans notre application qui fonctionne uniquement en viveaux de gris ?
+  // Par quoi pouvons nous donc remplacer lnk_data ?
   for (list_lnk_t *it = iterator_start_from_head(thresholds); it; it = iterator_next(it)) {
     color_thresholds_list_lnk_data_t lnk_data;
     iterator_get(thresholds, it, &lnk_data);
 
-    for (int y = roi->y, yy = roi->y + roi->h; y < yy; y += y_stride) {
+    // for (int y = roi->y, yy = roi->y + roi->h; y < yy; y += y_stride) {
+    for (int y = roi->y, yy = roi->y + roi->h; y < yy; y++) {
 
       uint8_t *row_ptr = IMAGE_COMPUTE_GRAYSCALE_PIXEL_ROW_PTR(ptr, y);
 
       size_t row_index = BITMAP_COMPUTE_ROW_INDEX(ptr, y);
 
-      for (int x = roi->x + (y % x_stride), xx = roi->x + roi->w; x < xx; x += x_stride) {
+      // for (int x = roi->x + (y % x_stride), xx = roi->x + roi->w; x < xx; x += x_stride) {
+      for (int x = roi->x, xx = roi->x + roi->w; x < xx; x++) {
 
         if ((!bitmap_bit_get(&bitmap, BITMAP_COMPUTE_INDEX(row_index, x)))
             && COLOR_THRESHOLD_GRAYSCALE(IMAGE_GET_GRAYSCALE_PIXEL_FAST(row_ptr, x), &lnk_data, invert)) {
+
           int old_x = x;
           int old_y = y;
 
@@ -106,7 +110,7 @@ void imlib_find_blobs(
             blob_y1 = IM_MIN(blob_y1, y);
             blob_x2 = IM_MAX(blob_x2, right);
             blob_y2 = IM_MAX(blob_y2, y);
-            
+
             for (int i = left; i <= right; i++) {
               bitmap_bit_set(&bitmap, BITMAP_COMPUTE_INDEX(index, i));
               blob_pixels += 1;
@@ -151,7 +155,7 @@ void imlib_find_blobs(
                   index = BITMAP_COMPUTE_ROW_INDEX(ptr, y + 1);
 
                   bool recurse = false;
-                  
+
                   for (int i = left; i <= right; i++) {
                     if ((!bitmap_bit_get(&bitmap, BITMAP_COMPUTE_INDEX(index, i)))
                         && COLOR_THRESHOLD_GRAYSCALE(IMAGE_GET_GRAYSCALE_PIXEL_FAST(row, i), &lnk_data, invert)) {
@@ -223,9 +227,15 @@ void imlib_find_blobs(
           lnk_blob.code = 1 << code;
           lnk_blob.count = 1;
 
-          if (((lnk_blob.rect.w * lnk_blob.rect.h) >= area_threshold) && (lnk_blob.pixels >= pixels_threshold)
-              && ((threshold_cb_arg == NULL) || threshold_cb(threshold_cb_arg, &lnk_blob))) {
+          if (((lnk_blob.rect.w * lnk_blob.rect.h) >= area_threshold) && (lnk_blob.pixels >= pixels_threshold)) {
+            // && ((threshold_cb_arg == NULL) || threshold_cb(threshold_cb_arg, &lnk_blob))) {
             list_push_back(out, &lnk_blob);
+
+            // Extract blobID, blobCX, blobCY, ...
+            // Is it the right place to do that?
+            // myPacket[0] = dataOut.code;
+            // myPacket[1] = dataOut.cx;
+            // myPacket[2] = dataOut.cy;
           }
 
           x = old_x;
@@ -245,19 +255,19 @@ void imlib_find_blobs(
       bool merge_occured = false;
 
       list_t out_temp;
-      
+
       list_init(&out_temp, sizeof(find_blobs_list_lnk_data_t));
 
       while (list_size(out)) {
-        
+
         find_blobs_list_lnk_data_t lnk_blob;
-        
+
         list_pop_front(out, &lnk_blob);
 
         for (size_t k = 0, l = list_size(out); k < l; k++) {
-          
+
           find_blobs_list_lnk_data_t tmp_blob;
-          
+
           list_pop_front(out, &tmp_blob);
 
           rectangle_t temp;
@@ -266,7 +276,8 @@ void imlib_find_blobs(
           temp.w = IM_MAX(IM_MIN(tmp_blob.rect.w + (margin * 2), INT16_MAX), 0);
           temp.h = IM_MAX(IM_MIN(tmp_blob.rect.h + (margin * 2), INT16_MAX), 0);
 
-          if (rectangle_overlap(&(lnk_blob.rect), &temp) && ((merge_cb_arg == NULL) || merge_cb(merge_cb_arg, &lnk_blob, &tmp_blob))) {
+          if (rectangle_overlap(&(lnk_blob.rect), &temp)) {
+            // && ((merge_cb_arg == NULL) || merge_cb(merge_cb_arg, &lnk_blob, &tmp_blob))) {
             rectangle_united(&(lnk_blob.rect), &(tmp_blob.rect));
             lnk_blob.centroid.x = ((lnk_blob.centroid.x * lnk_blob.pixels) + (tmp_blob.centroid.x * tmp_blob.pixels)) / (lnk_blob.pixels + tmp_blob.pixels);
             lnk_blob.centroid.y = ((lnk_blob.centroid.y * lnk_blob.pixels) + (tmp_blob.centroid.y * tmp_blob.pixels)) / (lnk_blob.pixels + tmp_blob.pixels);

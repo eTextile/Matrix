@@ -2,15 +2,12 @@
 
 #include "eTextile_matrix_sensor_blob.h"
 
-image_t image;
-list_t blobOut;
-rectangle_t roi;
-list_t thresholds[] = { 128, 128 }; // Middle grayscale values
+list_t thresholds; // Need to be INIT or modify
 
 ////////////////////////////////////// SETUP
 void setup() {
   analogReadRes(10);                     // Set the ADC converteur resolution to 10 bit
-  pinMode(LED_PIN, OUTPUT);              // Set rows pins in high-impedance state
+  pinMode(LED_BUILTIN, OUTPUT);              // Set rows pins in high-impedance state
   pinMode(BUTTON_PIN, INPUT_PULLUP);     // Set button pins as input and activate the input pullup resistor
   attachInterrupt(BUTTON_PIN, pushButton, RISING); // interrrupt 1 is data ready
 
@@ -23,12 +20,17 @@ void setup() {
 
   S.numCols = COLS;
   S.numRows = ROWS;
-  S.pData = &inputVals[0];
+  S.pData = &frameValues[0];
 
   image.w = COLS * SCALE;
   image.h = ROWS * SCALE;
   image.pixels = &bilinIntOutput[0];
-  
+
+  roi.x = 0;
+  roi.y = 0;
+  roi.w = COLS * SCALE;
+  roi.h = ROWS * SCALE;
+
   bootBlink(9);
 }
 
@@ -40,7 +42,7 @@ void loop() {
       // Set row pin as output + 3.3V
       pinMode(rowPins[row], OUTPUT);
       digitalWrite(rowPins[row], HIGH);
-      
+
       for (int column = 0; column < COLS; column++) {
         int rowValue = analogRead(columnPins[column]); // Read the sensor value
         int sensorID = row * ROWS + column; // Calculate the index of the unidimensional array
@@ -49,31 +51,37 @@ void loop() {
           Calibrate(sensorID, rowValue, minVals);
         } else {
           uint8_t value = map(rowValue, minVals[sensorID], 1024, 0, 255);
-          myPacket[sensorID] = value;
+          frameValues[sensorID] = value;
         }
       }
-      // Set row pin in high-impedance state
-      pinMode(rowPins[row], INPUT);
+      pinMode(rowPins[row], INPUT); // Set row pin in high-impedance state
+      // digitalWrite(rowPins[row], LOW); // Set row pin to GND
     }
     scan = false;
   }
-  bilinearInterpolation(1 / SCALE);
 
-  imlib_find_blobs(
+  int pos = 0;
+
+  for (float32_t posX = 0; posX < ROWS; posX += INC) {
+    for (float32_t posY = 0; posY < COLS; posY += INC) {
+      bilinIntOutput[pos++] = arm_bilinear_interp_q7(&S, posX, posY);
+    }
+  }
+
+  find_blobs(
     &blobOut,      // list_t *out
     &image,        // image_t *ptr
     &roi,          // rectangle_t *roi
-    1, 1,          // unsigned int x_stride, unsigned int y_stride
     &thresholds,   // list_t *thresholds
     false,         // bool invert
     6,             // unsigned int area_threshold
     4,             // unsigned int pixels_threshold
     true,          // bool merge
-    10,            // int margin
-    ?              // bool (*threshold_cb)(void*, find_blobs_list_lnk_data_t*) 
-    ?              // void *threshold_cb_arg
-    ?              // bool (*merge_cb)(void*, find_blobs_list_lnk_data_t*, find_blobs_list_lnk_data_t*)
-    ?              // void *merge_cb_arg
+    10             // int margin
+    // ?,             // bool (*threshold_cb)(void*, find_blobs_list_lnk_data_t*)
+    // ?,             // void *threshold_cb_arg
+    // ?,             // bool (*merge_cb)(void*, find_blobs_list_lnk_data_t*, find_blobs_list_lnk_data_t*)
+    // ?              // void *merge_cb_arg
   );
 
   // The update() method attempts to read in
@@ -106,17 +114,6 @@ void onPacket(const uint8_t* buffer, size_t size) {
   scan = true;
 }
 
-void bilinearInterpolation(float inc) {
-  float32_t posX, posY;
-  int pos = 0;
-
-  for (posX = 0; posX < ROWS; posX += inc) {
-    for (posY = 0; posY < COLS; posY += inc) {
-      bilinIntOutput[pos++] = arm_bilinear_interp_q7(&S, posX, posY);
-    }
-  }
-}
-
 /////////// Called with interrupt triggered with push button attached to I/O pin 32
 void pushButton() {
   cli();
@@ -129,9 +126,9 @@ void pushButton() {
 /////////// Blink fonction
 void bootBlink(int flash) {
   for (int i = 0; i < flash; i++) {
-    digitalWrite(LED_PIN, HIGH);
+    digitalWrite(LED_BUILTIN, HIGH);
     delay(50);
-    digitalWrite(LED_PIN, LOW);
+    digitalWrite(LED_BUILTIN, LOW);
     delay(50);
   }
 }
