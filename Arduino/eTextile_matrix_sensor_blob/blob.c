@@ -35,11 +35,15 @@ void rectangle_united(rectangle_t *dst, rectangle_t *src) {
 }
 
 void find_blobs(
-  list_t *out, image_t *ptr, rectangle_t *roi,
-  // unsigned int x_stride, unsigned int y_stride,
-  // list_t *thresholds, 
-  bool invert, unsigned int area_threshold, unsigned int pixels_threshold,
-  bool merge, int margin
+  list_t *out,
+  image_t *ptr,
+  rectangle_t *roi,
+  thresholds_t *thresholds,
+  bool invert,
+  unsigned int area_threshold,
+  unsigned int pixels_threshold,
+  bool merge,
+  int margin
   // bool (*threshold_cb)(void*, find_blobs_list_lnk_data_t*), void *threshold_cb_arg,
   // bool (*merge_cb)(void*, find_blobs_list_lnk_data_t*, find_blobs_list_lnk_data_t*), void *merge_cb_arg
 ) {
@@ -54,15 +58,6 @@ void find_blobs(
 
   size_t code = 0;
 
-  // Je ne comprend pas pourquoi utiliser une liste chainée pour memoriser une sucecion de seuils ?
-  // Avons-nous besoin de cette fonctionnalité dans notre application qui fonctionne uniquement en viveaux de gris ?
-  // Par quoi pouvons nous donc remplacer lnk_data ?
-  // for (list_lnk_t *it = iterator_start_from_head(thresholds); it; it = iterator_next(it)) {
-  thresholds_list_lnk_data_t lnk_data;
-  // iterator_get(thresholds, it, &lnk_data);
-  lnk_data.LMin = 15; // Added to make a test
-  lnk_data.LMax = 255; // Added to make a test
-
   for (int y = roi->y, yy = roi->y + roi->h; y < yy; y++) {
 
     uint8_t *row_ptr = IMAGE_COMPUTE_GRAYSCALE_PIXEL_ROW_PTR(ptr, y); // image->data + image->w * y
@@ -71,10 +66,8 @@ void find_blobs(
 
     for (int x = roi->x, xx = roi->x + roi->w; x < xx; x++) {
 
-      // COLOR_THRESHOLD_GRAYSCALE : if the pixel is in the range LMin < pixel > LMax
-
       if ((!bitmap_bit_get(&bitmap, BITMAP_COMPUTE_INDEX(row_index, x)))
-          && COLOR_THRESHOLD_GRAYSCALE(IMAGE_GET_GRAYSCALE_PIXEL_FAST(row_ptr, x), &lnk_data, invert)) {
+          && GRAYSCALE_THRESHOLD(IMAGE_GET_GRAYSCALE_PIXEL_FAST(row_ptr, x), &thresholds, invert)) {
 
         int old_x = x;
         int old_y = y;
@@ -99,13 +92,13 @@ void find_blobs(
 
           while ((left > roi->x)
                  && (!bitmap_bit_get(&bitmap, BITMAP_COMPUTE_INDEX(index, left - 1)))
-                 && COLOR_THRESHOLD_GRAYSCALE(IMAGE_GET_GRAYSCALE_PIXEL_FAST(row, left - 1), &lnk_data, invert)) {
+                 && GRAYSCALE_THRESHOLD(IMAGE_GET_GRAYSCALE_PIXEL_FAST(row, left - 1), &thresholds, invert)) {
             left--;
           }
 
           while ((right < (roi->x + roi->w - 1))
                  && (!bitmap_bit_get(&bitmap, BITMAP_COMPUTE_INDEX(index, right + 1)))
-                 && COLOR_THRESHOLD_GRAYSCALE(IMAGE_GET_GRAYSCALE_PIXEL_FAST(row, right + 1), &lnk_data, invert)) {
+                 && GRAYSCALE_THRESHOLD(IMAGE_GET_GRAYSCALE_PIXEL_FAST(row, right + 1), &thresholds, invert)) {
             right++;
           }
 
@@ -135,7 +128,7 @@ void find_blobs(
                 bool recurse = false;
                 for (int i = left; i <= right; i++) {
                   if ((!bitmap_bit_get(&bitmap, BITMAP_COMPUTE_INDEX(index, i)))
-                      && COLOR_THRESHOLD_GRAYSCALE(IMAGE_GET_GRAYSCALE_PIXEL_FAST(row, i), &lnk_data, invert)) {
+                      && GRAYSCALE_THRESHOLD(IMAGE_GET_GRAYSCALE_PIXEL_FAST(row, i), &thresholds, invert)) {
                     xylf_t context;
                     context.x = x;
                     context.y = y;
@@ -161,7 +154,7 @@ void find_blobs(
 
                 for (int i = left; i <= right; i++) {
                   if ((!bitmap_bit_get(&bitmap, BITMAP_COMPUTE_INDEX(index, i)))
-                      && COLOR_THRESHOLD_GRAYSCALE(IMAGE_GET_GRAYSCALE_PIXEL_FAST(row, i), &lnk_data, invert)) {
+                      && GRAYSCALE_THRESHOLD(IMAGE_GET_GRAYSCALE_PIXEL_FAST(row, i), &thresholds, invert)) {
                     xylf_t context;
                     context.x = x;
                     context.y = y;
@@ -233,12 +226,6 @@ void find_blobs(
         if (((lnk_blob.rect.w * lnk_blob.rect.h) >= area_threshold) && (lnk_blob.pixels >= pixels_threshold)) {
           // && ((threshold_cb_arg == NULL) || threshold_cb(threshold_cb_arg, &lnk_blob))) {
           list_push_back(out, &lnk_blob);
-
-          // Extract blobID, blobCX, blobCY, ...
-          // Is it the right place to do that?
-          // myPacket[0] = dataOut.code;
-          // myPacket[1] = dataOut.cx;
-          // myPacket[2] = dataOut.cy;
         }
 
         x = old_x;
@@ -246,9 +233,7 @@ void find_blobs(
       }
     }
   }
-
   code += 1;
-  //}
 
   lifo_free(&lifo);
   bitmap_free(&bitmap);

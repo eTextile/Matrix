@@ -10,7 +10,7 @@
 #define __FB_ALLOC_H__
 
 #include <stdio.h>
-#include <stdlib.h> 
+#include <stdlib.h>
 #include <stdint.h>
 
 void *fb_alloc0(uint32_t size);

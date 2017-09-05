@@ -66,9 +66,10 @@ uint8_t bilinIntOutput[NEW_FRAME] = {0};   // Bilinear interpolation Output buff
 uint8_t myPacket[ROW_FRAME] = {0};         // Array to store values to transmit
 
 arm_bilinear_interp_instance_q7 S;
-image_t image;
-list_t blobOut;
-rectangle_t roi;
+image_t       Image;
+list_t        BlobOut;
+rectangle_t   Roi;
+thresholds_t  Thresholds;
 
 void onPacket(const uint8_t* buffer, size_t size);
 void calibrate(uint8_t* id, int val, int frame);

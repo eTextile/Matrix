@@ -28,29 +28,26 @@ typedef struct rectangle {
 bool rectangle_overlap(rectangle_t *ptr0, rectangle_t *ptr1);
 void rectangle_united(rectangle_t *dst, rectangle_t *src);
 
-////////////// Color Stuff //////////////
+////////////// Threshold stuff //////////////
 
-typedef struct thresholds_list_lnk_data {
-  uint8_t LMin, LMax;
-} thresholds_list_lnk_data_t;
+typedef struct thresholds {
+  uint8_t LMin;
+  uint8_t LMax;
+} thresholds_t;
 
-#define COLOR_THRESHOLD_GRAYSCALE(pixel, threshold, invert) \
+#define GRAYSCALE_THRESHOLD(pixel, thresholds, invert) \
   ({ \
     __typeof__ (pixel) _pixel = (pixel); \
-    __typeof__ (threshold) _threshold = (threshold); \
+    __typeof__ (thresholds) _thresholds = (thresholds); \
     __typeof__ (invert) _invert = (invert); \
-    ((_threshold->LMin <= _pixel) && (_pixel <= _threshold->LMax)) ^ _invert; \
+    ((_thresholds->LMin <= _pixel) && (_pixel <= _thresholds->LMax)) ^ _invert; \
   })
 
-#define COLOR_GRAYSCALE_MIN 0
-#define COLOR_GRAYSCALE_MAX 255
-
-////////////// Image Stuff //////////////
+////////////// Image stuff //////////////
 
 typedef struct image {
-  int w;
-  int h;
-  // int bpp;
+  uint8_t w;
+  uint8_t h;
   union {
     uint8_t *pixels;
     uint8_t *data;
@@ -65,7 +62,7 @@ typedef struct image {
     ((uint8_t *) _image->data)[(_image->w * _y) + _x]; \
   })
 
-////////////// Fast Stuff //////////////
+////////////// Fast stuff //////////////
 
 #define IMAGE_COMPUTE_GRAYSCALE_PIXEL_ROW_PTR(image, y) \
   ({ \
@@ -81,7 +78,7 @@ typedef struct image {
     _row_ptr[_x]; \
   })
 
-////////////// Blob Tracking //////////////
+////////////// Blob tracking //////////////
 
 typedef struct find_blobs_list_lnk_data {
   rectangle_t rect;
@@ -92,11 +89,15 @@ typedef struct find_blobs_list_lnk_data {
 } find_blobs_list_lnk_data_t;
 
 void find_blobs(
-  list_t *out, image_t *ptr, rectangle_t *roi,
-  // unsigned int x_stride, unsigned int y_stride,
-  // list_t *thresholds, 
-  bool invert, unsigned int area_threshold, unsigned int pixels_threshold,
-  bool merge, int margin
+  list_t *out,
+  image_t *ptr,
+  rectangle_t *roi,
+  thresholds_t *thresholds,
+  bool invert,
+  unsigned int area_threshold,
+  unsigned int pixels_threshold,
+  bool merge,
+  int margin
   // bool (*threshold_cb)(void*, find_blobs_list_lnk_data_t*), void *threshold_cb_arg,
   // bool (*merge_cb)(void*, find_blobs_list_lnk_data_t*, find_blobs_list_lnk_data_t*), void *merge_cb_arg
 );

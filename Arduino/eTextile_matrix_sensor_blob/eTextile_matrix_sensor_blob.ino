@@ -2,8 +2,6 @@
 
 #include "eTextile_matrix_sensor_blob.h"
 
-// list_t thresholds; // Need to be INIT or modify
-
 ////////////////////////////////////// SETUP
 void setup() {
 
@@ -24,15 +22,18 @@ void setup() {
   S.numRows = ROWS;
   S.pData = &frameValues[0];
 
-  image.w = COLS * SCALE;
-  image.h = ROWS * SCALE;
-  image.pixels = &bilinIntOutput[0];
-  image.data = &bilinIntOutput[0]; //
+  Image.w = COLS * SCALE;
+  Image.h = ROWS * SCALE;
+  Image.pixels = &bilinIntOutput[0];
+  Image.data = &bilinIntOutput[0]; // Do we nead it?
 
-  roi.x = 0;
-  roi.y = 0;
-  roi.w = COLS * SCALE;
-  roi.h = ROWS * SCALE;
+  Roi.x = 0;
+  Roi.y = 0;
+  Roi.w = COLS * SCALE;
+  Roi.h = ROWS * SCALE;
+
+  Thresholds.LMin = 15;
+  Thresholds.LMax = 255;
 
   bootBlink(9);
 }
@@ -62,35 +63,37 @@ void loop() {
     }
     scan = false;
   }
+  Serial.println("FRAME");
 
   int pos = 0;
 
   for (float32_t posX = 0; posX < ROWS; posX += INC) {
     for (float32_t posY = 0; posY < COLS; posY += INC) {
-      bilinIntOutput[pos++] = arm_bilinear_interp_q7(&S, posX, posY);
+      // bilinIntOutput[pos++] = arm_bilinear_interp_q7(&S, posX, posY);
+      pos++;
     }
   }
-
-  find_blobs(
-    &blobOut,      // list_t *out
-    &image,        // image_t *ptr
-    &roi,          // rectangle_t *roi
-    // &thresholds,   // list_t *thresholds
-    false,         // bool invert
-    6,             // unsigned int area_threshold
-    4,             // unsigned int pixels_threshold
-    true ,         // bool merge
-    0              // int margin
-    // ?,             // bool (*threshold_cb)(void*, find_blobs_list_lnk_data_t*)
-    // ?,             // void *threshold_cb_arg
-    // ?,             // bool (*merge_cb)(void*, find_blobs_list_lnk_data_t*, find_blobs_list_lnk_data_t*)
-    // ?              // void *merge_cb_arg
-  );
-
+  /*
+    find_blobs(
+      &BlobOut,      // list_t *out
+      &Image,        // image_t *ptr
+      &Roi,          // rectangle_t *roi
+      &Thresholds,   // thresholds_t *thresholds
+      false,         // bool invert
+      6,             // unsigned int area_threshold
+      4,             // unsigned int pixels_threshold
+      true ,         // bool merge
+      0              // int margin
+      // ?,             // bool (*threshold_cb)(void*, find_blobs_list_lnk_data_t*)
+      // ?,             // void *threshold_cb_arg
+      // ?,             // bool (*merge_cb)(void*, find_blobs_list_lnk_data_t*, find_blobs_list_lnk_data_t*)
+      // ?              // void *merge_cb_arg
+    );
+  */
   Serial.println("FRAME");
-  for (list_lnk_t *it = iterator_start_from_head(&blobOut); it; it = iterator_next(it)) {
+  for (list_lnk_t *it = iterator_start_from_head(&BlobOut); it; it = iterator_next(it)) {
     find_blobs_list_lnk_data_t lnk_data;
-    iterator_get(&blobOut, it, &lnk_data);
+    iterator_get(&BlobOut, it, &lnk_data);
     Serial.print(lnk_data.centroid.x);
     Serial.print("_");
     Serial.print(lnk_data.centroid.y);
