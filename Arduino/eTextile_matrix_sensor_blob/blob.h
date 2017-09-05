@@ -30,11 +30,9 @@ void rectangle_united(rectangle_t *dst, rectangle_t *src);
 
 ////////////// Color Stuff //////////////
 
-typedef struct color_thresholds_list_lnk_data {
-  uint8_t LMin, LMax; // or grayscale
-  int8_t AMin, AMax;
-  int8_t BMin, BMax;
-} color_thresholds_list_lnk_data_t;
+typedef struct thresholds_list_lnk_data {
+  uint8_t LMin, LMax;
+} thresholds_list_lnk_data_t;
 
 #define COLOR_THRESHOLD_GRAYSCALE(pixel, threshold, invert) \
   ({ \
@@ -96,7 +94,8 @@ typedef struct find_blobs_list_lnk_data {
 void find_blobs(
   list_t *out, image_t *ptr, rectangle_t *roi,
   // unsigned int x_stride, unsigned int y_stride,
-  list_t *thresholds, bool invert, unsigned int area_threshold, unsigned int pixels_threshold,
+  // list_t *thresholds, 
+  bool invert, unsigned int area_threshold, unsigned int pixels_threshold,
   bool merge, int margin
   // bool (*threshold_cb)(void*, find_blobs_list_lnk_data_t*), void *threshold_cb_arg,
   // bool (*merge_cb)(void*, find_blobs_list_lnk_data_t*, find_blobs_list_lnk_data_t*), void *merge_cb_arg
