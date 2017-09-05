@@ -4,16 +4,17 @@
 
 ////////////////////////////////////// SETUP
 void setup() {
+  // serial.setPacketHandler(&onPacket); // We must specify a packet handler method so that
+  // serial.begin(BAUD_RATE);  // Start the serial module
+  Serial.begin(BAUD_RATE);
+  Serial.println("START");
 
   analogReadRes(10);                     // Set the ADC converteur resolution to 10 bit
   pinMode(LED_BUILTIN, OUTPUT);          // Set rows pins in high-impedance state
   pinMode(BUTTON_PIN, INPUT_PULLUP);     // Set button pins as input and activate the input pullup resistor
   attachInterrupt(BUTTON_PIN, pushButton, RISING); // Attach interrrupt on button PIN
 
-  // serial.setPacketHandler(&onPacket); // We must specify a packet handler method so that
-  // serial.begin(BAUD_RATE);  // Start the serial module
-  Serial.begin(BAUD_RATE);
-  Serial.println("Serial:start");
+
   for (int i = 0; i < ROWS; i++) {
     pinMode(rowPins[ROWS], INPUT);        // Set rows pins in high-impedance state
   }
@@ -63,42 +64,47 @@ void loop() {
     }
     scan = false;
   }
-  Serial.println("FRAME");
 
   int pos = 0;
 
-  for (float32_t posX = 0; posX < ROWS; posX += INC) {
-    for (float32_t posY = 0; posY < COLS; posY += INC) {
-      // bilinIntOutput[pos++] = arm_bilinear_interp_q7(&S, posX, posY);
+  for (float posX = 0; posX < ROWS; posX += INC) {
+    for (float posY = 0; posY < COLS; posY += INC) {
       pos++;
+      // Serial.print(posX), Serial.print("_"), Serial.print(posY), Serial.print("\t");
+      bilinIntOutput[pos] = arm_bilinear_interp_q7(&S, posX, posY);
+      // delay(50);
     }
+    // Serial.println("");
+    // delay(1000);
+
   }
+
+  find_blobs(
+    &BlobOut,      // list_t *out
+    &Image,        // image_t *ptr
+    &Roi,          // rectangle_t *roi
+    &Thresholds,   // thresholds_t *thresholds
+    false,         // bool invert
+    6,             // unsigned int area_threshold
+    4,             // unsigned int pixels_threshold
+    true ,         // bool merge
+    0              // int margin
+    // ?,             // bool (*threshold_cb)(void*, find_blobs_list_lnk_data_t*)
+    // ?,             // void *threshold_cb_arg
+    // ?,             // bool (*merge_cb)(void*, find_blobs_list_lnk_data_t*, find_blobs_list_lnk_data_t*)
+    // ?              // void *merge_cb_arg
+  );
+
+  Serial.println("TOP_B");
   /*
-    find_blobs(
-      &BlobOut,      // list_t *out
-      &Image,        // image_t *ptr
-      &Roi,          // rectangle_t *roi
-      &Thresholds,   // thresholds_t *thresholds
-      false,         // bool invert
-      6,             // unsigned int area_threshold
-      4,             // unsigned int pixels_threshold
-      true ,         // bool merge
-      0              // int margin
-      // ?,             // bool (*threshold_cb)(void*, find_blobs_list_lnk_data_t*)
-      // ?,             // void *threshold_cb_arg
-      // ?,             // bool (*merge_cb)(void*, find_blobs_list_lnk_data_t*, find_blobs_list_lnk_data_t*)
-      // ?              // void *merge_cb_arg
-    );
-  */
-  Serial.println("FRAME");
-  for (list_lnk_t *it = iterator_start_from_head(&BlobOut); it; it = iterator_next(it)) {
+    for (list_lnk_t *it = iterator_start_from_head(&BlobOut); it; it = iterator_next(it)) {
     find_blobs_list_lnk_data_t lnk_data;
     iterator_get(&BlobOut, it, &lnk_data);
     Serial.print(lnk_data.centroid.x);
     Serial.print("_");
     Serial.print(lnk_data.centroid.y);
-  }
-
+    }
+  */
   // The update() method attempts to read in
   // any incoming serial data and emits packets via
   // the user's onPacket(const uint8_t* buffer, size_t size)

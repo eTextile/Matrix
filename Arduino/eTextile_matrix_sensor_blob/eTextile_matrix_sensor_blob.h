@@ -41,8 +41,8 @@ PacketSerial serial;
 #define  COLS                 16
 #define  ROWS                 16
 #define  SCALE                4
-
-#define  INC                  1/SCALE
+// #define  INC               1/SCALE // Do not work!?
+#define  INC                  0.25
 #define  ROW_FRAME            COLS*ROWS
 #define  NEW_FRAME            COLS*ROWS*SCALE
 #define  CALIBRATION_CYCLES   4

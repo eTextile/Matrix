@@ -35,11 +35,12 @@ typedef struct thresholds {
   uint8_t LMax;
 } thresholds_t;
 
+
 #define GRAYSCALE_THRESHOLD(pixel, thresholds, invert) \
   ({ \
-    __typeof__ (pixel) _pixel = (pixel); \
-    __typeof__ (thresholds) _thresholds = (thresholds); \
-    __typeof__ (invert) _invert = (invert); \
+    __typeof__(pixel) _pixel = (pixel); \
+    __typeof__(*thresholds) _thresholds = (*thresholds); \
+    __typeof__(invert) _invert = (invert); \
     ((_thresholds->LMin <= _pixel) && (_pixel <= _thresholds->LMax)) ^ _invert; \
   })
 
