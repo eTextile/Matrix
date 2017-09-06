@@ -36,15 +36,15 @@ PacketSerial serial;
 
 // Teensy - SPI PINS https://www.pjrc.com/teensy/td_libs_SPI.html
 
+#define  BUILTIN_LED          13
 #define  BUTTON_PIN           32      // Teensy 
 #define  BAUD_RATE            230400
 #define  COLS                 16
 #define  ROWS                 16
 #define  SCALE                4
-// #define  INC               1/SCALE // Do not work!?
-#define  INC                  0.25
-#define  ROW_FRAME            COLS*ROWS
-#define  NEW_FRAME            COLS*ROWS*SCALE
+#define  INC                  (float)(1/SCALE)
+#define  ROW_FRAME            (uint16_t)(COLS * ROWS)
+#define  NEW_FRAME            (uint16_t)(COLS * ROWS * SCALE)
 #define  CALIBRATION_CYCLES   4
 #define  MIN_BLOB_PIX         4   // Only blobs that with more pixels than 4
 #define  A0_PIN               A0  // The output of multiplexerA (SIG pin) is connected to Arduino Analog pin 0
@@ -60,7 +60,7 @@ const int columnPins[COLS] = {
   A17, A18, A19, A0, A20, A1, A2, A3, A4, A5, A6, A7, A11, A8, A10, A9
 };
 
-int minVals[ROW_FRAME] = {0};              // Array to store smallest values
+uint16_t minVals[ROW_FRAME] = {0};              // Array to store smallest values
 q7_t frameValues[ROW_FRAME] = {0};         // Array to store ofset input values
 uint8_t bilinIntOutput[NEW_FRAME] = {0};   // Bilinear interpolation Output buffer
 uint8_t myPacket[ROW_FRAME] = {0};         // Array to store values to transmit
@@ -72,11 +72,9 @@ rectangle_t   Roi;
 thresholds_t  Thresholds;
 
 void onPacket(const uint8_t* buffer, size_t size);
-void calibrate(uint8_t* id, int val, int frame);
-void bilinearInterpolation(float inc);
+void calibrate(uint16_t *sumArray, uint16_t id, uint16_t val);
 
 boolean scan = true;
 boolean calibration = true;
-int calibrationCounter = 0;
 
 #endif // __ETEXTILE_MATRIX_SENSOR_BLOB_H__
