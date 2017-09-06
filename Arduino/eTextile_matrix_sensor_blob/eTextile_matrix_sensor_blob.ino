@@ -1,4 +1,4 @@
-// E-256 eTextile matrix sensor shield V2.0
+// eTextile matrix sensor shield V2.0 (E-256)
 
 #include "eTextile_matrix_sensor_blob.h"
 
@@ -19,28 +19,28 @@ void setup() {
   for (int i = 0; i < ROWS; i++) {
     pinMode(rowPins[ROWS], INPUT);        // Set rows pins in high-impedance state
   }
+  /*
+    S.numCols = COLS;
+    S.numRows = ROWS;
+    S.pData = &frameValues[0];
+    Serial.println("STEP_2");
 
-  S.numCols = COLS;
-  S.numRows = ROWS;
-  S.pData = &frameValues[0];
-  Serial.println("STEP_2");
+    Image.w = COLS * SCALE;
+    Image.h = ROWS * SCALE;
+    Image.pixels = &bilinIntOutput[0];
+    Image.data = &bilinIntOutput[0]; // Do we nead it?
+    Serial.println("STEP_3");
 
-  Image.w = COLS * SCALE;
-  Image.h = ROWS * SCALE;
-  Image.pixels = &bilinIntOutput[0];
-  Image.data = &bilinIntOutput[0]; // Do we nead it?
-  Serial.println("STEP_3");
+    Roi.x = 0;
+    Roi.y = 0;
+    Roi.w = COLS * SCALE;
+    Roi.h = ROWS * SCALE;
+    Serial.println("STEP_4");
 
-  Roi.x = 0;
-  Roi.y = 0;
-  Roi.w = COLS * SCALE;
-  Roi.h = ROWS * SCALE;
-  Serial.println("STEP_4");
-
-  Thresholds.LMin = 15;
-  Thresholds.LMax = 255;
-  Serial.println("STEP_5");
-
+    Thresholds.LMin = 15;
+    Thresholds.LMax = 255;
+    Serial.println("STEP_5");
+  */
   bootBlink(9);
   Serial.println("STEP_6");
 }
@@ -64,8 +64,9 @@ void loop() {
           calibrate(minVals, sensorID, rowValue);
           Serial.println("STEP_9");
         } else {
-          uint8_t value = map(rowValue, minVals[sensorID], 1023, 0, 255);
-          frameValues[sensorID] = value;
+          uint16_t value = rowValue - minVals[sensorID]; // Aplay the calibration ofset
+          if (value < 0) value = 0;
+          // frameValues[sensorID] = value;
         }
       }
       pinMode(rowPins[row], INPUT); // Set row pin in high-impedance state
@@ -91,7 +92,7 @@ void loop() {
       &Thresholds,   // thresholds_t *thresholds
       false,         // bool invert
       6,             // unsigned int area_threshold
-      4,             // unsigned int pixels_threshold
+      MIN_BLOB_PIX,  // unsigned int pixels_threshold
       true ,         // bool merge
       0              // int margin
       // ?,             // bool (*threshold_cb)(void*, find_blobs_list_lnk_data_t*)
@@ -138,8 +139,8 @@ void calibrate(uint16_t sumArray[], uint16_t id, uint16_t val) {
 void onPacket(const uint8_t *buffer, size_t size) {
   // The send() method will encode the buffer
   // as a packet, set packet markers, etc.
-  serial.send(myPacket, ROW_FRAME);
-  scan = true;
+  // serial.send(myPacket, ROW_FRAME);
+  scan = false;
 }
 
 /////////// Called with interrupt triggered with push button attached to I/O pin 32

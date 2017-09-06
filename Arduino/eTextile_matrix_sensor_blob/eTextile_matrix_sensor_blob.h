@@ -1,11 +1,11 @@
 #ifndef __ETEXTILE_MATRIX_SENSOR_BLOB_H__
 #define __ETEXTILE_MATRIX_SENSOR_BLOB_H__
 
-#include <arm_math.h>
-#include <PacketSerial.h>
-#include "blob.h" // Part of the OpenMV project : https://github.com/openmv/openmv
+// #include <arm_math.h>
+// #include <PacketSerial.h>
+// #include "blob.h" // Part of the OpenMV project : https://github.com/openmv/openmv
 
-PacketSerial serial;
+// PacketSerial serial;
 /*
   PACKET SERIAL : Copyright (c) 2012-2014 Christopher Baker <http://christopherbaker.net>
   Permission is hereby granted, free of charge, to any person obtaining a copy
@@ -37,14 +37,14 @@ PacketSerial serial;
 // Teensy - SPI PINS https://www.pjrc.com/teensy/td_libs_SPI.html
 
 #define  BUILTIN_LED          13
-#define  BUTTON_PIN           32      // Teensy 
+#define  BUTTON_PIN           32      // Teensy
 #define  BAUD_RATE            230400
 #define  COLS                 16
 #define  ROWS                 16
 #define  SCALE                4
-#define  INC                  (float)(1/SCALE)
-#define  ROW_FRAME            (uint16_t)(COLS * ROWS)
-#define  NEW_FRAME            (uint16_t)(COLS * ROWS * SCALE)
+#define  INC                  ((float)(1.0 / SCALE))
+#define  ROW_FRAME            ((uint16_t)(COLS * ROWS))
+#define  NEW_FRAME            ((uint16_t)(COLS * ROWS * SCALE))
 #define  CALIBRATION_CYCLES   4
 #define  MIN_BLOB_PIX         4   // Only blobs that with more pixels than 4
 #define  A0_PIN               A0  // The output of multiplexerA (SIG pin) is connected to Arduino Analog pin 0
@@ -61,18 +61,20 @@ const int columnPins[COLS] = {
 };
 
 uint16_t minVals[ROW_FRAME] = {0};              // Array to store smallest values
-q7_t frameValues[ROW_FRAME] = {0};         // Array to store ofset input values
+// q7_t frameValues[ROW_FRAME] = {0};         // Array to store ofset input values
 uint8_t bilinIntOutput[NEW_FRAME] = {0};   // Bilinear interpolation Output buffer
 uint8_t myPacket[ROW_FRAME] = {0};         // Array to store values to transmit
 
+/*
 arm_bilinear_interp_instance_q7 S;
 image_t       Image;
 list_t        BlobOut;
 rectangle_t   Roi;
 thresholds_t  Thresholds;
+*/
 
-void onPacket(const uint8_t* buffer, size_t size);
-void calibrate(uint16_t *sumArray, uint16_t id, uint16_t val);
+// void onPacket(const uint8_t *buffer, size_t size);
+// void calibrate(const uint16_t *sumArray, uint16_t id, uint16_t val);
 
 boolean scan = true;
 boolean calibration = true;
