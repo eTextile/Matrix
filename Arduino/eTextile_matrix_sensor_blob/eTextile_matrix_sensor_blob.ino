@@ -47,18 +47,21 @@ void setup() {
 
 /////////////////////////////////// LOOP
 void loop() {
+
   Serial.println("STEP_7");
   if (scan) {
+
     Serial.println("STEP_8");
     for (uint8_t row = 0; row < ROWS; row++) {
       // Set row pin as output + 3.3V
       pinMode(rowPins[row], OUTPUT);
       digitalWrite(rowPins[row], HIGH);
+
       for (uint8_t column = 0; column < COLS; column++) {
         uint16_t rowValue = analogRead(columnPins[column]); // Read the sensor value
         uint8_t sensorID = row * ROWS + column; // Calculate the index of the unidimensional array
         if (calibration) {
-          calibrate(&minVals, sensorID, rowValue);
+          calibrate(minVals, sensorID, rowValue);
           Serial.println("STEP_9");
         } else {
           uint8_t value = map(rowValue, minVals[sensorID], 1023, 0, 255);
@@ -69,8 +72,8 @@ void loop() {
       // digitalWrite(rowPins[row], LOW); // Set row pin to GND
     }
     // scan = false;
-    int pos = 0;
   }
+  int pos = 0;
 
   for (float posY = 0; posY < COLS; posY += INC) {
     for (float posX = 0; posX < ROWS; posX += INC) {
@@ -115,13 +118,13 @@ void loop() {
   // serial.update();
 }
 
-void calibrate(uint16_t *sumArray, uint16_t id, uint16_t val) {
+void calibrate(uint16_t sumArray[], uint16_t id, uint16_t val) {
   static int counter = 0;
 
   sumArray[id] += val;
 
   if (counter >= CALIBRATION_CYCLES * ROW_FRAME) {
-    for (int i = 0; i < ROW_FRAME; i++) {
+    for (uint8_t i = 0; i < ROW_FRAME; i++) {
       sumArray[i] = sumArray[i] / CALIBRATION_CYCLES;
     }
     counter = 0;
@@ -142,7 +145,6 @@ void onPacket(const uint8_t *buffer, size_t size) {
 /////////// Called with interrupt triggered with push button attached to I/O pin 32
 void pushButton() {
   cli();
-  calibrationCounter = 0;
   calibration = true; // Activate the calibration process
   bootBlink(3);
   sei();
