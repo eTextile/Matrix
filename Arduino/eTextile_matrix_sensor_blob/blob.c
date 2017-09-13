@@ -49,11 +49,10 @@ void find_blobs(
 ) {
 
   bitmap_t bitmap; // Create the bitmap_t instance
-  bitmap_alloc(&bitmap, ptr->w * ptr->h); // Set the size of the bitmap_t instance
-
+  bitmap_alloc(&bitmap, ptr->w * ptr->h); // Allocate memody for the bitmap_t instance
   lifo_t lifo;
   size_t lifo_len;
-  lifo_alloc_all(&lifo, &lifo_len, sizeof(xylf_t));
+  lifo_alloc_all(&lifo, &lifo_len, sizeof(xylf_t)); // Allocate memody for the lifo buffer
   list_init(out, sizeof(find_blobs_list_lnk_data_t));
 
   size_t code = 0;

@@ -3,66 +3,56 @@
 #include "eTextile_matrix_sensor_blob.h"
 
 ////////////////////////////////////// SETUP
+
 void setup() {
 
   // serial.setPacketHandler(&onPacket); // We must specify a packet handler method so that
-  // serial.begin(BAUD_RATE);  // Start the serial module
+  // serial.begin(BAUD_RATE);            // Start the serial module
   Serial.begin(BAUD_RATE);
-  Serial.println("START_0");
 
   analogReadRes(10);                     // Set the ADC converteur resolution to 10 bit
   pinMode(BUILTIN_LED, OUTPUT);          // Set rows pins in high-impedance state
   pinMode(BUTTON_PIN, INPUT_PULLUP);     // Set button pins as input and activate the input pullup resistor
   attachInterrupt(BUTTON_PIN, pushButton, RISING); // Attach interrrupt on button PIN
-  Serial.println("STEP_1");
 
   for (int i = 0; i < ROWS; i++) {
     pinMode(rowPins[ROWS], INPUT);        // Set rows pins in high-impedance state
   }
-  /*
-    S.numCols = COLS;
-    S.numRows = ROWS;
-    S.pData = &frameValues[0];
-    Serial.println("STEP_2");
 
-    Image.w = COLS * SCALE;
-    Image.h = ROWS * SCALE;
-    Image.pixels = &bilinIntOutput[0];
-    Image.data = &bilinIntOutput[0]; // Do we nead it?
-    Serial.println("STEP_3");
+  S.numCols = COLS;
+  S.numRows = ROWS;
+  S.pData = &frameValues[0];
 
-    Roi.x = 0;
-    Roi.y = 0;
-    Roi.w = COLS * SCALE;
-    Roi.h = ROWS * SCALE;
-    Serial.println("STEP_4");
+  Image.w = COLS * SCALE;
+  Image.h = ROWS * SCALE;
+  Image.pixels = &bilinIntOutput[0];
+  Image.data = &bilinIntOutput[0]; // Do we nead it?
 
-    Thresholds.LMin = 15;
-    Thresholds.LMax = 255;
-    Serial.println("STEP_5");
-  */
+  Roi.x = 0;
+  Roi.y = 0;
+  Roi.w = COLS * SCALE;
+  Roi.h = ROWS * SCALE;
+
+  Thresholds.LMin = 15;
+  Thresholds.LMax = 255;
+
   bootBlink(9);
-  Serial.println("STEP_6");
 }
 
 /////////////////////////////////// LOOP
+
 void loop() {
 
-  Serial.println("STEP_7");
   if (scan) {
-
-    Serial.println("STEP_8");
     for (uint8_t row = 0; row < ROWS; row++) {
       // Set row pin as output + 3.3V
       pinMode(rowPins[row], OUTPUT);
       digitalWrite(rowPins[row], HIGH);
-
       for (uint8_t column = 0; column < COLS; column++) {
         uint16_t rowValue = analogRead(columnPins[column]); // Read the sensor value
         uint8_t sensorID = row * ROWS + column; // Calculate the index of the unidimensional array
         if (calibration) {
           calibrate(minVals, sensorID, rowValue);
-          Serial.println("STEP_9");
         } else {
           uint16_t value = rowValue - minVals[sensorID]; // Aplay the calibration ofset
           if (value < 0) value = 0;
@@ -83,24 +73,22 @@ void loop() {
     }
   }
 
-  Serial.println("STEP_10");
-  /*
-    find_blobs(
-      &BlobOut,      // list_t *out
-      &Image,        // image_t *ptr
-      &Roi,          // rectangle_t *roi
-      &Thresholds,   // thresholds_t *thresholds
-      false,         // bool invert
-      6,             // unsigned int area_threshold
-      MIN_BLOB_PIX,  // unsigned int pixels_threshold
-      true ,         // bool merge
-      0              // int margin
-      // ?,             // bool (*threshold_cb)(void*, find_blobs_list_lnk_data_t*)
-      // ?,             // void *threshold_cb_arg
-      // ?,             // bool (*merge_cb)(void*, find_blobs_list_lnk_data_t*, find_blobs_list_lnk_data_t*)
-      // ?              // void *merge_cb_arg
-    );
-  */
+  find_blobs(
+    &BlobOut,      // list_t *out
+    &Image,        // image_t *ptr
+    &Roi,          // rectangle_t *roi
+    &Thresholds,   // thresholds_t *thresholds
+    false,         // bool invert
+    6,             // unsigned int area_threshold
+    MIN_BLOB_PIX,  // unsigned int pixels_threshold
+    true ,         // bool merge
+    0              // int margin
+    // ?,             // bool (*threshold_cb)(void*, find_blobs_list_lnk_data_t*)
+    // ?,             // void *threshold_cb_arg
+    // ?,             // bool (*merge_cb)(void*, find_blobs_list_lnk_data_t*, find_blobs_list_lnk_data_t*)
+    // ?              // void *merge_cb_arg
+  );
+
   Serial.println("Frame compleat");
   /*
     for (list_lnk_t *it = iterator_start_from_head(&BlobOut); it; it = iterator_next(it)) {

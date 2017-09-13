@@ -8,7 +8,6 @@
 #include "fmath.h"
 #include "collections.h"
 
-
 #define IM_MAX(a,b) ({ __typeof__ (a) _a = (a); __typeof__ (b) _b = (b); _a > _b ? _a : _b; })
 #define IM_MIN(a,b) ({ __typeof__ (a) _a = (a); __typeof__ (b) _b = (b); _a < _b ? _a : _b; })
 
@@ -17,7 +16,7 @@ typedef struct point {
   int16_t y;
 } point_t;
 
-////////////// Rectangle Stuff //////////////
+////////////// Rectangle stuff //////////////
 
 typedef struct rectangle {
   int16_t x;

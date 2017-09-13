@@ -11,6 +11,32 @@
 extern char _fballoc;
 static char *pointer = &_fballoc;
 
+NORETURN void fb_alloc_fail() {
+  nlr_raise(mp_obj_new_exception_msg(&mp_type_MemoryError, "FB Alloc Collision!!!"));
+}
+
+
+// returns null pointer without error if size==0
+void *fb_alloc(uint32_t size) {
+  if (!size) {
+    return NULL;
+  }
+
+  size = ((size + sizeof(uint32_t) - 1) / sizeof(uint32_t)) * sizeof(uint32_t); // Round Up
+  char *result = pointer - size;
+  char *new_pointer = result - sizeof(uint32_t);
+
+  // Check if allocation overwrites the framebuffer pixels
+  if (new_pointer < (char *) MAIN_FB_PIXELS()) {
+    fb_alloc_fail();
+  }
+
+  // size is always 4/8/12/etc. so the value below must be 8 or more.
+  *((uint32_t *) new_pointer) = size + sizeof(uint32_t); // Save size.
+  pointer = new_pointer;
+  return result;
+}
+
 // returns null pointer without error if passed size==0
 void *fb_alloc0(uint32_t size) {
   void *mem = fb_alloc(size);

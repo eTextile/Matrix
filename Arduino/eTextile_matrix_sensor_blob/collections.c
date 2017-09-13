@@ -12,7 +12,7 @@
 
 void bitmap_alloc(bitmap_t *ptr, size_t size) {
   ptr->size = size;
-  ptr->data = (char *) fb_alloc0(((size + CHAR_MASK) >> CHAR_SHIFT) * sizeof(char));
+  ptr->data = (char *) fb_alloc0(((size + CHAR_MASK) >> CHAR_SHIFT) * sizeof(char)); // Suppres fb_alloc0()
 }
 
 void bitmap_free(bitmap_t *ptr) {
@@ -81,7 +81,9 @@ size_t list_size(list_t *ptr) {
 }
 
 void list_push_back(list_t *ptr, void *data) {
-  list_lnk_t *tmp = (list_lnk_t *) xalloc(sizeof(list_lnk_t) + ptr->data_len);
+
+  list_lnk_t *tmp = (list_lnk_t *) xalloc(sizeof(list_lnk_t) + ptr->data_len); // TODO Supp xalloc !
+
   memcpy(tmp->data, data, ptr->data_len);
 
   if (ptr->size++) {

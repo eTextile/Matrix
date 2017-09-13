@@ -1,9 +1,9 @@
 #ifndef __ETEXTILE_MATRIX_SENSOR_BLOB_H__
 #define __ETEXTILE_MATRIX_SENSOR_BLOB_H__
 
-// #include <arm_math.h>
-// #include <PacketSerial.h>
-// #include "blob.h" // Part of the OpenMV project : https://github.com/openmv/openmv
+#include <arm_math.h>
+#include <PacketSerial.h>
+#include "blob.h" // Part of the OpenMV project : https://github.com/openmv/openmv
 
 // PacketSerial serial;
 /*
@@ -60,21 +60,21 @@ const int columnPins[COLS] = {
   A17, A18, A19, A0, A20, A1, A2, A3, A4, A5, A6, A7, A11, A8, A10, A9
 };
 
-uint16_t minVals[ROW_FRAME] = {0};              // Array to store smallest values
-// q7_t frameValues[ROW_FRAME] = {0};         // Array to store ofset input values
+uint16_t minVals[ROW_FRAME] = {0};         // Array to store smallest values
+// q7_t frameValues[ROW_FRAME] = {0};      // Array to store ofset input values
 uint8_t bilinIntOutput[NEW_FRAME] = {0};   // Bilinear interpolation Output buffer
 uint8_t myPacket[ROW_FRAME] = {0};         // Array to store values to transmit
 
-/*
 arm_bilinear_interp_instance_q7 S;
 image_t       Image;
 list_t        BlobOut;
 rectangle_t   Roi;
 thresholds_t  Thresholds;
-*/
 
-// void onPacket(const uint8_t *buffer, size_t size);
-// void calibrate(const uint16_t *sumArray, uint16_t id, uint16_t val);
+void onPacket(const uint8_t *buffer, size_t size);
+void calibrate(const uint16_t *sumArray, uint16_t id, uint16_t val);
+void pushButton();
+void bootBlink(int flash);
 
 boolean scan = true;
 boolean calibration = true;

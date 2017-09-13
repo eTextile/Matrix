@@ -9,14 +9,15 @@
 #include <stddef.h>
 #include <string.h>
 
+#include "xalloc.h"
 #include "fb_alloc.h"
 
-#define IM_LOG2_2(x) (((x) &                0x2ULL) ? ( 2                        ) :             1) // NO ({ ... }) !
-#define IM_LOG2_4(x) (((x) & 0xCULL) ? ( 2 + IM_LOG2_2((x) >> 2)) : IM_LOG2_2(x)) // NO ({ ... }) !
-#define IM_LOG2_8(x) (((x) & 0xF0ULL) ? ( 4 + IM_LOG2_4((x) >> 4)) : IM_LOG2_4(x)) // NO ({ ... }) !
-#define IM_LOG2_16(x) (((x) & 0xFF00ULL) ? ( 8 + IM_LOG2_8((x) >> 8)) : IM_LOG2_8(x)) // NO ({ ... }) !
-#define IM_LOG2_32(x) (((x) & 0xFFFF0000ULL) ? (16 + IM_LOG2_16((x) >> 16)) : IM_LOG2_16(x)) // NO ({ ... }) !
-#define IM_LOG2(x) (((x) & 0xFFFFFFFF00000000ULL) ? (32 + IM_LOG2_32((x) >> 32)) : IM_LOG2_32(x)) // NO ({ ... }) !
+#define IM_LOG2_2(x)    (((x) &                0x2ULL) ? ( 2                        ) :             1) // NO ({ ... }) !
+#define IM_LOG2_4(x)    (((x) &                0xCULL) ? ( 2 +  IM_LOG2_2((x) >>  2)) :  IM_LOG2_2(x)) // NO ({ ... }) !
+#define IM_LOG2_8(x)    (((x) &               0xF0ULL) ? ( 4 +  IM_LOG2_4((x) >>  4)) :  IM_LOG2_4(x)) // NO ({ ... }) !
+#define IM_LOG2_16(x)   (((x) &             0xFF00ULL) ? ( 8 +  IM_LOG2_8((x) >>  8)) :  IM_LOG2_8(x)) // NO ({ ... }) !
+#define IM_LOG2_32(x)   (((x) &         0xFFFF0000ULL) ? (16 + IM_LOG2_16((x) >> 16)) : IM_LOG2_16(x)) // NO ({ ... }) !
+#define IM_LOG2(x)      (((x) & 0xFFFFFFFF00000000ULL) ? (32 + IM_LOG2_32((x) >> 32)) : IM_LOG2_32(x)) // NO ({ ... }) !
 
 ////////////// Bitmap //////////////
 
@@ -29,6 +30,7 @@ void bitmap_alloc(bitmap_t *ptr, size_t size);
 void bitmap_free(bitmap_t *ptr);
 void bitmap_bit_set(bitmap_t *ptr, size_t index);
 bool bitmap_bit_get(bitmap_t *ptr, size_t index);
+
 #define BITMAP_COMPUTE_ROW_INDEX(image, y) (((image)->w)*(y))
 #define BITMAP_COMPUTE_INDEX(row_index, x) ((row_index)+(x))
 
@@ -49,7 +51,7 @@ void lifo_dequeue(lifo_t *ptr, void *data);
 
 typedef struct list_lnk {
   struct list_lnk *next_ptr, *prev_ptr;
-  char data[];
+  char data[]; // TODO uint16_t
 } list_lnk_t;
 
 typedef struct list {
