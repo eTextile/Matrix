@@ -4,8 +4,8 @@
    This work is licensed under the MIT license, see the file LICENSE for details.
 
    Fast approximate math functions.
-
 */
+
 #ifndef __FMATH_H__
 #define __FMATH_H__
 

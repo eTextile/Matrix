@@ -2,6 +2,7 @@
    Copyright (c) 2013-2017 Ibrahim Abdelkader <iabdalkader@openmv.io> & Kwabena W. Agyeman <kwagyeman@openmv.io>
    This work is licensed under the MIT license, see the file LICENSE for details.
 */
+
 #ifndef __COLLECTIONS_H__
 #define __COLLECTIONS_H__
 
@@ -38,7 +39,7 @@ bool bitmap_bit_get(bitmap_t *ptr, size_t index);
 
 typedef struct lifo {
   size_t len, size, data_len;
-  char *data;
+  char *data; // Do I nead to set it to uint16_t for 10 bits values ?
 } lifo_t;
 
 void lifo_alloc_all(lifo_t *ptr, size_t *size, size_t data_len);

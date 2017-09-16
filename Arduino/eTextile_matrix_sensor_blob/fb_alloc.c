@@ -4,30 +4,29 @@
    This work is licensed under the MIT license, see the file LICENSE for details.
 
    Interface for using extra frame buffer RAM as a stack.
-
 */
+
 #include "fb_alloc.h"
 
 extern char _fballoc;
-static char *pointer = &_fballoc;
+static char *pointer = &_fballoc; // Static variables preserve their previous value in their previous scope and are not initialized again in the new scope
 
 NORETURN void fb_alloc_fail() {
   nlr_raise(mp_obj_new_exception_msg(&mp_type_MemoryError, "FB Alloc Collision!!!"));
 }
 
-
 // returns null pointer without error if size==0
 void *fb_alloc(uint32_t size) {
+
   if (!size) {
     return NULL;
   }
-
   size = ((size + sizeof(uint32_t) - 1) / sizeof(uint32_t)) * sizeof(uint32_t); // Round Up
   char *result = pointer - size;
   char *new_pointer = result - sizeof(uint32_t);
 
   // Check if allocation overwrites the framebuffer pixels
-  if (new_pointer < (char *) MAIN_FB_PIXELS()) {
+  if (new_pointer < (char *) MAIN_FB_PIXELS()) { // TODO : rm MAIN_FB_PIXELS()
     fb_alloc_fail();
   }
 
@@ -45,7 +44,7 @@ void *fb_alloc0(uint32_t size) {
 }
 
 void *fb_alloc_all(uint32_t *size) {
-  int32_t temp = pointer - ((char *) MAIN_FB_PIXELS()) - sizeof(uint32_t);
+  int32_t temp = pointer - ((char *) MAIN_FB_PIXELS()) - sizeof(uint32_t); // TODO : rm MAIN_FB_PIXELS()
 
   if (temp < sizeof(uint32_t)) {
     *size = 0;

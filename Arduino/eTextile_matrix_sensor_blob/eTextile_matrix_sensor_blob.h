@@ -37,7 +37,7 @@
 // Teensy - SPI PINS https://www.pjrc.com/teensy/td_libs_SPI.html
 
 #define  BUILTIN_LED          13
-#define  BUTTON_PIN           32      // Teensy
+#define  BUTTON_PIN           32  // Button on the eTextile Teensy shield
 #define  BAUD_RATE            230400
 #define  COLS                 16
 #define  ROWS                 16
@@ -62,11 +62,12 @@ const int columnPins[COLS] = {
 
 uint16_t minVals[ROW_FRAME] = {0};         // Array to store smallest values
 // q7_t frameValues[ROW_FRAME] = {0};      // Array to store ofset input values
+uint16_t frameValues[ROW_FRAME] = {0};      // Array to store ofset input values
 uint8_t bilinIntOutput[NEW_FRAME] = {0};   // Bilinear interpolation Output buffer
 uint8_t myPacket[ROW_FRAME] = {0};         // Array to store values to transmit
 
 arm_bilinear_interp_instance_q7 S;
-image_t       Image;
+image_t       frame;
 list_t        BlobOut;
 rectangle_t   Roi;
 thresholds_t  Thresholds;

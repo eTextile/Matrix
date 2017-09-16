@@ -2,8 +2,11 @@
    Copyright (c) 2013-2017 Ibrahim Abdelkader <iabdalkader@openmv.io> & Kwabena W. Agyeman <kwagyeman@openmv.io>
    This work is licensed under the MIT license, see the file LICENSE for details.
 */
-#include "blob.h"
+
 #include <stdint.h>
+
+#include "blob.h"
+#include "collections.h" // bitmap_t
 
 typedef struct xylf {
   int16_t x, y, l, r;
@@ -23,7 +26,7 @@ bool rectangle_overlap(rectangle_t *ptr0, rectangle_t *ptr1) {
   return (x0 < (x1 + w1)) && (y0 < (y1 + h1)) && (x1 < (x0 + w0)) && (y1 < (y0 + h0));
 }
 
-void rectangle_united(rectangle_t *dst, rectangle_t *src) {
+void rectangle_united(rectangle_t *src, rectangle_t *dst) {
   int leftX = IM_MIN(dst->x, src->x);
   int topY = IM_MIN(dst->y, src->y);
   int rightX = IM_MAX(dst->x + dst->w, src->x + src->w);
@@ -49,10 +52,12 @@ void find_blobs(
 ) {
 
   bitmap_t bitmap; // Create the bitmap_t instance
-  bitmap_alloc(&bitmap, ptr->w * ptr->h); // Allocate memody for the bitmap_t instance
+  bitmap_alloc(&bitmap, ptr->w * ptr->h); // Allocate memody for the bitmap_t instance with fb_alloc0()
+  
   lifo_t lifo;
   size_t lifo_len;
-  lifo_alloc_all(&lifo, &lifo_len, sizeof(xylf_t)); // Allocate memody for the lifo buffer
+  lifo_alloc_all(&lifo, &lifo_len, sizeof(xylf_t)); // Allocate memody for the lifo buffer // TODO : 
+  
   list_init(out, sizeof(find_blobs_list_lnk_data_t));
 
   size_t code = 0;
@@ -85,12 +90,14 @@ void find_blobs(
         // Scanline Flood Fill Algorithm //
 
         for (;;) {
+          
           int left = x, right = x;
-          uint8_t *row = IMAGE_COMPUTE_GRAYSCALE_PIXEL_ROW_PTR(ptr, y);  // Déclaration
-          size_t index = BITMAP_COMPUTE_ROW_INDEX(ptr, y);
+          
+          uint8_t *row = IMAGE_COMPUTE_GRAYSCALE_PIXEL_ROW_PTR(ptr, y);  // IMAGE_COMPUTE_GRAYSCALE_PIXEL_ROW_PTR = ((uint8_t *) ptr->data) + (ptr->w * y)
+          size_t index = BITMAP_COMPUTE_ROW_INDEX(ptr, y);               // BITMAP_COMPUTE_ROW_INDEX = (ptr->w)* y
 
           while ((left > roi->x)
-                 && (!bitmap_bit_get(&bitmap, BITMAP_COMPUTE_INDEX(index, left - 1)))
+                 && (!bitmap_bit_get(&bitmap, BITMAP_COMPUTE_INDEX(index, left - 1))) // BITMAP_COMPUTE_INDEX = row_index + x
                  && GRAYSCALE_THRESHOLD(IMAGE_GET_GRAYSCALE_PIXEL_FAST(row, left - 1), &thresholds, invert)) {
             left--;
           }
@@ -117,8 +124,9 @@ void find_blobs(
           }
 
           bool break_out = false;
+          
           for (;;) {
-            if (lifo_size(&lifo) < lifo_len) {
+            if (lifo_size(&lifo) < lifo_len) { 
 
               if (y > roi->y) {
                 row = IMAGE_COMPUTE_GRAYSCALE_PIXEL_ROW_PTR(ptr, y - 1);
@@ -265,7 +273,7 @@ void find_blobs(
 
           if (rectangle_overlap(&(lnk_blob.rect), &temp)) {
             // && ((merge_cb_arg == NULL) || merge_cb(merge_cb_arg, &lnk_blob, &tmp_blob))) {
-            rectangle_united(&(lnk_blob.rect), &(tmp_blob.rect));
+            rectangle_united(&(tmp_blob.rect), &(lnk_blob.rect));
             lnk_blob.centroid.x = ((lnk_blob.centroid.x * lnk_blob.pixels) + (tmp_blob.centroid.x * tmp_blob.pixels)) / (lnk_blob.pixels + tmp_blob.pixels);
             lnk_blob.centroid.y = ((lnk_blob.centroid.y * lnk_blob.pixels) + (tmp_blob.centroid.y * tmp_blob.pixels)) / (lnk_blob.pixels + tmp_blob.pixels);
             // float sin_mean = ((sinf(lnk_blob.rotation) * lnk_blob.pixels) + (sinf(tmp_blob.rotation) * tmp_blob.pixels)) / (lnk_blob.pixels + tmp_blob.pixels);

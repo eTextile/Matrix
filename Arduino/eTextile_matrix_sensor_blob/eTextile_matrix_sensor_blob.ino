@@ -19,14 +19,14 @@ void setup() {
     pinMode(rowPins[ROWS], INPUT);        // Set rows pins in high-impedance state
   }
 
-  S.numCols = COLS;
-  S.numRows = ROWS;
-  S.pData = &frameValues[0];
+  // S.numCols = COLS;
+  // S.numRows = ROWS;
+  // S.pData = &frameValues[0];
 
-  Image.w = COLS * SCALE;
-  Image.h = ROWS * SCALE;
-  Image.pixels = &bilinIntOutput[0];
-  Image.data = &bilinIntOutput[0]; // Do we nead it?
+  frame.w = COLS;
+  frame.h = ROWS;
+  frame.pixels = ; // ?
+  frame.data = &frameValues[0];
 
   Roi.x = 0;
   Roi.y = 0;
@@ -55,56 +55,64 @@ void loop() {
           calibrate(minVals, sensorID, rowValue);
         } else {
           uint16_t value = rowValue - minVals[sensorID]; // Aplay the calibration ofset
-          if (value < 0) value = 0;
-          // frameValues[sensorID] = value;
+
+          if (value >= 0) {
+            frameValues[sensorID] = value;
+          } else {
+            //
+          }
+
         }
       }
-      pinMode(rowPins[row], INPUT); // Set row pin in high-impedance state
-      // digitalWrite(rowPins[row], LOW); // Set row pin to GND
     }
-    // scan = false;
+    pinMode(rowPins[row], INPUT); // Set row pin in high-impedance state
+    // digitalWrite(rowPins[row], LOW); // Set row pin to GND (TO TEST!)
   }
+  // scan = false;
+}
+/*
   int pos = 0;
-
   for (float posY = 0; posY < COLS; posY += INC) {
-    for (float posX = 0; posX < ROWS; posX += INC) {
-      // bilinIntOutput[pos] = arm_bilinear_interp_q7(&S, posX, posY);
-      pos++;
-    }
+  for (float posX = 0; posX < ROWS; posX += INC) {
+    bilinIntOutput[pos] = arm_bilinear_interp_q7(&S, posX, posY);
+    pos++;
   }
+  }
+*/
 
-  find_blobs(
-    &BlobOut,      // list_t *out
-    &Image,        // image_t *ptr
-    &Roi,          // rectangle_t *roi
-    &Thresholds,   // thresholds_t *thresholds
-    false,         // bool invert
-    6,             // unsigned int area_threshold
-    MIN_BLOB_PIX,  // unsigned int pixels_threshold
-    true ,         // bool merge
-    0              // int margin
-    // ?,             // bool (*threshold_cb)(void*, find_blobs_list_lnk_data_t*)
-    // ?,             // void *threshold_cb_arg
-    // ?,             // bool (*merge_cb)(void*, find_blobs_list_lnk_data_t*, find_blobs_list_lnk_data_t*)
-    // ?              // void *merge_cb_arg
-  );
+find_blobs(
+  &BlobOut,      // list_t *out
+  &frame,        // image_t *ptr
+  &Roi,          // rectangle_t *roi
+  &Thresholds,   // thresholds_t *thresholds
+  false,         // bool invert
+  6,             // unsigned int area_threshold
+  MIN_BLOB_PIX,  // unsigned int pixels_threshold
+  false,         // bool merge
+  0              // int margin
+  // ?,             // bool (*threshold_cb)(void*, find_blobs_list_lnk_data_t*)
+  // ?,             // void *threshold_cb_arg
+  // ?,             // bool (*merge_cb)(void*, find_blobs_list_lnk_data_t*, find_blobs_list_lnk_data_t*)
+  // ?              // void *merge_cb_arg
+);
 
-  Serial.println("Frame compleat");
-  /*
-    for (list_lnk_t *it = iterator_start_from_head(&BlobOut); it; it = iterator_next(it)) {
-    find_blobs_list_lnk_data_t lnk_data;
-    iterator_get(&BlobOut, it, &lnk_data);
-    Serial.print(lnk_data.centroid.x);
-    Serial.print("_");
-    Serial.print(lnk_data.centroid.y);
-    }
-  */
-  // The update() method attempts to read in
-  // any incoming serial data and emits packets via
-  // the user's onPacket(const uint8_t* buffer, size_t size)
-  // method registered with the setPacketHandler() method.
-  // The update() method should be called at the end of the loop().
-  // serial.update();
+Serial.println("Frame compleat");
+
+for (list_lnk_t *it = iterator_start_from_head(&BlobOut); it; it = iterator_next(it)) {
+  find_blobs_list_lnk_data_t lnk_data;
+  iterator_get(&BlobOut, it, &lnk_data);
+  Serial.print(lnk_data.centroid.x);
+  Serial.print("_");
+  Serial.print(lnk_data.centroid.y);
+  Serial.print("\t");
+}
+
+// The update() method attempts to read in
+// any incoming serial data and emits packets via
+// the user's onPacket(const uint8_t* buffer, size_t size)
+// method registered with the setPacketHandler() method.
+// The update() method should be called at the end of the loop().
+// serial.update();
 }
 
 void calibrate(uint16_t sumArray[], uint16_t id, uint16_t val) {

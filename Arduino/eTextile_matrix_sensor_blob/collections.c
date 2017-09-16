@@ -2,7 +2,9 @@
    Copyright (c) 2013-2017 Ibrahim Abdelkader <iabdalkader@openmv.io> & Kwabena W. Agyeman <kwagyeman@openmv.io>
    This work is licensed under the MIT license, see the file LICENSE for details.
 */
+
 #include "collections.h"
+#include "fb_alloc.h"
 
 #define CHAR_BITS (sizeof(char) * 8)
 #define CHAR_MASK (CHAR_BITS - 1)
@@ -33,7 +35,7 @@ bool bitmap_bit_get(bitmap_t *ptr, size_t index) {
 
 void lifo_alloc_all(lifo_t *ptr, size_t *size, size_t data_len) {
   uint32_t tmp_size;
-  ptr->data = (char *) fb_alloc_all(&tmp_size);
+  ptr->data = (char *) fb_alloc_all(&tmp_size); // 
   ptr->data_len = data_len;
   ptr->size = tmp_size / data_len;
   ptr->len = 0;

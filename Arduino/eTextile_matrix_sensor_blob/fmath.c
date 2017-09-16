@@ -4,8 +4,8 @@
    This work is licensed under the MIT license, see the file LICENSE for details.
 
    Fast approximate math functions.
-
 */
+
 #include "fmath.h"
 
 #define M_PI    3.14159265f

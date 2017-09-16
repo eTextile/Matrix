@@ -4,19 +4,17 @@
    This work is licensed under the MIT license, see the file LICENSE for details.
 
    Memory allocation functions.
-
 */
-// #include <mp.h>
+
+// #include <mp.h> // OR https://github.com/micropython/micropython/wiki/Board-Teensy-3.1-3.5-3.6
 #include "xalloc.h"
 
-NORETURN static void xalloc_fail()
-{
+NORETURN static void xalloc_fail() {
   nlr_raise(mp_obj_new_exception_msg(&mp_type_MemoryError, "Out of Memory!!!"));
 }
 
 // returns null pointer without error if size==0
-void *xalloc(uint32_t size)
-{
+void *xalloc(uint32_t size) {
   void *mem = gc_alloc(size, false);
   if (size && (mem == NULL)) {
     xalloc_fail();
@@ -25,8 +23,8 @@ void *xalloc(uint32_t size)
 }
 
 // returns null pointer without error if size==0
-void *xalloc_try_alloc(uint32_t size)
-{ MP_STATE_MEM(gc_lock_depth)++;
+void *xalloc_try_alloc(uint32_t size) {
+  MP_STATE_MEM(gc_lock_depth)++;
   void *mem = gc_alloc(size, false);
   if (size && (mem == NULL)) {
     return NULL;
@@ -35,8 +33,7 @@ void *xalloc_try_alloc(uint32_t size)
 }
 
 // returns null pointer without error if size==0
-void *xalloc0(uint32_t size)
-{
+void *xalloc0(uint32_t size) {
   void *mem = gc_alloc(size, false);
   if (size && (mem == NULL)) {
     xalloc_fail();
@@ -46,19 +43,6 @@ void *xalloc0(uint32_t size)
 }
 
 // returns without error if mem==null
-void xfree(void *mem)
-{
+void xfree(void *mem) {
   gc_free(mem);
-}
-
-// returns null pointer without error if size==0
-// allocs if mem==null and size!=0
-// frees if mem!=null and size==0
-void *xrealloc(void *mem, uint32_t size)
-{
-  mem = gc_realloc(mem, size, true);
-  if (size && (mem == NULL)) {
-    xalloc_fail();
-  }
-  return mem;
 }

@@ -2,6 +2,7 @@
    Copyright (c) 2013-2017 Ibrahim Abdelkader <iabdalkader@openmv.io> & Kwabena W. Agyeman <kwagyeman@openmv.io>
    This work is licensed under the MIT license, see the file LICENSE for details.
 */
+
 #ifndef __BLOB_H__
 #define __BLOB_H__
 
@@ -50,8 +51,8 @@ typedef struct image {
   uint8_t w;
   uint8_t h;
   union {
-    uint8_t *pixels;
-    uint8_t *data;
+    uint16_t *pixels;
+    uint16_t *data;
   };
 } image_t;
 
