@@ -45,8 +45,7 @@ void loop() {
 
   if (scan) {
     for (uint8_t row = 0; row < ROWS; row++) {
-      // Set row pin as output + 3.3V
-      pinMode(rowPins[row], OUTPUT);
+      pinMode(rowPins[row], OUTPUT);  // Set row pin as output
       digitalWrite(rowPins[row], HIGH);
       for (uint8_t column = 0; column < COLS; column++) {
         uint16_t rowValue = analogRead(columnPins[column]); // Read the sensor value

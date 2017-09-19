@@ -15,7 +15,7 @@ NORETURN static void xalloc_fail() {
 
 // returns null pointer without error if size==0
 void *xalloc(uint32_t size) {
-  void *mem = gc_alloc(size, false);
+  void *mem = gc_alloc(size, false); // 
   if (size && (mem == NULL)) {
     xalloc_fail();
   }

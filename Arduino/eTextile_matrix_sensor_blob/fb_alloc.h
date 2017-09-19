@@ -12,6 +12,9 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <stdint.h>
+#include <string.h>
+
+#include "framebuffer.h"
 
 void *fb_alloc(uint32_t size); // FIXME
 void *fb_alloc0(uint32_t size); // FIXME

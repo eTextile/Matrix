@@ -10,6 +10,7 @@
 #define __XALLOC_H__
 
 #include <stdint.h>
+#include <string.h>
 
 void *xalloc(uint32_t size);
 void *xalloc_try_alloc(uint32_t size);

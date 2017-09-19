@@ -14,7 +14,7 @@
 
 void bitmap_alloc(bitmap_t *ptr, size_t size) {
   ptr->size = size;
-  ptr->data = (char *) fb_alloc0(((size + CHAR_MASK) >> CHAR_SHIFT) * sizeof(char)); // Suppres fb_alloc0()
+  ptr->data = (char *) fb_alloc0(((size + CHAR_MASK) >> CHAR_SHIFT) * sizeof(char)); // Suppress fb_alloc0()
 }
 
 void bitmap_free(bitmap_t *ptr) {
