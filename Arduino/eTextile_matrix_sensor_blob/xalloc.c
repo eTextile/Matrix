@@ -14,7 +14,7 @@ static void xalloc_fail() {
 
 // returns null pointer without error if size==0
 void *xalloc(uint32_t size) {
-  void *mem = gc_alloc(size, false); //
+  void *mem = gc_alloc(size, false); // TODO: repace it!
   if (size && (mem == NULL)) {
     xalloc_fail();
   }
@@ -23,5 +23,5 @@ void *xalloc(uint32_t size) {
 
 // returns without error if mem==null
 void xfree(void *mem) {
-  gc_free(mem);
+  gc_free(mem); // TODO: repace it!
 }

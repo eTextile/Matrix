@@ -1,19 +1,19 @@
 /*
- * This file is part of the OpenMV project.
- * Copyright (c) 2013/2014 Ibrahim Abdelkader <i.abdalkader@gmail.com>
- * This work is licensed under the MIT license, see the file LICENSE for details.
- *
- * Framebuffer stuff.
- *
- */
+   This file is part of the OpenMV project.
+   Copyright (c) 2013/2014 Ibrahim Abdelkader <i.abdalkader@gmail.com>
+   This work is licensed under the MIT license, see the file LICENSE for details.
+
+   Framebuffer stuff.
+*/
+
 #ifndef __FRAMEBUFFER_H__
 #define __FRAMEBUFFER_H__
 
 #include <stdint.h>
 
 typedef struct framebuffer {
-    int w,h;
-    uint16_t pixels[];
+  int w, h;
+  uint16_t pixels[];
 } framebuffer_t;
 
 extern framebuffer_t *fb_framebuffer;

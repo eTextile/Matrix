@@ -46,8 +46,12 @@
 #define  ROW_FRAME            ((uint16_t)(COLS * ROWS))
 #define  NEW_FRAME            ((uint16_t)(COLS * ROWS * SCALE))
 #define  CALIBRATION_CYCLES   4
-#define  MIN_BLOB_PIX         4   // Only blobs that with more pixels than 4
+#define  MIN_BLOB_PIX         4   // Set the minimum blob pixels
+#define  MIN_BLOB_SIZE        9   // Set the minimum blob size
+
 #define  A0_PIN               A0  // The output of multiplexerA (SIG pin) is connected to Arduino Analog pin 0
+
+#define THRESHOLD             20
 
 // Digital pins array
 // See the attached home made PCB (Eagle file) to understand the Digital and Analog pin mapping
@@ -73,7 +77,7 @@ arm_bilinear_interp_instance_q7 S;
 image_t       frame;
 list_t        BlobOut;
 rectangle_t   Roi;
-thresholds_t  Thresholds;
+
 
 void onPacket(const uint8_t *buffer, size_t size);
 void calibrate(const uint16_t *sumArray, uint16_t id, uint16_t val);

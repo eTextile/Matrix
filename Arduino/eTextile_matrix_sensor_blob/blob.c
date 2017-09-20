@@ -41,37 +41,33 @@ void find_blobs(
   list_t *out,
   image_t *ptr,
   rectangle_t *roi,
-  thresholds_t *thresholds,
-  bool invert,
-  unsigned int area_threshold,
-  unsigned int pixels_threshold,
+  unsigned int pixelThreshold,
+  unsigned int minBlobSize,
+  unsigned int minBlobPix,
   bool merge,
   int margin
-  // bool (*threshold_cb)(void*, find_blobs_list_lnk_data_t*), void *threshold_cb_arg,
-  // bool (*merge_cb)(void*, find_blobs_list_lnk_data_t*, find_blobs_list_lnk_data_t*), void *merge_cb_arg
 ) {
 
   bitmap_t bitmap; // Create the bitmap_t instance
   bitmap_alloc(&bitmap, ptr->w * ptr->h); // Allocate memody for the bitmap_t instance with fb_alloc0()
-  
+
   lifo_t lifo;
   size_t lifo_len;
-  lifo_alloc_all(&lifo, &lifo_len, sizeof(xylf_t)); // Allocate memody for the lifo buffer // TODO : 
-  
+  lifo_alloc_all(&lifo, &lifo_len, sizeof(xylf_t)); // Allocate memody for the lifo buffer
+
   list_init(out, sizeof(find_blobs_list_lnk_data_t));
 
   size_t code = 0;
 
   for (int y = roi->y, yy = roi->y + roi->h; y < yy; y++) {
 
-    uint8_t *row_ptr = IMAGE_COMPUTE_GRAYSCALE_PIXEL_ROW_PTR(ptr, y); // image->data + image->w * y
-
-    size_t row_index = BITMAP_COMPUTE_ROW_INDEX(ptr, y); // image->w * y
+    uint8_t *row_ptr = IMAGE_COMPUTE_ROW_PTR(ptr, y);         // return : (uint8_t *) ptr->data + ptr->w * y
+    size_t row_index = BITMAP_COMPUTE_ROW_INDEX(ptr, y);      // return : ptr->w * y
 
     for (int x = roi->x, xx = roi->x + roi->w; x < xx; x++) {
 
       if ((!bitmap_bit_get(&bitmap, BITMAP_COMPUTE_INDEX(row_index, x)))
-          && GRAYSCALE_THRESHOLD(IMAGE_GET_GRAYSCALE_PIXEL_FAST(row_ptr, x), &thresholds, invert)) {
+          && GRAYSCALE_THRESHOLD(IMAGE_GET_GRAYSCALE_PIXEL_FAST(row_ptr, x), pixelThreshold)) {
 
         int old_x = x;
         int old_y = y;
@@ -83,28 +79,24 @@ void find_blobs(
         int blob_pixels = 0;
         int blob_cx = 0;
         int blob_cy = 0;
-        // long long blob_a = 0;
-        // long long blob_b = 0;
-        // long long blob_c = 0;
 
-        // Scanline Flood Fill Algorithm //
+        ////////// Scanline Flood Fill Algorithm //////////
 
         for (;;) {
-          
           int left = x, right = x;
-          
-          uint8_t *row = IMAGE_COMPUTE_GRAYSCALE_PIXEL_ROW_PTR(ptr, y);  // IMAGE_COMPUTE_GRAYSCALE_PIXEL_ROW_PTR = ((uint8_t *) ptr->data) + (ptr->w * y)
-          size_t index = BITMAP_COMPUTE_ROW_INDEX(ptr, y);               // BITMAP_COMPUTE_ROW_INDEX = (ptr->w)* y
+
+          uint8_t *row = IMAGE_COMPUTE_ROW_PTR(ptr, y);        // return : (uint8_t *) ptr->data + ptr->w * y
+          size_t index = BITMAP_COMPUTE_ROW_INDEX(ptr, y);     // return : ptr->w * y
 
           while ((left > roi->x)
-                 && (!bitmap_bit_get(&bitmap, BITMAP_COMPUTE_INDEX(index, left - 1))) // BITMAP_COMPUTE_INDEX = row_index + x
-                 && GRAYSCALE_THRESHOLD(IMAGE_GET_GRAYSCALE_PIXEL_FAST(row, left - 1), &thresholds, invert)) {
+                 && (!bitmap_bit_get(&bitmap, BITMAP_COMPUTE_INDEX(index, left - 1))) // BITMAP_COMPUTE_INDEX return : index + x
+                 && GRAYSCALE_THRESHOLD(IMAGE_GET_GRAYSCALE_PIXEL_FAST(row, left - 1), pixelThreshold)) {
             left--;
           }
 
           while ((right < (roi->x + roi->w - 1))
                  && (!bitmap_bit_get(&bitmap, BITMAP_COMPUTE_INDEX(index, right + 1)))
-                 && GRAYSCALE_THRESHOLD(IMAGE_GET_GRAYSCALE_PIXEL_FAST(row, right + 1), &thresholds, invert)) {
+                 && GRAYSCALE_THRESHOLD(IMAGE_GET_GRAYSCALE_PIXEL_FAST(row, right + 1), pixelThreshold)) {
             right++;
           }
 
@@ -118,24 +110,21 @@ void find_blobs(
             blob_pixels += 1;
             blob_cx += i;
             blob_cy += y;
-            // blob_a += i * i;
-            // blob_b += i * y;
-            // blob_c += y * y;
           }
 
           bool break_out = false;
-          
+
           for (;;) {
-            if (lifo_size(&lifo) < lifo_len) { 
+            if (lifo_size(&lifo) < lifo_len) {
 
               if (y > roi->y) {
-                row = IMAGE_COMPUTE_GRAYSCALE_PIXEL_ROW_PTR(ptr, y - 1);
-                index = BITMAP_COMPUTE_ROW_INDEX(ptr, y - 1);
+                row = IMAGE_COMPUTE_ROW_PTR(ptr, y + 1);      // return : (uint8_t *) ptr->data + ptr->w * y
+                index = BITMAP_COMPUTE_ROW_INDEX(ptr, y + 1); // return : ptr->w * y
 
                 bool recurse = false;
                 for (int i = left; i <= right; i++) {
                   if ((!bitmap_bit_get(&bitmap, BITMAP_COMPUTE_INDEX(index, i)))
-                      && GRAYSCALE_THRESHOLD(IMAGE_GET_GRAYSCALE_PIXEL_FAST(row, i), &thresholds, invert)) {
+                      && GRAYSCALE_THRESHOLD(IMAGE_GET_GRAYSCALE_PIXEL_FAST(row, i), pixelThreshold)) {
                     xylf_t context;
                     context.x = x;
                     context.y = y;
@@ -154,14 +143,14 @@ void find_blobs(
               }
 
               if (y < (roi->y + roi->h - 1)) {
-                row = IMAGE_COMPUTE_GRAYSCALE_PIXEL_ROW_PTR(ptr, y + 1);
-                index = BITMAP_COMPUTE_ROW_INDEX(ptr, y + 1);
+                row = IMAGE_COMPUTE_ROW_PTR(ptr, y + 1);      // return : (uint8_t *) ptr->data + ptr->w * y
+                index = BITMAP_COMPUTE_ROW_INDEX(ptr, y + 1); // return : ptr->w * y
 
                 bool recurse = false;
 
                 for (int i = left; i <= right; i++) {
                   if ((!bitmap_bit_get(&bitmap, BITMAP_COMPUTE_INDEX(index, i)))
-                      && GRAYSCALE_THRESHOLD(IMAGE_GET_GRAYSCALE_PIXEL_FAST(row, i), &thresholds, invert)) {
+                      && GRAYSCALE_THRESHOLD(IMAGE_GET_GRAYSCALE_PIXEL_FAST(row, i), pixelThreshold)) {
                     xylf_t context;
                     context.x = x;
                     context.y = y;
@@ -212,8 +201,7 @@ void find_blobs(
         lnk_blob.code = 1 << code;
         lnk_blob.count = 1;
 
-        if (((lnk_blob.rect.w * lnk_blob.rect.h) >= area_threshold) && (lnk_blob.pixels >= pixels_threshold)) {
-          // && ((threshold_cb_arg == NULL) || threshold_cb(threshold_cb_arg, &lnk_blob))) {
+        if (((lnk_blob.rect.w * lnk_blob.rect.h) >= minBlobSize) && (lnk_blob.pixels >= minBlobPix)) {
           list_push_back(out, &lnk_blob);
         }
 
@@ -222,7 +210,7 @@ void find_blobs(
       }
     }
   }
-  code += 1;
+  code++;
 
   lifo_free(&lifo);
   bitmap_free(&bitmap);
@@ -253,7 +241,6 @@ void find_blobs(
           temp.h = IM_MAX(IM_MIN(tmp_blob.rect.h + (margin * 2), INT16_MAX), 0);
 
           if (rectangle_overlap(&(lnk_blob.rect), &temp)) {
-            // && ((merge_cb_arg == NULL) || merge_cb(merge_cb_arg, &lnk_blob, &tmp_blob))) {
             rectangle_united(&(tmp_blob.rect), &(lnk_blob.rect));
             lnk_blob.centroid.x = ((lnk_blob.centroid.x * lnk_blob.pixels) + (tmp_blob.centroid.x * tmp_blob.pixels)) / (lnk_blob.pixels + tmp_blob.pixels);
             lnk_blob.centroid.y = ((lnk_blob.centroid.y * lnk_blob.pixels) + (tmp_blob.centroid.y * tmp_blob.pixels)) / (lnk_blob.pixels + tmp_blob.pixels);
@@ -267,7 +254,6 @@ void find_blobs(
         }
         list_push_back(&out_temp, &lnk_blob);
       }
-
       list_copy(out, &out_temp);
 
       if (!merge_occured) {

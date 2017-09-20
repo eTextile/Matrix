@@ -31,18 +31,11 @@ void rectangle_united(rectangle_t *dst, rectangle_t *src);
 
 ////////////// Threshold stuff //////////////
 
-typedef struct thresholds {
-  uint8_t LMin;
-  uint8_t LMax;
-} thresholds_t;
-
-
-#define GRAYSCALE_THRESHOLD(pixel, thresholds, invert) \
+#define GRAYSCALE_THRESHOLD(pixel, pixelThreshold) \
   ({ \
     __typeof__(pixel) _pixel = (pixel); \
-    __typeof__(*thresholds) _thresholds = (*thresholds); \
-    __typeof__(invert) _invert = (invert); \
-    ((_thresholds->LMin <= _pixel) && (_pixel <= _thresholds->LMax)) ^ _invert; \
+    __typeof__(pixelThreshold) _pixelThresholds = (pixelThreshold); \
+    (_pixelThresholds <= _pixel); \
   })
 
 ////////////// Image stuff //////////////
@@ -51,27 +44,21 @@ typedef struct image {
   uint8_t w;
   uint8_t h;
   union {
+    // uint8_t *pixels;
+    // uint8_t *data;
     uint16_t *pixels;
     uint16_t *data;
   };
 } image_t;
 
-#define IMAGE_GET_GRAYSCALE_PIXEL(image, x, y) \
-  ({ \
-    __typeof__ (image) _image = (image); \
-    __typeof__ (x) _x = (x); \
-    __typeof__ (y) _y = (y); \
-    ((uint8_t *) _image->data)[(_image->w * _y) + _x]; \
-  })
-
 ////////////// Fast stuff //////////////
 
-#define IMAGE_COMPUTE_GRAYSCALE_PIXEL_ROW_PTR(image, y) \
+#define IMAGE_COMPUTE_ROW_PTR(image, y) \
   ({ \
     __typeof__ (image) _image = (image); \
     __typeof__ (y) _y = (y); \
     ((uint8_t *) _image->data) + (_image->w * _y); \
-  })
+})
 
 #define IMAGE_GET_GRAYSCALE_PIXEL_FAST(row_ptr, x) \
   ({ \
@@ -93,14 +80,11 @@ void find_blobs(
   list_t *out,
   image_t *ptr,
   rectangle_t *roi,
-  thresholds_t *thresholds,
-  bool invert,
-  unsigned int area_threshold,
-  unsigned int pixels_threshold,
+  unsigned int pixelThreshold,
+  unsigned int minBlobSize,
+  unsigned int minBlobPix,
   bool merge,
   int margin
-  // bool (*threshold_cb)(void*, find_blobs_list_lnk_data_t*), void *threshold_cb_arg,
-  // bool (*merge_cb)(void*, find_blobs_list_lnk_data_t*, find_blobs_list_lnk_data_t*), void *merge_cb_arg
 );
 
 #endif // __BLOB_H__

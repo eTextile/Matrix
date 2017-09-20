@@ -39,7 +39,7 @@ bool bitmap_bit_get(bitmap_t *ptr, size_t index);
 
 typedef struct lifo {
   size_t len, size, data_len;
-  char *data; // Do I nead to set it to uint16_t for 10 bits values ?
+  char *data;
 } lifo_t;
 
 void lifo_alloc_all(lifo_t *ptr, size_t *size, size_t data_len);
@@ -52,7 +52,7 @@ void lifo_dequeue(lifo_t *ptr, void *data);
 
 typedef struct list_lnk {
   struct list_lnk *next_ptr, *prev_ptr;
-  char data[]; // TODO uint16_t
+  char data[];
 } list_lnk_t;
 
 typedef struct list {

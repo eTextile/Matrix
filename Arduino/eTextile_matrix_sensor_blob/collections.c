@@ -81,6 +81,10 @@ size_t list_size(list_t *ptr) {
   return ptr->size;
 }
 
+// list_push_back()
+// Adds a new element at the end of the list container, after its current last element.
+// The content of val is copied (or moved) to the new element.
+// This effectively increases the container size by one.
 void list_push_back(list_t *ptr, void *data) {
 
   list_lnk_t *tmp = (list_lnk_t *) xalloc(sizeof(list_lnk_t) + ptr->data_len); // TODO: replace xalloc!

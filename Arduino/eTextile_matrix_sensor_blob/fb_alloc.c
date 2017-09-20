@@ -38,6 +38,7 @@ void *fb_alloc(uint32_t size) {
   return result;
 }
 
+// Allocate a memory stack and write it all to 0
 // returns null pointer without error if passed size==0
 void *fb_alloc0(uint32_t size) {
   void *mem = fb_alloc(size);
