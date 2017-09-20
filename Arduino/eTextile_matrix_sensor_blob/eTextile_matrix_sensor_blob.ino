@@ -8,7 +8,7 @@ void setup() {
 
   // serial.setPacketHandler(&onPacket); // We must specify a packet handler method so that
   // serial.begin(BAUD_RATE);            // Start the serial module
-  Serial.begin(BAUD_RATE);
+  Serial.begin(BAUD_RATE);               // Arduino serial standard library
 
   analogReadRes(10);                     // Set the ADC converteur resolution to 10 bit
   pinMode(BUILTIN_LED, OUTPUT);          // Set rows pins in high-impedance state
@@ -69,15 +69,16 @@ void loop() {
   }
   // scan = false;
 }
-/*
-  int pos = 0;
-  for (float posY = 0; posY < COLS; posY += INC) {
+int pos = 0;
+for (float posY = 0; posY < COLS; posY += INC) {
   for (float posX = 0; posX < ROWS; posX += INC) {
+#ifdef CORE_TEENSY
     bilinIntOutput[pos] = arm_bilinear_interp_q7(&S, posX, posY);
+#endif // __CORE_TEENSY__
     pos++;
   }
-  }
-*/
+}
+
 
 find_blobs(
   &BlobOut,      // list_t *out

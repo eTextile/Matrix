@@ -86,7 +86,6 @@ typedef struct find_blobs_list_lnk_data {
   rectangle_t rect;
   uint32_t pixels;
   point_t centroid;
-  // float rotation;
   uint16_t code, count;
 } find_blobs_list_lnk_data_t;
 

@@ -11,11 +11,11 @@
 extern char _fballoc;
 static char *pointer = &_fballoc;
 
-/*
-  NORETURN void fb_alloc_fail() {
-  nlr_raise(mp_obj_new_exception_msg(&mp_type_MemoryError, "FB Alloc Collision!!!"));
-  }
-*/
+
+void fb_alloc_fail() {
+  // nlr_raise(mp_obj_new_exception_msg(&mp_type_MemoryError, "FB Alloc Collision!!!"));
+  // Serial.println("FB Alloc Collision!");
+}
 
 // returns null pointer without error if size==0
 void *fb_alloc(uint32_t size) {

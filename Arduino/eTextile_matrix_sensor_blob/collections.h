@@ -70,6 +70,5 @@ void list_pop_front(list_t *ptr, void *data);
 
 list_lnk_t *iterator_start_from_head(list_t *ptr);
 list_lnk_t *iterator_next(list_lnk_t *lnk);
-void iterator_get(list_t *ptr, list_lnk_t *lnk, void *data);
 
 #endif /* __COLLECTIONS_H__ */

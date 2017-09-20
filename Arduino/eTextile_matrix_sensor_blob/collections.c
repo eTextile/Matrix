@@ -4,7 +4,6 @@
 */
 
 #include "collections.h"
-#include "fb_alloc.h"
 
 #define CHAR_BITS (sizeof(char) * 8)
 #define CHAR_MASK (CHAR_BITS - 1)
@@ -14,7 +13,7 @@
 
 void bitmap_alloc(bitmap_t *ptr, size_t size) {
   ptr->size = size;
-  ptr->data = (char *) fb_alloc0(((size + CHAR_MASK) >> CHAR_SHIFT) * sizeof(char)); // Suppress fb_alloc0()
+  ptr->data = (char *) fb_alloc0(((size + CHAR_MASK) >> CHAR_SHIFT) * sizeof(char));
 }
 
 void bitmap_free(bitmap_t *ptr) {
@@ -35,7 +34,7 @@ bool bitmap_bit_get(bitmap_t *ptr, size_t index) {
 
 void lifo_alloc_all(lifo_t *ptr, size_t *size, size_t data_len) {
   uint32_t tmp_size;
-  ptr->data = (char *) fb_alloc_all(&tmp_size); // 
+  ptr->data = (char *) fb_alloc_all(&tmp_size);
   ptr->data_len = data_len;
   ptr->size = tmp_size / data_len;
   ptr->len = 0;
@@ -84,7 +83,7 @@ size_t list_size(list_t *ptr) {
 
 void list_push_back(list_t *ptr, void *data) {
 
-  list_lnk_t *tmp = (list_lnk_t *) xalloc(sizeof(list_lnk_t) + ptr->data_len); // TODO Supp xalloc !
+  list_lnk_t *tmp = (list_lnk_t *) xalloc(sizeof(list_lnk_t) + ptr->data_len); // TODO: replace xalloc!
 
   memcpy(tmp->data, data, ptr->data_len);
 
@@ -102,16 +101,16 @@ void list_push_back(list_t *ptr, void *data) {
 }
 
 void list_pop_front(list_t *ptr, void *data) {
+  
   list_lnk_t *tmp = ptr->head_ptr;
 
   if (data) {
     memcpy(data, tmp->data, ptr->data_len);
   }
-
   tmp->next_ptr->prev_ptr = NULL;
   ptr->head_ptr = tmp->next_ptr;
   ptr->size -= 1;
-  xfree(tmp);
+  xfree(tmp); // TODO: replace xfree!
 }
 
 ////////////// Iterators //////////////
@@ -124,6 +123,3 @@ list_lnk_t *iterator_next(list_lnk_t *lnk) {
   return lnk->next_ptr;
 }
 
-void iterator_get(list_t *ptr, list_lnk_t *lnk, void *data) {
-  memcpy(data, lnk->data, ptr->data_len);
-}

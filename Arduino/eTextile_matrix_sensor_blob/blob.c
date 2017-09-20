@@ -6,7 +6,7 @@
 #include <stdint.h>
 
 #include "blob.h"
-#include "collections.h" // bitmap_t
+#include "collections.h"
 
 typedef struct xylf {
   int16_t x, y, l, r;
@@ -83,9 +83,9 @@ void find_blobs(
         int blob_pixels = 0;
         int blob_cx = 0;
         int blob_cy = 0;
-        long long blob_a = 0;
-        long long blob_b = 0;
-        long long blob_c = 0;
+        // long long blob_a = 0;
+        // long long blob_b = 0;
+        // long long blob_c = 0;
 
         // Scanline Flood Fill Algorithm //
 
@@ -118,9 +118,9 @@ void find_blobs(
             blob_pixels += 1;
             blob_cx += i;
             blob_cy += y;
-            blob_a += i * i;
-            blob_b += i * y;
-            blob_c += y * y;
+            // blob_a += i * i;
+            // blob_b += i * y;
+            // blob_c += y * y;
           }
 
           bool break_out = false;
@@ -198,25 +198,8 @@ void find_blobs(
           }
         }
 
-        // http://www.cse.usf.edu/~r1k/MachineVisionBook/MachineVision.files/MachineVision_Chapter2.pdf
-        // https://www.strchr.com/standard_deviation_in_one_pass
-        //
-        // a = sigma(x*x) + (mx*sigma(x)) + (mx*sigma(x)) + (sigma()*mx*mx)
-        // b = sigma(x*y) + (mx*sigma(y)) + (my*sigma(x)) + (sigma()*mx*my)
-        // c = sigma(y*y) + (my*sigma(y)) + (my*sigma(y)) + (sigma()*my*my)
-        //
-        // blob_a = sigma(x*x)
-        // blob_b = sigma(x*y)
-        // blob_c = sigma(y*y)
-        // blob_cx = sigma(x)
-        // blob_cy = sigma(y)
-        // blob_pixels = sigma()
-
         int mx = blob_cx / blob_pixels; // x centroid
         int my = blob_cy / blob_pixels; // y centroid
-        // int small_blob_a = blob_a - ((mx * blob_cx) + (mx * blob_cx)) + (blob_pixels * mx * mx);
-        // int small_blob_b = blob_b - ((mx * blob_cy) + (my * blob_cx)) + (blob_pixels * mx * my);
-        // int small_blob_c = blob_c - ((my * blob_cy) + (my * blob_cy)) + (blob_pixels * my * my);
 
         find_blobs_list_lnk_data_t lnk_blob;
         lnk_blob.rect.x = blob_x1;
@@ -226,7 +209,6 @@ void find_blobs(
         lnk_blob.pixels = blob_pixels;
         lnk_blob.centroid.x = mx;
         lnk_blob.centroid.y = my;
-        // lnk_blob.rotation = (small_blob_a != small_blob_c) ? (fast_atan2f(2 * small_blob_b, small_blob_a - small_blob_c) / 2.0f) : 0.0f;
         lnk_blob.code = 1 << code;
         lnk_blob.count = 1;
 
@@ -250,7 +232,6 @@ void find_blobs(
       bool merge_occured = false;
 
       list_t out_temp;
-
       list_init(&out_temp, sizeof(find_blobs_list_lnk_data_t));
 
       while (list_size(out)) {
@@ -276,9 +257,6 @@ void find_blobs(
             rectangle_united(&(tmp_blob.rect), &(lnk_blob.rect));
             lnk_blob.centroid.x = ((lnk_blob.centroid.x * lnk_blob.pixels) + (tmp_blob.centroid.x * tmp_blob.pixels)) / (lnk_blob.pixels + tmp_blob.pixels);
             lnk_blob.centroid.y = ((lnk_blob.centroid.y * lnk_blob.pixels) + (tmp_blob.centroid.y * tmp_blob.pixels)) / (lnk_blob.pixels + tmp_blob.pixels);
-            // float sin_mean = ((sinf(lnk_blob.rotation) * lnk_blob.pixels) + (sinf(tmp_blob.rotation) * tmp_blob.pixels)) / (lnk_blob.pixels + tmp_blob.pixels);
-            // float cos_mean = ((cosf(lnk_blob.rotation) * lnk_blob.pixels) + (cosf(tmp_blob.rotation) * tmp_blob.pixels)) / (lnk_blob.pixels + tmp_blob.pixels);
-            // lnk_blob.rotation = fast_atan2f(sin_mean, cos_mean);
             lnk_blob.pixels += tmp_blob.pixels; // won't overflow
             lnk_blob.code |= tmp_blob.code;
             lnk_blob.count = IM_MAX(IM_MIN(lnk_blob.count + tmp_blob.count, UINT16_MAX), 0);

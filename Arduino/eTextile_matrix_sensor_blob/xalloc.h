@@ -13,8 +13,6 @@
 #include <string.h>
 
 void *xalloc(uint32_t size);
-void *xalloc_try_alloc(uint32_t size);
-void *xalloc0(uint32_t size);
 void xfree(void *mem);
 
 #endif // __XALLOC_H__

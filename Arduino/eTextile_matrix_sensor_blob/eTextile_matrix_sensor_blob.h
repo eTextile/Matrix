@@ -66,7 +66,10 @@ uint16_t frameValues[ROW_FRAME] = {0};      // Array to store ofset input values
 uint8_t bilinIntOutput[NEW_FRAME] = {0};   // Bilinear interpolation Output buffer
 uint8_t myPacket[ROW_FRAME] = {0};         // Array to store values to transmit
 
+#ifdef CORE_TEENSY
 arm_bilinear_interp_instance_q7 S;
+#endif // __CORE_TEENSY__
+
 image_t       frame;
 list_t        BlobOut;
 rectangle_t   Roi;
