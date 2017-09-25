@@ -49,25 +49,24 @@ void find_blobs(
 ) {
 
   bitmap_t bitmap; // Create the bitmap_t instance
-  bitmap_alloc(&bitmap, ptr->w * ptr->h); // Allocate memody for the bitmap_t instance with fb_alloc0()
+  bitmap_alloc(&bitmap, ptr->w * ptr->h);   // Allocate memody for the bitmap_t instance with fb_alloc0()
 
   lifo_t lifo;
   size_t lifo_len;
-  lifo_alloc_all(&lifo, &lifo_len, sizeof(xylf_t)); // Allocate memody for the lifo buffer
-
+  lifo_alloc_all(&lifo, &lifo_len, sizeof(xylf_t));   // Allocate memody for the lifo buffer
   list_init(out, sizeof(find_blobs_list_lnk_data_t));
 
   size_t code = 0;
 
   for (int y = roi->y, yy = roi->y + roi->h; y < yy; y++) {
 
-    uint8_t *row_ptr = IMAGE_COMPUTE_ROW_PTR(ptr, y);         // return : (uint8_t *) ptr->data + ptr->w * y
-    size_t row_index = BITMAP_COMPUTE_ROW_INDEX(ptr, y);      // return : ptr->w * y
+    uint8_t *row_ptr = IMAGE_COMPUTE_ROW_PTR(ptr, y);         // Return pointer to image curent row
+    size_t row_index = BITMAP_COMPUTE_ROW_INDEX(ptr, y);      // Return bitmap curent row
 
     for (int x = roi->x, xx = roi->x + roi->w; x < xx; x++) {
 
       if ((!bitmap_bit_get(&bitmap, BITMAP_COMPUTE_INDEX(row_index, x)))
-          && GRAYSCALE_THRESHOLD(IMAGE_GET_GRAYSCALE_PIXEL_FAST(row_ptr, x), pixelThreshold)) {
+          && GRAYSCALE_THRESHOLD(IMAGE_GET_PIXEL_FAST(row_ptr, x), pixelThreshold)) {
 
         int old_x = x;
         int old_y = y;
@@ -80,23 +79,22 @@ void find_blobs(
         int blob_cx = 0;
         int blob_cy = 0;
 
-        ////////// Scanline Flood Fill Algorithm //////////
+        ////////// Scanline flood fill algorithm //////////
 
         for (;;) {
           int left = x, right = x;
 
-          uint8_t *row = IMAGE_COMPUTE_ROW_PTR(ptr, y);        // return : (uint8_t *) ptr->data + ptr->w * y
-          size_t index = BITMAP_COMPUTE_ROW_INDEX(ptr, y);     // return : ptr->w * y
+          uint16_t *row = IMAGE_COMPUTE_ROW_PTR(ptr, y);       // Return pointer to image curent row
+          size_t index = BITMAP_COMPUTE_ROW_INDEX(ptr, y);     // Return bitmap curent row
 
           while ((left > roi->x)
                  && (!bitmap_bit_get(&bitmap, BITMAP_COMPUTE_INDEX(index, left - 1))) // BITMAP_COMPUTE_INDEX return : index + x
-                 && GRAYSCALE_THRESHOLD(IMAGE_GET_GRAYSCALE_PIXEL_FAST(row, left - 1), pixelThreshold)) {
+                 && GRAYSCALE_THRESHOLD(IMAGE_GET_PIXEL_FAST(row, left - 1), pixelThreshold)) {
             left--;
           }
-
           while ((right < (roi->x + roi->w - 1))
                  && (!bitmap_bit_get(&bitmap, BITMAP_COMPUTE_INDEX(index, right + 1)))
-                 && GRAYSCALE_THRESHOLD(IMAGE_GET_GRAYSCALE_PIXEL_FAST(row, right + 1), pixelThreshold)) {
+                 && GRAYSCALE_THRESHOLD(IMAGE_GET_PIXEL_FAST(row, right + 1), pixelThreshold)) {
             right++;
           }
 
@@ -124,7 +122,7 @@ void find_blobs(
                 bool recurse = false;
                 for (int i = left; i <= right; i++) {
                   if ((!bitmap_bit_get(&bitmap, BITMAP_COMPUTE_INDEX(index, i)))
-                      && GRAYSCALE_THRESHOLD(IMAGE_GET_GRAYSCALE_PIXEL_FAST(row, i), pixelThreshold)) {
+                      && GRAYSCALE_THRESHOLD((row, i), pixelThreshold)) {
                     xylf_t context;
                     context.x = x;
                     context.y = y;
@@ -150,7 +148,7 @@ void find_blobs(
 
                 for (int i = left; i <= right; i++) {
                   if ((!bitmap_bit_get(&bitmap, BITMAP_COMPUTE_INDEX(index, i)))
-                      && GRAYSCALE_THRESHOLD(IMAGE_GET_GRAYSCALE_PIXEL_FAST(row, i), pixelThreshold)) {
+                      && GRAYSCALE_THRESHOLD(IMAGE_GET_PIXEL_FAST(row, i), pixelThreshold)) {
                     xylf_t context;
                     context.x = x;
                     context.y = y;

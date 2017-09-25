@@ -13,7 +13,7 @@
 
 void bitmap_alloc(bitmap_t *ptr, size_t size) {
   ptr->size = size;
-  ptr->data = (char *) fb_alloc0(((size + CHAR_MASK) >> CHAR_SHIFT) * sizeof(char));
+  ptr->data = (char *) fb_alloc0(((size + CHAR_MASK) >> CHAR_SHIFT) * sizeof(char)); // Need explanation!
 }
 
 void bitmap_free(bitmap_t *ptr) {
@@ -63,7 +63,6 @@ void lifo_dequeue(lifo_t *ptr, void *data) {
   ptr->len -= 1;
 }
 
-
 ////////////// List //////////////
 
 void list_init(list_t *ptr, size_t data_len) {
@@ -81,14 +80,13 @@ size_t list_size(list_t *ptr) {
   return ptr->size;
 }
 
-// list_push_back()
-// Adds a new element at the end of the list container, after its current last element.
-// The content of val is copied (or moved) to the new element.
-// This effectively increases the container size by one.
+/////////// list_push_back() ///////////
+// Adds a new element at the end of the list container.
+// The content of *data is added to the new element.
+// This increases the container size by one.
 void list_push_back(list_t *ptr, void *data) {
 
   list_lnk_t *tmp = (list_lnk_t *) xalloc(sizeof(list_lnk_t) + ptr->data_len); // TODO: replace xalloc!
-
   memcpy(tmp->data, data, ptr->data_len);
 
   if (ptr->size++) {

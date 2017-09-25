@@ -14,6 +14,6 @@ extern char _fb_base;
 framebuffer_t *fb_framebuffer = (framebuffer_t *) &_fb_base;
 
 uint32_t fb_buffer_size() {
-  // return (MAIN_FB()->w * MAIN_FB()->h) * sizeof(uint8_t); // We need uint16_t frame buffer to hold 10 bit values!
-  return (MAIN_FB()->w * MAIN_FB()->h) * sizeof(uint16_t);
+  // return (MAIN_FB()->w * MAIN_FB()->h) * sizeof(uint8_t);
+  return (MAIN_FB()->w * MAIN_FB()->h) * sizeof(uint16_t); // We need uint16_t frame buffer to hold 10 bit ADC values!
 }

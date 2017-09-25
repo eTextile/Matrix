@@ -43,12 +43,7 @@ void rectangle_united(rectangle_t *dst, rectangle_t *src);
 typedef struct image {
   uint8_t w;
   uint8_t h;
-  union {
-    // uint8_t *pixels;
-    // uint8_t *data;
-    uint16_t *pixels;
-    uint16_t *data;
-  };
+  uint16_t *data;
 } image_t;
 
 ////////////// Fast stuff //////////////
@@ -57,10 +52,10 @@ typedef struct image {
   ({ \
     __typeof__ (image) _image = (image); \
     __typeof__ (y) _y = (y); \
-    ((uint8_t *) _image->data) + (_image->w * _y); \
-})
+    ((uint16_t *) _image->data) + (_image->w * _y); \
+  })
 
-#define IMAGE_GET_GRAYSCALE_PIXEL_FAST(row_ptr, x) \
+#define IMAGE_GET_PIXEL_FAST(row_ptr, x) \
   ({ \
     __typeof__ (row_ptr) _row_ptr = (row_ptr); \
     __typeof__ (x) _x = (x); \

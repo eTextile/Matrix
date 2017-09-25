@@ -21,17 +21,16 @@ void setup() {
 
   // S.numCols = COLS;
   // S.numRows = ROWS;
-  // S.pData = &frameValues[0];
+  // S.pData = frameValues;
 
   frame.w = COLS;
   frame.h = ROWS;
-  frame.pixels = ; // ?
-  frame.data = &frameValues[0];
+  frame.data = frameValues;
 
   Roi.x = 0;
   Roi.y = 0;
-  Roi.w = COLS * SCALE;
-  Roi.h = ROWS * SCALE;
+  Roi.w = COLS;
+  Roi.h = ROWS;
 
   bootBlink(9);
 }
@@ -46,38 +45,33 @@ void loop() {
     for (uint8_t column = 0; column < COLS; column++) {
       uint16_t rowValue = analogRead(columnPins[column]); // Read the sensor value
       uint8_t sensorID = row * ROWS + column; // Calculate the index of the unidimensional array
-      if (calibration) {
-        calibrate(minVals, sensorID, rowValue);
+      if (value > 0) {
+        frameValues[sensorID] = rowValue - minVals[sensorID]; // Aplay the calibration ofset
       } else {
-        uint16_t value = rowValue - minVals[sensorID]; // Aplay the calibration ofset
-        if (value >= 0) {
-          frameValues[sensorID] = value;
-        } else {
-          // NULL
-        }
+        frameValues[sensorID] = 0;
       }
     }
+    pinMode(rowPins[row], INPUT); // Set row pin in high-impedance state
+    // digitalWrite(rowPins[row], LOW); // Set row pin to GND (TO TEST!)
   }
-  pinMode(rowPins[row], INPUT); // Set row pin in high-impedance state
-  // digitalWrite(rowPins[row], LOW); // Set row pin to GND (TO TEST!)
 
   int pos = 0;
   for (float posY = 0; posY < COLS; posY += INC) {
     for (float posX = 0; posX < ROWS; posX += INC) {
-      #ifdef CORE_TEENSY
+#ifdef CORE_TEENSY
       bilinIntOutput[pos] = arm_bilinear_interp_q7(&S, posX, posY);
-      #endif // __CORE_TEENSY__
+#endif // __CORE_TEENSY__
       pos++;
     }
   }
 
   find_blobs(
-    &BlobOut,       // list_t *out
-    &frame,         // image_t *ptr
-    &Roi,           // rectangle_t *roi
-    THRESHOLD,      // unsigned int pixelThreshold
-    MIN_BLOB_SIZE,  // unsigned int blobMinSize
-    MIN_BLOB_PIX,   // unsigned int blobMinPix
+    &BlobOut,       // list_t
+    &frame,         // image_t
+    &Roi,           // rectangle_t
+    THRESHOLD,      // unsigned int
+    MIN_BLOB_SIZE,  // unsigned int
+    MIN_BLOB_PIX,   // unsigned int
     true,           // bool merge
     0               // int margin
   );
@@ -102,20 +96,25 @@ void loop() {
 
 }
 
+// Calibrate the sensor matrix
+void _calibrate(uint16_t *sumArray, const uint8_t frames) {
 
-void calibrate(uint16_t sumArray[], uint16_t id, uint16_t val) {
-  static int counter = 0;
-
-  sumArray[id] += val;
-
-  if (counter >= CALIBRATION_CYCLES * ROW_FRAME) {
-    for (uint8_t i = 0; i < ROW_FRAME; i++) {
-      sumArray[i] = sumArray[i] / CALIBRATION_CYCLES;
+  for (uint8_t i = 0; i < frames; i++) {
+    for (uint8_t row = 0; row < ROWS; row++) {
+      pinMode(rowPins[row], OUTPUT);  // Set row pin as output
+      digitalWrite(rowPins[row], HIGH);
+      for (uint8_t column = 0; column < COLS; column++) {
+        uint16_t rowValue = analogRead(columnPins[column]); // Read the sensor value
+        uint8_t sensorID = row * ROWS + column; // Calculate the index of the unidimensional array
+        sumArray[sensorID] += rowValue;
+      }
+      pinMode(rowPins[row], INPUT); // Set row pin in high-impedance state
+      // digitalWrite(rowPins[row], LOW); // Set row pin to GND (TO TEST!)
     }
-    counter = 0;
-    calibration = false; // Global variable - FIXME!?
   }
-  counter++;
+  for (uint8_t i = 0; i < ROW_FRAME; i++) {
+    sumArray[i] = sumArray[i] / frames;
+  }
 }
 
 // This is our packet callback.
@@ -124,18 +123,17 @@ void onPacket(const uint8_t *buffer, size_t size) {
   // The send() method will encode the buffer
   // as a packet, set packet markers, etc.
   // serial.send(myPacket, ROW_FRAME);
-  scan = false;
 }
 
 /////////// Called with interrupt triggered with push button attached to I/O pin 32
 void pushButton() {
   cli();
-  calibration = true; // Activate the calibration process
+  _calibrate(&minVals, CALIBRATION_CYCLES);
   bootBlink(3);
   sei();
 }
 
-/////////// Blink fonction
+/////////// Blink
 void bootBlink(int flash) {
   for (int i = 0; i < flash; i++) {
     digitalWrite(BUILTIN_LED, HIGH);

@@ -36,7 +36,7 @@
 
 // Teensy - SPI PINS https://www.pjrc.com/teensy/td_libs_SPI.html
 
-#define  BUILTIN_LED          13
+// #define  BUILTIN_LED          13
 #define  BUTTON_PIN           32  // Button on the eTextile Teensy shield
 #define  BAUD_RATE            230400
 #define  COLS                 16
@@ -45,13 +45,12 @@
 #define  INC                  ((float)(1.0 / SCALE))
 #define  ROW_FRAME            ((uint16_t)(COLS * ROWS))
 #define  NEW_FRAME            ((uint16_t)(COLS * ROWS * SCALE))
-#define  CALIBRATION_CYCLES   4
+#define  CALIBRATION_CYCLES   4   // Set the calibration cycles
+#define THRESHOLD             15  // Set the threshold that determine toutch sensitivity (10 is low 30 is high)
 #define  MIN_BLOB_PIX         4   // Set the minimum blob pixels
 #define  MIN_BLOB_SIZE        9   // Set the minimum blob size
+#define  A0_PIN               A0  // The output of multiplexerA (SIG pin) is connected to Analog pin 0
 
-#define  A0_PIN               A0  // The output of multiplexerA (SIG pin) is connected to Arduino Analog pin 0
-
-#define THRESHOLD             20
 
 // Digital pins array
 // See the attached home made PCB (Eagle file) to understand the Digital and Analog pin mapping
@@ -78,13 +77,11 @@ image_t       frame;
 list_t        BlobOut;
 rectangle_t   Roi;
 
-
 void onPacket(const uint8_t *buffer, size_t size);
 void calibrate(const uint16_t *sumArray, uint16_t id, uint16_t val);
 void pushButton();
 void bootBlink(int flash);
 
 boolean scan = true;
-boolean calibration = true;
 
 #endif // __ETEXTILE_MATRIX_SENSOR_BLOB_H__

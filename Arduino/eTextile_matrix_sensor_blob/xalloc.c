@@ -16,7 +16,7 @@ static void xalloc_fail() {
 void *xalloc(uint32_t size) {
   void *mem = gc_alloc(size, false); // TODO: repace it!
   if (size && (mem == NULL)) {
-    xalloc_fail();
+    // xalloc_fail();
   }
   return mem;
 }
