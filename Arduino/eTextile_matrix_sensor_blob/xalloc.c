@@ -8,20 +8,11 @@
 
 #include "xalloc.h"
 
-static void xalloc_fail() {
-  // nlr_raise(mp_obj_new_exception_msg(&mp_type_MemoryError, "Out of Memory!!!"));
-}
-
-// returns null pointer without error if size==0
-void *xalloc(uint32_t size) {
-  void *mem = gc_alloc(size, false); // TODO: repace it!
-  if (size && (mem == NULL)) {
-    // xalloc_fail();
-  }
+void *xalloc(heap_t *heap, uint32_t size) {
+  void *mem = heap_alloc(heap, size);
   return mem;
 }
 
-// returns without error if mem==null
-void xfree(void *mem) {
-  gc_free(mem); // TODO: repace it!
+void xfree(heap_t *heap, void *mem) {
+  heap_free(heap, mem);
 }

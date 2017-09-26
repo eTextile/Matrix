@@ -11,28 +11,42 @@ void setup() {
   Serial.begin(BAUD_RATE);               // Arduino serial standard library
 
   analogReadRes(10);                     // Set the ADC converteur resolution to 10 bit
-  pinMode(BUILTIN_LED, OUTPUT);          // Set rows pins in high-impedance state
-  pinMode(BUTTON_PIN, INPUT_PULLUP);     // Set button pins as input and activate the input pullup resistor
+  pinMode(BUILTIN_LED, OUTPUT);          // Set BUILTIN_LED pin as output
+  pinMode(BUTTON_PIN, INPUT_PULLUP);     // Set button pin as input and activate the input pullup resistor
   attachInterrupt(BUTTON_PIN, pushButton, RISING); // Attach interrrupt on button PIN
 
   for (int i = 0; i < ROWS; i++) {
     pinMode(rowPins[ROWS], INPUT);        // Set rows pins in high-impedance state
   }
 
-  // S.numCols = COLS;
-  // S.numRows = ROWS;
-  // S.pData = frameValues;
+  S.numCols = COLS;
+  S.numRows = ROWS;
+  S.pData = frameValues;
 
-  frame.w = COLS;
-  frame.h = ROWS;
-  frame.data = frameValues;
+  frame.w = COLS * SCALE;
+  frame.h = ROWS * SCALE;
+  frame.data = bilinIntOutput;
 
   Roi.x = 0;
   Roi.y = 0;
-  Roi.w = COLS;
-  Roi.h = ROWS;
+  Roi.w = COLS * SCALE;
+  Roi.h = ROWS * SCALE;
 
   bootBlink(9);
+
+  heap_t *heap = malloc(sizeof(heap_t));
+  memset(heap, 0, sizeof(heap_t));
+
+  void *region = malloc(HEAP_INIT_SIZE);
+  memset(region, 0, HEAP_INIT_SIZE);
+
+  for (int i = 0; i < BIN_COUNT; i++) {
+    heap->bins[i] = malloc(sizeof(bin_t));
+    memset(heap->bins[i], 0, sizeof(bin_t));
+  }
+
+  init_heap(heap, (uint) region);
+  
 }
 
 /////////////////////////////////// LOOP
@@ -45,8 +59,9 @@ void loop() {
     for (uint8_t column = 0; column < COLS; column++) {
       uint16_t rowValue = analogRead(columnPins[column]); // Read the sensor value
       uint8_t sensorID = row * ROWS + column; // Calculate the index of the unidimensional array
+      int16_t value = rowValue - minVals[sensorID]; // Aplay the calibration ofset
       if (value > 0) {
-        frameValues[sensorID] = rowValue - minVals[sensorID]; // Aplay the calibration ofset
+        frameValues[sensorID] = value;
       } else {
         frameValues[sensorID] = 0;
       }
@@ -56,11 +71,11 @@ void loop() {
   }
 
   int pos = 0;
-  for (float posY = 0; posY < COLS; posY += INC) {
-    for (float posX = 0; posX < ROWS; posX += INC) {
-#ifdef CORE_TEENSY
+  for (q31_t posY = 0; posY < COLS; posY += INC) {
+    for (q31_t posX = 0; posX < ROWS; posX += INC) {
+      #ifdef CORE_TEENSY
       bilinIntOutput[pos] = arm_bilinear_interp_q7(&S, posX, posY);
-#endif // __CORE_TEENSY__
+      #endif // __CORE_TEENSY__
       pos++;
     }
   }
@@ -96,8 +111,8 @@ void loop() {
 
 }
 
-// Calibrate the sensor matrix
-void _calibrate(uint16_t *sumArray, const uint8_t frames) {
+// Calibrate the sensor matrix by doing average
+void _calibrate(uint16_t *sumArray, uint8_t frames) {
 
   for (uint8_t i = 0; i < frames; i++) {
     for (uint8_t row = 0; row < ROWS; row++) {

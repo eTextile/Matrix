@@ -63,8 +63,8 @@ typedef struct list {
 void list_init(list_t *ptr, size_t data_len);
 void list_copy(list_t *dst, list_t *src);
 size_t list_size(list_t *ptr);
-void list_push_back(list_t *ptr, void *data);
-void list_pop_front(list_t *ptr, void *data);
+void list_push_back(heap_t *heap, list_t *ptr, void *data);
+void list_pop_front(heap_t *heap, list_t *ptr, void *data);
 
 ////////////// Iterators //////////////
 

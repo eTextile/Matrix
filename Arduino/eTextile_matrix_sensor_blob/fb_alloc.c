@@ -29,7 +29,7 @@ void *fb_alloc(uint32_t size) {
 
   // Check if allocation overwrites the framebuffer pixels
   if (new_pointer < (char *) MAIN_FB_PIXELS()) {
-    fb_alloc_fail();
+    // fb_alloc_fail();
   }
 
   // size is always 4/8/12/etc. so the value below must be 8 or more.

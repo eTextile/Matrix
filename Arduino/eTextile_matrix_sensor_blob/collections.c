@@ -84,9 +84,10 @@ size_t list_size(list_t *ptr) {
 // Adds a new element at the end of the list container.
 // The content of *data is added to the new element.
 // This increases the container size by one.
-void list_push_back(list_t *ptr, void *data) {
+void list_push_back(heap_t *heap, list_t *ptr, void *data) {
 
-  list_lnk_t *tmp = (list_lnk_t *) xalloc(sizeof(list_lnk_t) + ptr->data_len); // TODO: replace xalloc!
+  list_lnk_t *tmp = (list_lnk_t *) xalloc(heap, sizeof(list_lnk_t) + ptr->data_len);
+  
   memcpy(tmp->data, data, ptr->data_len);
 
   if (ptr->size++) {
@@ -102,8 +103,8 @@ void list_push_back(list_t *ptr, void *data) {
   }
 }
 
-void list_pop_front(list_t *ptr, void *data) {
-  
+void list_pop_front(heap_t *heap, list_t *ptr, void *data) {
+
   list_lnk_t *tmp = ptr->head_ptr;
 
   if (data) {
@@ -112,7 +113,7 @@ void list_pop_front(list_t *ptr, void *data) {
   tmp->next_ptr->prev_ptr = NULL;
   ptr->head_ptr = tmp->next_ptr;
   ptr->size -= 1;
-  xfree(tmp); // TODO: replace xfree!
+  xfree(heap, tmp);
 }
 
 ////////////// Iterators //////////////

@@ -16,8 +16,8 @@
 
 #include "framebuffer.h"
 
-void *fb_alloc(uint32_t size); // FIXME
-void *fb_alloc0(uint32_t size); // FIXME
+void *fb_alloc(uint32_t size);      //
+void *fb_alloc0(uint32_t size);     //
 void *fb_alloc_all(uint32_t *size); // returns pointer and sets size
 void fb_free();
 void fb_alloc_fail();

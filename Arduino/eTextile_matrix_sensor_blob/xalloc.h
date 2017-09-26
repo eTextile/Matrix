@@ -12,7 +12,11 @@
 #include <stdint.h>
 #include <string.h>
 
-void *xalloc(uint32_t size);
-void xfree(void *mem);
+#include "heap.h"
+
+heap_t  *heap;
+
+void *xalloc(heap_t *heap, uint32_t size);
+void xfree(heap_t *heap, void *mem);
 
 #endif // __XALLOC_H__

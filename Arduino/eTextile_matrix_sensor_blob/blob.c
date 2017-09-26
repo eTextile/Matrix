@@ -200,7 +200,7 @@ void find_blobs(
         lnk_blob.count = 1;
 
         if (((lnk_blob.rect.w * lnk_blob.rect.h) >= minBlobSize) && (lnk_blob.pixels >= minBlobPix)) {
-          list_push_back(out, &lnk_blob);
+          list_push_back(&heap, out, &lnk_blob);
         }
 
         x = old_x;
@@ -224,13 +224,13 @@ void find_blobs(
 
         find_blobs_list_lnk_data_t lnk_blob;
 
-        list_pop_front(out, &lnk_blob);
+        list_pop_front(&heap, out, &lnk_blob);
 
         for (size_t k = 0, l = list_size(out); k < l; k++) {
 
           find_blobs_list_lnk_data_t tmp_blob;
 
-          list_pop_front(out, &tmp_blob);
+          list_pop_front(&heap, out, &tmp_blob);
 
           rectangle_t temp;
           temp.x = IM_MAX(IM_MIN(tmp_blob.rect.x - margin, INT16_MAX), INT16_MIN);
@@ -247,10 +247,10 @@ void find_blobs(
             lnk_blob.count = IM_MAX(IM_MIN(lnk_blob.count + tmp_blob.count, UINT16_MAX), 0);
             merge_occured = true;
           } else {
-            list_push_back(out, &tmp_blob);
+            list_push_back(&heap, out, &tmp_blob);
           }
         }
-        list_push_back(&out_temp, &lnk_blob);
+        list_push_back(&heap, &out_temp, &lnk_blob);
       }
       list_copy(out, &out_temp);
 
