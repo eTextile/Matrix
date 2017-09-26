@@ -14,8 +14,6 @@
 
 #include "heap.h"
 
-heap_t  *heap;
-
 void *xalloc(heap_t *heap, uint32_t size);
 void xfree(heap_t *heap, void *mem);
 

@@ -87,7 +87,7 @@ size_t list_size(list_t *ptr) {
 void list_push_back(heap_t *heap, list_t *ptr, void *data) {
 
   list_lnk_t *tmp = (list_lnk_t *) xalloc(heap, sizeof(list_lnk_t) + ptr->data_len);
-  
+
   memcpy(tmp->data, data, ptr->data_len);
 
   if (ptr->size++) {
@@ -124,5 +124,13 @@ list_lnk_t *iterator_start_from_head(list_t *ptr) {
 
 list_lnk_t *iterator_next(list_lnk_t *lnk) {
   return lnk->next_ptr;
+}
+
+void iterator_get(list_t *ptr, list_lnk_t *lnk, void *data) {
+  memcpy(data, lnk->data, ptr->data_len);
+}
+
+void iterator_set(list_t *ptr, list_lnk_t *lnk, void *data) {
+  memcpy(lnk->data, data, ptr->data_len);
 }
 

@@ -34,19 +34,19 @@ void setup() {
 
   bootBlink(9);
 
-  heap_t *heap = malloc(sizeof(heap_t));
+  heap_t *heap = (heap_t*)malloc(sizeof(heap_t));
   memset(heap, 0, sizeof(heap_t));
 
   void *region = malloc(HEAP_INIT_SIZE);
   memset(region, 0, HEAP_INIT_SIZE);
 
   for (int i = 0; i < BIN_COUNT; i++) {
-    heap->bins[i] = malloc(sizeof(bin_t));
+    heap->bins[i] = (bin_t*)malloc(sizeof(bin_t));
     memset(heap->bins[i], 0, sizeof(bin_t));
   }
 
-  init_heap(heap, (uint) region);
-  
+  init_heap(heap, (uint)region);
+
 }
 
 /////////////////////////////////// LOOP
@@ -73,9 +73,9 @@ void loop() {
   int pos = 0;
   for (q31_t posY = 0; posY < COLS; posY += INC) {
     for (q31_t posX = 0; posX < ROWS; posX += INC) {
-      #ifdef CORE_TEENSY
+#ifdef CORE_TEENSY
       bilinIntOutput[pos] = arm_bilinear_interp_q7(&S, posX, posY);
-      #endif // __CORE_TEENSY__
+#endif // __CORE_TEENSY__
       pos++;
     }
   }
@@ -112,9 +112,9 @@ void loop() {
 }
 
 // Calibrate the sensor matrix by doing average
-void _calibrate(uint16_t *sumArray, uint8_t frames) {
+void _calibrate(uint16_t *sumArray) {
 
-  for (uint8_t i = 0; i < frames; i++) {
+  for (uint8_t i = 0; i < CALIBRATION_CYCLES; i++) {
     for (uint8_t row = 0; row < ROWS; row++) {
       pinMode(rowPins[row], OUTPUT);  // Set row pin as output
       digitalWrite(rowPins[row], HIGH);
@@ -128,7 +128,7 @@ void _calibrate(uint16_t *sumArray, uint8_t frames) {
     }
   }
   for (uint8_t i = 0; i < ROW_FRAME; i++) {
-    sumArray[i] = sumArray[i] / frames;
+    sumArray[i] = sumArray[i] / CALIBRATION_CYCLES;
   }
 }
 
@@ -143,7 +143,7 @@ void onPacket(const uint8_t *buffer, size_t size) {
 /////////// Called with interrupt triggered with push button attached to I/O pin 32
 void pushButton() {
   cli();
-  _calibrate(&minVals, CALIBRATION_CYCLES);
+  _calibrate(minVals);
   bootBlink(3);
   sei();
 }

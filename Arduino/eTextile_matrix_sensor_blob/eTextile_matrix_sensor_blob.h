@@ -79,7 +79,7 @@ list_t        BlobOut;
 rectangle_t   Roi;
 
 void onPacket(const uint8_t *buffer, size_t size);
-void _calibrate(uint16_t *sumArray, uint8_t frames);
+void _calibrate(uint16_t *sumArray);
 void pushButton();
 void bootBlink(int flash);
 

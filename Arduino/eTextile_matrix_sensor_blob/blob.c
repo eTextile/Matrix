@@ -6,11 +6,6 @@
 #include <stdint.h>
 
 #include "blob.h"
-#include "collections.h"
-
-typedef struct xylf {
-  int16_t x, y, l, r;
-} xylf_t;
 
 ////////////// Rectangle Stuff //////////////
 
@@ -84,7 +79,7 @@ void find_blobs(
         for (;;) {
           int left = x, right = x;
 
-          uint16_t *row = IMAGE_COMPUTE_ROW_PTR(ptr, y);       // Return pointer to image curent row
+          uint8_t *row = IMAGE_COMPUTE_ROW_PTR(ptr, y);       // Return pointer to image curent row
           size_t index = BITMAP_COMPUTE_ROW_INDEX(ptr, y);     // Return bitmap curent row
 
           while ((left > roi->x)
@@ -122,7 +117,7 @@ void find_blobs(
                 bool recurse = false;
                 for (int i = left; i <= right; i++) {
                   if ((!bitmap_bit_get(&bitmap, BITMAP_COMPUTE_INDEX(index, i)))
-                      && GRAYSCALE_THRESHOLD((row, i), pixelThreshold)) {
+                      && GRAYSCALE_THRESHOLD(IMAGE_GET_PIXEL_FAST(row, i), pixelThreshold)) {
                     xylf_t context;
                     context.x = x;
                     context.y = y;
@@ -200,7 +195,7 @@ void find_blobs(
         lnk_blob.count = 1;
 
         if (((lnk_blob.rect.w * lnk_blob.rect.h) >= minBlobSize) && (lnk_blob.pixels >= minBlobPix)) {
-          list_push_back(&heap, out, &lnk_blob);
+          list_push_back(heap, out, &lnk_blob);
         }
 
         x = old_x;
@@ -224,13 +219,13 @@ void find_blobs(
 
         find_blobs_list_lnk_data_t lnk_blob;
 
-        list_pop_front(&heap, out, &lnk_blob);
+        list_pop_front(heap, out, &lnk_blob);
 
         for (size_t k = 0, l = list_size(out); k < l; k++) {
 
           find_blobs_list_lnk_data_t tmp_blob;
 
-          list_pop_front(&heap, out, &tmp_blob);
+          list_pop_front(heap, out, &tmp_blob);
 
           rectangle_t temp;
           temp.x = IM_MAX(IM_MIN(tmp_blob.rect.x - margin, INT16_MAX), INT16_MIN);
@@ -247,10 +242,10 @@ void find_blobs(
             lnk_blob.count = IM_MAX(IM_MIN(lnk_blob.count + tmp_blob.count, UINT16_MAX), 0);
             merge_occured = true;
           } else {
-            list_push_back(&heap, out, &tmp_blob);
+            list_push_back(heap, out, &tmp_blob);
           }
         }
-        list_push_back(&heap, &out_temp, &lnk_blob);
+        list_push_back(heap, &out_temp, &lnk_blob);
       }
       list_copy(out, &out_temp);
 

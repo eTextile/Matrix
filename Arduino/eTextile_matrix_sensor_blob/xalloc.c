@@ -8,6 +8,8 @@
 
 #include "xalloc.h"
 
+heap_t  *heap;
+
 void *xalloc(heap_t *heap, uint32_t size) {
   void *mem = heap_alloc(heap, size);
   return mem;

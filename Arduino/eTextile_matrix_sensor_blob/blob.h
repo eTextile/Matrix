@@ -17,6 +17,10 @@ typedef struct point {
   int16_t y;
 } point_t;
 
+typedef struct xylf {
+  int16_t x, y, l, r;
+} xylf_t;
+
 ////////////// Rectangle stuff //////////////
 
 typedef struct rectangle {
@@ -31,12 +35,12 @@ void rectangle_united(rectangle_t *dst, rectangle_t *src);
 
 ////////////// Threshold stuff //////////////
 
-#define GRAYSCALE_THRESHOLD(pixel, pixelThreshold) \
+#define GRAYSCALE_THRESHOLD(pixel, pThreshold) \
   ({ \
     __typeof__(pixel) _pixel = (pixel); \
-    __typeof__(pixelThreshold) _pixelThresholds = (pixelThreshold); \
-    (_pixelThresholds <= _pixel); \
-  })
+    __typeof__(pThreshold) _pThreshold = (pThreshold); \
+    (_pThreshold <= _pixel); \
+  })  
 
 ////////////// Image stuff //////////////
 
@@ -52,7 +56,7 @@ typedef struct image {
   ({ \
     __typeof__ (image) _image = (image); \
     __typeof__ (y) _y = (y); \
-    ((uint16_t *) _image->data) + (_image->w * _y); \
+    ((uint8_t *) _image->data) + (_image->w * _y); \
   })
 
 #define IMAGE_GET_PIXEL_FAST(row_ptr, x) \

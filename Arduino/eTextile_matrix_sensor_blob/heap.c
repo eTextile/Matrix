@@ -26,7 +26,7 @@ void *heap_alloc(heap_t *heap, size_t size) {
     found = get_best_fit(temp, size);
   }
 
-  if ((found->size - size) > (overhead + MIN_ALLOC_SZ)) {
+  if ((found->size - size) > (OVERHEAD + MIN_ALLOC_SZ)) {
     node_t *split = (node_t *) (((char *) found + sizeof(node_t) + sizeof(footer_t)) + size);
     split->size = found->size - size - sizeof(node_t) - sizeof(footer_t);
     split->hole = 1;
@@ -78,7 +78,7 @@ void heap_free(heap_t *heap, void *p) {
     list = heap->bins[get_bin_index(prev->size)];
     remove_node(list, prev);
 
-    prev->size += overhead + head->size;
+    prev->size += (OVERHEAD + head->size);
     new_foot = get_foot(head);
     new_foot->header = prev;
 
@@ -89,7 +89,7 @@ void heap_free(heap_t *heap, void *p) {
     list = heap->bins[get_bin_index(next->size)];
     remove_node(list, next);
 
-    head->size += overhead + next->size;
+    head->size += (OVERHEAD + next->size);
 
     old_foot = get_foot(next);
     old_foot->header = 0;
@@ -136,3 +136,4 @@ node_t *get_wilderness(heap_t *heap) {
   footer_t *wild_foot = (footer_t *) ((char *) (uintptr_t) heap->end - sizeof(footer_t));
   return wild_foot->header;
 }
+
