@@ -42,10 +42,14 @@
 #define  BAUD_RATE            230400
 #define  COLS                 16
 #define  ROWS                 16
+#define  ROW_FRAME            (COLS * ROWS)
+
 #define  SCALE                4
-#define  INC                  ((float)(1.0 / SCALE))
-#define  ROW_FRAME            ((uint16_t)(COLS * ROWS))
-#define  NEW_FRAME            ((uint16_t)(COLS * ROWS * SCALE))
+#define  INC                  (1.0 / SCALE)
+#define  NEW_COLS             (COLS * SCALE)
+#define  NEW_ROWS             (ROWS * SCALE)
+#define  NEW_FRAME            (NEW_COLS * NEW_ROWS)
+
 #define  CALIBRATION_CYCLES   4   // Set the calibration cycles
 #define  THRESHOLD            15  // Set the threshold that determine toutch sensitivity (10 is low 30 is high)
 #define  MIN_BLOB_PIX         4   // Set the minimum blob pixels
@@ -65,13 +69,12 @@ const int columnPins[COLS] = {
 };
 
 uint16_t minVals[ROW_FRAME] = {0};         // Array to store smallest values
-// uint16_t frameValues[ROW_FRAME] = {0};      // Array to store ofset input values
-q7_t frameValues[ROW_FRAME] = {0};      // Array to store ofset input values
-uint16_t bilinIntOutput[NEW_FRAME] = {0};   // Bilinear interpolation Output buffer
+float32_t frameValues[ROW_FRAME] = {0};      // Array to store ofset input values
+float32_t bilinIntOutput[NEW_FRAME] = {0};   // Bilinear interpolation Output buffer
 uint8_t myPacket[ROW_FRAME] = {0};         // Array to store values to transmit
 
 #ifdef CORE_TEENSY
-arm_bilinear_interp_instance_q7 S;
+arm_bilinear_interp_instance_f32 S;
 #endif // __CORE_TEENSY__
 
 image_t       frame;

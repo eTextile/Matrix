@@ -22,19 +22,19 @@ typedef unsigned int uint;
 typedef struct node_t {
   uint hole;
   uint size;
-  struct node_t* next;
-  struct node_t* prev;
+  struct node_t *next;
+  struct node_t *prev;
 } node_t;
 
-typedef struct {
+typedef struct footer {
   node_t *header;
 } footer_t;
 
-typedef struct {
-  node_t* head;
+typedef struct bin {
+  node_t *head;
 } bin_t;
 
-typedef struct {
+typedef struct heap {
   uint start;
   uint end;
   bin_t *bins[BIN_COUNT];

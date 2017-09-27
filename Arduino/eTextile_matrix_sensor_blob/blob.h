@@ -8,6 +8,7 @@
 
 #include "fmath.h"
 #include "collections.h"
+#include "heap.h"
 
 #define IM_MAX(a,b) ({ __typeof__ (a) _a = (a); __typeof__ (b) _b = (b); _a > _b ? _a : _b; })
 #define IM_MIN(a,b) ({ __typeof__ (a) _a = (a); __typeof__ (b) _b = (b); _a < _b ? _a : _b; })
@@ -40,7 +41,7 @@ void rectangle_united(rectangle_t *dst, rectangle_t *src);
     __typeof__(pixel) _pixel = (pixel); \
     __typeof__(pThreshold) _pThreshold = (pThreshold); \
     (_pThreshold <= _pixel); \
-  })  
+  })
 
 ////////////// Image stuff //////////////
 

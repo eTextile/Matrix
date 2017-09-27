@@ -8,10 +8,9 @@
 
 #include <stdbool.h>
 #include <stddef.h>
-#include <string.h>
-
 #include "xalloc.h"
 #include "fb_alloc.h"
+#include "heap.h"
 
 #define IM_LOG2_2(x)    (((x) &                0x2ULL) ? ( 2                        ) :             1) // NO ({ ... }) !
 #define IM_LOG2_4(x)    (((x) &                0xCULL) ? ( 2 +  IM_LOG2_2((x) >>  2)) :  IM_LOG2_2(x)) // NO ({ ... }) !
@@ -56,8 +55,10 @@ typedef struct list_lnk {
 } list_lnk_t;
 
 typedef struct list {
-  list_lnk_t *head_ptr, *tail_ptr;
-  size_t size, data_len;
+  list_lnk_t *head_ptr;
+  list_lnk_t *tail_ptr;
+  size_t size;
+  size_t data_len;
 } list_t;
 
 void list_init(list_t *ptr, size_t data_len);

@@ -4,7 +4,7 @@
 uint offset = 8;
 
 void init_heap(heap_t *heap, uint start) {
-  node_t *init_region = (node_t *) (uintptr_t) start;
+  node_t *init_region = (node_t *) start;
   init_region->hole = 1;
   init_region->size = (HEAP_INIT_SIZE) - sizeof(node_t) - sizeof(footer_t);
 
@@ -65,14 +65,14 @@ void heap_free(heap_t *heap, void *p) {
   footer_t *new_foot, *old_foot;
 
   node_t *head = (node_t *) ((char *) p - offset);
-  if (head == (node_t *) (uintptr_t) heap->start) {
+  if (head == (node_t *) heap->start) {
     head->hole = 1;
     add_node(heap->bins[get_bin_index(head->size)], head);
     return;
   }
 
   node_t *next = (node_t *) ((char *) get_foot(head) + sizeof(footer_t));
-  node_t *prev = (node_t *) (uintptr_t) * ((uint *) ((char *) head - sizeof(footer_t)));
+  node_t *prev = (node_t *) * ((uint *) ((char *) head - sizeof(footer_t)));
 
   if (prev->hole) {
     list = heap->bins[get_bin_index(prev->size)];
@@ -133,7 +133,7 @@ footer_t *get_foot(node_t *node) {
 }
 
 node_t *get_wilderness(heap_t *heap) {
-  footer_t *wild_foot = (footer_t *) ((char *) (uintptr_t) heap->end - sizeof(footer_t));
+  footer_t *wild_foot = (footer_t *) ((char *) heap->end - sizeof(footer_t));
   return wild_foot->header;
 }
 

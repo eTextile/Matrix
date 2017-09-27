@@ -4,7 +4,6 @@
 */
 
 #include <stdint.h>
-
 #include "blob.h"
 
 ////////////// Rectangle Stuff //////////////
@@ -42,6 +41,19 @@ void find_blobs(
   bool merge,
   int margin
 ) {
+
+  heap_t *heap = (heap_t*)malloc(sizeof(heap_t));
+  memset(heap, 0, sizeof(heap_t));
+
+  void *region = malloc(HEAP_INIT_SIZE);
+  memset(region, 0, HEAP_INIT_SIZE);
+
+  for (int i = 0; i < BIN_COUNT; i++) {
+    heap->bins[i] = (bin_t*)malloc(sizeof(bin_t));
+    memset(heap->bins[i], 0, sizeof(bin_t));
+  }
+
+  init_heap(heap, (uint)region);
 
   bitmap_t bitmap; // Create the bitmap_t instance
   bitmap_alloc(&bitmap, ptr->w * ptr->h);   // Allocate memody for the bitmap_t instance with fb_alloc0()
