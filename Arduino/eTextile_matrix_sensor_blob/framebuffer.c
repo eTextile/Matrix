@@ -6,7 +6,6 @@
    Framebuffer stuff.
 */
 
-#include "blob.h"
 #include "framebuffer.h"
 
 extern char _fb_base;

@@ -14,4 +14,4 @@
 float fast_atanf(float x);
 float fast_atan2f(float y, float x);
 
-#endif // __FMATH_H__
+#endif /* __FMATH_H__ */

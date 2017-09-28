@@ -6,10 +6,9 @@
 #ifndef __COLLECTIONS_H__
 #define __COLLECTIONS_H__
 
-#include <stdbool.h>
 #include <stddef.h>
-#include "xalloc.h"
-#include "fb_alloc.h"
+#include <stdbool.h>
+
 #include "heap.h"
 
 #define IM_LOG2_2(x)    (((x) &                0x2ULL) ? ( 2                        ) :             1) // NO ({ ... }) !

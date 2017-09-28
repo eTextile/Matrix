@@ -1,8 +1,9 @@
 // eTextile matrix sensor shield V2.0 (E-256)
 
-#include "eTextile_matrix_sensor_blob.h"
+#include <PacketSerial.h> // https://github.com/bakercp/PacketSerial
+PacketSerial serial;
 
-////////////////////////////////////// SETUP
+#include "eTextile_matrix_sensor_blob.h"
 
 void setup() {
 
@@ -25,7 +26,7 @@ void setup() {
 
   frame.w = COLS * SCALE;
   frame.h = ROWS * SCALE;
-  // frame.data = bilinIntOutput;
+  frame.data = bilinIntOutput;
 
   Roi.x = 0;
   Roi.y = 0;
@@ -36,15 +37,11 @@ void setup() {
 
 }
 
-/////////////////////////////////// LOOP
-
 void loop() {
-
-  static uint16_t sensorID;
 
   Serial.println("Start scanning!");
 
-  sensorID = 0;
+  uint16_t sensorID = 0;
   for (uint8_t row = 0; row < ROWS; row++) {
     pinMode(rowPins[row], OUTPUT);  // Set row pin as output
     digitalWrite(rowPins[row], HIGH);
@@ -62,46 +59,43 @@ void loop() {
     // digitalWrite(rowPins[row], LOW); // Set row pin to GND (TO TEST!)
   }
 
-  Serial.println("Start interpolation!");
-
+  Serial.println("Starting interpolation!");
   sensorID = 0;
-  for (uint16_t row = 0; row < NEW_ROWS; row++) {
-    for (uint16_t col = 0; col < NEW_COLS; col++) {
-      float32_t rowPos = row / SCALE;
-      float32_t colPos = col / SCALE;
-      bilinIntOutput[sensorID] = arm_bilinear_interp_f32(&S, rowPos, colPos);
-      Serial.print(" "), Serial.print(bilinIntOutput[sensorID]);
+  for (uint8_t row = 0; row < NEW_ROWS; row++) {
+    for (uint8_t col = 0; col < NEW_COLS; col++) {
+      float32_t rowPos = (float32_t)row / SCALE;
+      float32_t colPos = (float32_t)col / SCALE;
+      bilinIntOutput[sensorID] = (uint16_t) arm_bilinear_interp_f32(&S, rowPos, colPos);
+      // Serial.print(" "), Serial.print((float)bilinIntOutput[sensorID]);
       sensorID++;
     }
-    Serial.println();
+    // Serial.println();
   }
-  Serial.println();
+  // Serial.println();
 
-
-  Serial.println("Start blob!");
-  /*
-    find_blobs(
+  Serial.println("Starting blob!");
+  find_blobs(
     &BlobOut,       // list_t
     &frame,         // image_t
     &Roi,           // rectangle_t
     THRESHOLD,      // unsigned int
     MIN_BLOB_SIZE,  // unsigned int
     MIN_BLOB_PIX,   // unsigned int
-    true,           // bool merge
+    true,           // boolean merge
     0               // int margin
-    );
+  );
 
-    Serial.println("Frame compleat!");
+  Serial.println("Frame compleat!");
 
-    for (list_lnk_t *it = iterator_start_from_head(&BlobOut); it; it = iterator_next(it)) {
+  for (list_lnk_t *it = iterator_start_from_head(&BlobOut); it; it = iterator_next(it)) {
     find_blobs_list_lnk_data_t lnk_data;
     iterator_get(&BlobOut, it, &lnk_data);
     Serial.print(lnk_data.centroid.x);
     Serial.print("_");
     Serial.print(lnk_data.centroid.y);
     Serial.print("\t");
-    }
-  */
+  }
+
   // The update() method attempts to read in
   // any incoming serial data and emits packets via
   // the user's onPacket(const uint8_t* buffer, size_t size)
@@ -112,25 +106,21 @@ void loop() {
 }
 
 /////////// Calibrate the 16x16 sensor matrix by doing average
-void _calibrate(uint16_t *sumArray) {
-  uint8_t sensCel;
+void _calibrate(volatile uint16_t *sumArray) {
 
   for (uint8_t i = 0; i < CALIBRATION_CYCLES; i++) {
-    sensCel = 0;
+    uint8_t pos = 0;
     for (uint8_t row = 0; row < ROWS; row++) {
       pinMode(rowPins[row], OUTPUT);  // Set row pin as output
       digitalWrite(rowPins[row], HIGH);
-      for (uint8_t column = 0; column < COLS; column++) {
-        uint16_t rowValue = analogRead(columnPins[column]); // Read the sensor value
-        sumArray[sensCel] += rowValue;
-        sensCel++;
+      for (uint8_t col = 0; col < COLS; col++) {
+        uint16_t val = analogRead(columnPins[col]); // Read the sensor value
+        sumArray[pos] += (uint16_t) val / CALIBRATION_CYCLES;
+        pos++;
       }
       pinMode(rowPins[row], INPUT); // Set row pin in high-impedance state
       // digitalWrite(rowPins[row], LOW); // Set row pin to GND (TO TEST!)
     }
-  }
-  for (uint8_t i = 0; i < ROW_FRAME; i++) {
-    sumArray[i] = sumArray[i] / CALIBRATION_CYCLES;
   }
 }
 

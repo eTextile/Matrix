@@ -6,9 +6,18 @@
 #ifndef __BLOB_H__
 #define __BLOB_H__
 
+#include <stdbool.h>
+#include <stddef.h>
+#include <stdlib.h>
+#include <stdint.h>
+#include <string.h>
+#include <math.h>
+#include <arm_math.h>
+
+#include "fb_alloc.h"
+#include "xalloc.h"
 #include "fmath.h"
 #include "collections.h"
-#include "heap.h"
 
 #define IM_MAX(a,b) ({ __typeof__ (a) _a = (a); __typeof__ (b) _b = (b); _a > _b ? _a : _b; })
 #define IM_MIN(a,b) ({ __typeof__ (a) _a = (a); __typeof__ (b) _b = (b); _a < _b ? _a : _b; })
@@ -87,4 +96,4 @@ void find_blobs(
   int margin
 );
 
-#endif // __BLOB_H__
+#endif /* __BLOB_H__ */

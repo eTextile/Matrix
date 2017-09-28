@@ -9,6 +9,8 @@
 #ifndef __FRAMEBUFFER_H__
 #define __FRAMEBUFFER_H__
 
+#include "blob.h"
+
 #include <stdint.h>
 
 typedef struct framebuffer {

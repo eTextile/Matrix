@@ -4,17 +4,17 @@
 #include <stdint.h>
 #include <stddef.h>
 
-#define HEAP_INIT_SIZE 0x10000
-#define HEAP_MAX_SIZE 0xF0000
-#define HEAP_MIN_SIZE 0x10000
+#define HEAP_INIT_SIZE  0x10000
+#define HEAP_MAX_SIZE   0xF0000
+#define HEAP_MIN_SIZE   0x10000
 
-#define MIN_ALLOC_SZ 4
+#define MIN_ALLOC_SZ    4
 
-#define MIN_WILDERNESS 0x2000
-#define MAX_WILDERNESS 0x1000000
+#define MIN_WILDERNESS  0x2000
+#define MAX_WILDERNESS  0x1000000
 
-#define BIN_COUNT 9
-#define BIN_MAX_IDX (BIN_COUNT - 1)
+#define BIN_COUNT       9
+#define BIN_MAX_IDX     (BIN_COUNT - 1)
 
 typedef unsigned int uint;
 // typedef uint16_t uint;
@@ -26,15 +26,15 @@ typedef struct node_t {
   struct node_t *prev;
 } node_t;
 
-typedef struct footer {
+typedef struct {
   node_t *header;
 } footer_t;
 
-typedef struct bin {
+typedef struct {
   node_t *head;
 } bin_t;
 
-typedef struct heap {
+typedef struct {
   uint start;
   uint end;
   bin_t *bins[BIN_COUNT];
@@ -53,5 +53,5 @@ void create_foot(node_t *head);
 footer_t *get_foot(node_t *head);
 node_t *get_wilderness(heap_t *heap);
 
-#endif // __HEAP_H__
+#endif /* __HEAP_H__ */
 

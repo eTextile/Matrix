@@ -13,4 +13,4 @@ node_t *get_last_node(bin_t *list);
 node_t *next(node_t *current);
 node_t *prev(node_t *current);
 
-#endif // __LLIST_H__
+#endif /* __LLIST_H__ */

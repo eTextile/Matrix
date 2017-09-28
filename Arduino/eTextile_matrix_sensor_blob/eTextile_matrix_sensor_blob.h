@@ -1,32 +1,7 @@
 #ifndef __ETEXTILE_MATRIX_SENSOR_BLOB_H__
 #define __ETEXTILE_MATRIX_SENSOR_BLOB_H__
 
-#include <arm_math.h>
-#include <PacketSerial.h> // https://github.com/bakercp/PacketSerial
-#include "heap.h" // Heap llocator project : https://github.com/CCareaga/heap_allocator
-#include "blob.h" // Part of the OpenMV project : https://github.com/openmv/openmv
-
-// PacketSerial serial;
-/*
-  PACKET SERIAL : Copyright (c) 2012-2014 Christopher Baker <http://christopherbaker.net>
-  Permission is hereby granted, free of charge, to any person obtaining a copy
-  of this software and associated documentation files (the "Software"), to deal
-  in the Software without restriction, including without limitation the rights
-  to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
-  copies of the Software, and to permit persons to whom the Software is
-  furnished to do so, subject to the following conditions:
-
-  The above copyright notice and this permission notice shall be included in
-  all copies or substantial portions of the Software.
-
-  THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
-  IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
-  FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
-  AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
-  LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
-  OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
-  THE SOFTWARE.
-*/
+#include "blob.h"
 
 // Control pins to send values to the 8-BITs shift registers used on the E-256 PCB
 // shiftOut using SPI library : https://forum.arduino.cc/index.php?topic=52383.0
@@ -68,10 +43,10 @@ const int columnPins[COLS] = {
   A17, A18, A19, A0, A20, A1, A2, A3, A4, A5, A6, A7, A11, A8, A10, A9
 };
 
-uint16_t minVals[ROW_FRAME] = {0};         // Array to store smallest values
+volatile uint16_t minVals[ROW_FRAME] = {0};  // Array to store smallest values
 float32_t frameValues[ROW_FRAME] = {0};      // Array to store ofset input values
-float32_t bilinIntOutput[NEW_FRAME] = {0};   // Bilinear interpolation Output buffer
-uint8_t myPacket[ROW_FRAME] = {0};         // Array to store values to transmit
+uint16_t bilinIntOutput[NEW_FRAME] = {0};    // Bilinear interpolation Output buffer
+uint8_t myPacket[ROW_FRAME] = {0};           // Array to store values to transmit
 
 #ifdef CORE_TEENSY
 arm_bilinear_interp_instance_f32 S;
@@ -82,10 +57,8 @@ list_t        BlobOut;
 rectangle_t   Roi;
 
 void onPacket(const uint8_t *buffer, size_t size);
-void _calibrate(uint16_t *sumArray);
-void pushButton();
+void _calibrate(volatile uint16_t *sumArray);
 void bootBlink(int flash);
+void pushButton();
 
-boolean scan = true;
-
-#endif // __ETEXTILE_MATRIX_SENSOR_BLOB_H__
+#endif /* __ETEXTILE_MATRIX_SENSOR_BLOB_H__ */

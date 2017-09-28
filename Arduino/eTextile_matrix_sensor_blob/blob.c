@@ -3,7 +3,6 @@
    This work is licensed under the MIT license, see the file LICENSE for details.
 */
 
-#include <stdint.h>
 #include "blob.h"
 
 ////////////// Rectangle Stuff //////////////
@@ -41,6 +40,7 @@ void find_blobs(
   bool merge,
   int margin
 ) {
+
 
   heap_t *heap = (heap_t*)malloc(sizeof(heap_t));
   memset(heap, 0, sizeof(heap_t));
