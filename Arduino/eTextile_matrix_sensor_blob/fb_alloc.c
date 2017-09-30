@@ -6,7 +6,12 @@
    Interface for using extra frame buffer RAM as a stack.
 */
 
+#include <stdlib.h>
+#include <stdint.h>
+#include <string.h>
+
 #include "fb_alloc.h"
+#include "framebuffer.h"
 
 extern char _fballoc;
 static char *pointer = &_fballoc;

@@ -9,8 +9,6 @@
 #ifndef __FMATH_H__
 #define __FMATH_H__
 
-#include <stdint.h>
-
 float fast_atanf(float x);
 float fast_atan2f(float y, float x);
 

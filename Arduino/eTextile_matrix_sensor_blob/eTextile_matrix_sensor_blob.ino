@@ -1,9 +1,10 @@
 // eTextile matrix sensor shield V2.0 (E-256)
 
 #include <PacketSerial.h> // https://github.com/bakercp/PacketSerial
-PacketSerial serial;
-
 #include "eTextile_matrix_sensor_blob.h"
+#include "blob.h"
+
+PacketSerial serial;
 
 void setup() {
 
@@ -49,7 +50,7 @@ void loop() {
       uint16_t rowValue = analogRead(columnPins[col]); // Read the sensor value
       int16_t value = rowValue - minVals[sensorID]; // Aplay the calibration ofset
       if (value > 0) {
-        frameValues[sensorID] = value;
+        frameValues[sensorID] = (float32_t)value;
       } else {
         frameValues[sensorID] = 0;
       }
@@ -73,7 +74,7 @@ void loop() {
   }
   // Serial.println();
 
-  Serial.println("Starting blob!");
+  // Serial.println("Starting blob!");
   find_blobs(
     &BlobOut,       // list_t
     &frame,         // image_t
@@ -125,8 +126,8 @@ void _calibrate(volatile uint16_t *sumArray) {
 }
 
 /////////// Blink
-void bootBlink(int flash) {
-  for (int i = 0; i < flash; i++) {
+void bootBlink(uint8_t flash) {
+  for (uint8_t i = 0; i < flash; i++) {
     digitalWrite(BUILTIN_LED, HIGH);
     delay(50);
     digitalWrite(BUILTIN_LED, LOW);

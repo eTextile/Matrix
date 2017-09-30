@@ -2,8 +2,13 @@
    Copyright (c) 2013-2017 Ibrahim Abdelkader <iabdalkader@openmv.io> & Kwabena W. Agyeman <kwagyeman@openmv.io>
    This work is licensed under the MIT license, see the file LICENSE for details.
 */
+#include <string.h> /* Used for memcpy() */
+#include <stdbool.h>
 
-#include "blob.h"
+#include "collections.h"
+#include "fb_alloc.h"
+#include "xalloc.h"
+#include "heap.h"
 
 #define CHAR_BITS (sizeof(char) * 8)
 #define CHAR_MASK (CHAR_BITS - 1)

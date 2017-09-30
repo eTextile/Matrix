@@ -6,6 +6,9 @@
    Memory allocation functions.
 */
 
+#include <stdint.h>
+#include <string.h>
+
 #include "xalloc.h"
 
 void *xalloc(heap_t *heap, uint32_t size) {

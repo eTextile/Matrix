@@ -6,6 +6,8 @@
    Fast approximate math functions.
 */
 
+#include <stdint.h>
+
 #include "fmath.h"
 
 #define M_PI    3.14159265f

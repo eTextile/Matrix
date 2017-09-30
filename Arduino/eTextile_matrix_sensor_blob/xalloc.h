@@ -9,9 +9,6 @@
 #ifndef __XALLOC_H__
 #define __XALLOC_H__
 
-#include <stdint.h>
-#include <string.h>
-
 #include "heap.h"
 
 void *xalloc(heap_t *heap, uint32_t size);

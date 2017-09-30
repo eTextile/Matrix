@@ -1,6 +1,13 @@
 #ifndef __ETEXTILE_MATRIX_SENSOR_BLOB_H__
 #define __ETEXTILE_MATRIX_SENSOR_BLOB_H__
 
+#include <stddef.h>
+#include <stdlib.h>
+#include <stdint.h>
+#include <string.h>
+#include <math.h>
+#include <arm_math.h>
+
 #include "blob.h"
 
 // Control pins to send values to the 8-BITs shift registers used on the E-256 PCB
@@ -20,10 +27,10 @@
 #define  ROW_FRAME            (COLS * ROWS)
 
 #define  SCALE                4
-#define  INC                  (1.0 / SCALE)
 #define  NEW_COLS             (COLS * SCALE)
 #define  NEW_ROWS             (ROWS * SCALE)
 #define  NEW_FRAME            (NEW_COLS * NEW_ROWS)
+#define  INC                  (1.0 / SCALE)
 
 #define  CALIBRATION_CYCLES   4   // Set the calibration cycles
 #define  THRESHOLD            15  // Set the threshold that determine toutch sensitivity (10 is low 30 is high)
@@ -58,7 +65,7 @@ rectangle_t   Roi;
 
 void onPacket(const uint8_t *buffer, size_t size);
 void _calibrate(volatile uint16_t *sumArray);
-void bootBlink(int flash);
+void bootBlink(uint8_t flash);
 void pushButton();
 
 #endif /* __ETEXTILE_MATRIX_SENSOR_BLOB_H__ */

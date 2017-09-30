@@ -3,7 +3,15 @@
    This work is licensed under the MIT license, see the file LICENSE for details.
 */
 
+#include <stdbool.h>
+#include <stddef.h>
+#include <stdlib.h>
+#include <stdint.h>
+#include <string.h> /* Used for memset() */
+#include <math.h>
+
 #include "blob.h"
+#include "collections.h"
 
 ////////////// Rectangle Stuff //////////////
 
@@ -34,9 +42,9 @@ void find_blobs(
   list_t *out,
   image_t *ptr,
   rectangle_t *roi,
-  unsigned int pixelThreshold,
-  unsigned int minBlobSize,
-  unsigned int minBlobPix,
+  const unsigned int pixelThreshold,
+  const unsigned int minBlobSize,
+  const unsigned int minBlobPix,
   bool merge,
   int margin
 ) {

@@ -6,17 +6,6 @@
 #ifndef __BLOB_H__
 #define __BLOB_H__
 
-#include <stdbool.h>
-#include <stddef.h>
-#include <stdlib.h>
-#include <stdint.h>
-#include <string.h>
-#include <math.h>
-#include <arm_math.h>
-
-#include "fb_alloc.h"
-#include "xalloc.h"
-#include "fmath.h"
 #include "collections.h"
 
 #define IM_MAX(a,b) ({ __typeof__ (a) _a = (a); __typeof__ (b) _b = (b); _a > _b ? _a : _b; })
@@ -89,9 +78,9 @@ void find_blobs(
   list_t *out,
   image_t *ptr,
   rectangle_t *roi,
-  unsigned int pixelThreshold,
-  unsigned int minBlobSize,
-  unsigned int minBlobPix,
+  const unsigned int pixelThreshold,
+  const unsigned int minBlobSize,
+  const unsigned int minBlobPix,
   bool merge,
   int margin
 );

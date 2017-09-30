@@ -1,10 +1,10 @@
 #include "llist.h"
 
-void add_node(bin_t *bin, node_t* node) {
+void add_node(bin_t *bin, node_t *node) {
   node->next = NULL;
   node->prev = NULL;
 
-  // node_t *temp = bin->head;
+  node_t *temp = bin->head;
 
   if (bin->head == NULL) {
     bin->head = node;
@@ -41,7 +41,8 @@ void add_node(bin_t *bin, node_t* node) {
   }
 }
 
-void remove_node(bin_t * bin, node_t *node) {
+void remove_node(bin_t *bin, node_t *node) {
+  
   if (bin->head == NULL) return;
   if (bin->head == node) {
     bin->head = bin->head->next;
@@ -49,6 +50,7 @@ void remove_node(bin_t * bin, node_t *node) {
   }
 
   node_t *temp = bin->head->next;
+  
   while (temp != NULL) {
     if (temp == node) { // found the node
       if (temp->next == NULL) { // last item
@@ -66,6 +68,7 @@ void remove_node(bin_t * bin, node_t *node) {
 }
 
 node_t *get_best_fit(bin_t *bin, size_t size) {
+  
   if (bin->head == NULL) return NULL; // empty list!
 
   node_t *temp = bin->head;

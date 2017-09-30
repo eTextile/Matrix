@@ -8,9 +8,10 @@
 - Arduino library
   - PacketSerial: https://github.com/bakercp/PacketSerial
 
-### Settings for Arduino IDE
-- Board:           Teensy 3.1
-- USB Type:        Serial
+### Settings for Arduino-mk
+- sudo apt-get install arduino-mk
+- git clone https://github.com/sudar/Arduino-Makefile.git
+- ...
 
 ## Program Synopsis
 The sketch implemant rows and columns scaning algorithm.
@@ -30,8 +31,5 @@ WARRANTIES, see LICENSE.txt included in the resistiveMatrix project folder.
 Thanks to Vincent Roudaut, Hannah Perner Willson, Cedric Honnet, Antoine Meisso, Paul Strohmeier
 
 ## TODO
-- Add blob detection
- - Fork OpenMV : https://github.com/openmv/openmv
- - ...
-- Add TUIO serveur
+- Add OSC/TUIO serveur
 
