@@ -75,6 +75,7 @@ typedef struct find_blobs_list_lnk_data {
 } find_blobs_list_lnk_data_t;
 
 void find_blobs(
+  heap_t *heap,
   list_t *out,
   image_t *ptr,
   rectangle_t *roi,
@@ -85,4 +86,4 @@ void find_blobs(
   int margin
 );
 
-#endif /* __BLOB_H__ */
+#endif /*__BLOB_H__*/

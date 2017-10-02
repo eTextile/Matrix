@@ -5,3 +5,5 @@ openFrameworks/openFrameworks.xcodeproj/xcshareddata/xcschemes/openFrameworks De
 openFrameworks/openFrameworks.xcodeproj/xcshareddata/xcschemes/openFrameworks Release.xcscheme
 openFrameworks/openFrameworks.xcodeproj/xcuserdata/antoine.xcuserdatad/xcschemes/xcschememanagement.plist
 openFrameworks/openFrameworks.xcodeproj/project.pbxproj
+Arduino/eTextile_matrix_sensor_blob/build-teensy31/
+Arduino/eTextile_matrix_sensor_blob/build-uno/

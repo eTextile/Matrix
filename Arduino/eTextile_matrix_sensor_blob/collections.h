@@ -74,4 +74,4 @@ list_lnk_t *iterator_next(list_lnk_t *lnk);
 void iterator_get(list_t *ptr, list_lnk_t *lnk, void *data);
 void iterator_set(list_t *ptr, list_lnk_t *lnk, void *data);
 
-#endif /* __COLLECTIONS_H__ */
+#endif /*__COLLECTIONS_H__*/

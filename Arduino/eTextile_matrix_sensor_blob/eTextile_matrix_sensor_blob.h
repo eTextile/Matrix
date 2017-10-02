@@ -33,7 +33,7 @@
 #define  INC                  (1.0 / SCALE)
 
 #define  CALIBRATION_CYCLES   4   // Set the calibration cycles
-#define  THRESHOLD            15  // Set the threshold that determine toutch sensitivity (10 is low 30 is high)
+#define  THRESHOLD            50  // Set the threshold that determine toutch sensitivity (10 is low 30 is high)
 #define  MIN_BLOB_PIX         4   // Set the minimum blob pixels
 #define  MIN_BLOB_SIZE        9   // Set the minimum blob size
 #define  A0_PIN               A0  // The output of multiplexerA (SIG pin) is connected to Analog pin 0
@@ -60,12 +60,12 @@ arm_bilinear_interp_instance_f32 S;
 #endif // __CORE_TEENSY__
 
 image_t       frame;
-list_t        BlobOut;
-rectangle_t   Roi;
+list_t        blobOut;
+rectangle_t   roi;
 
 void onPacket(const uint8_t *buffer, size_t size);
-void _calibrate(volatile uint16_t *sumArray);
+void calibrate(volatile uint16_t *sumArray);
 void bootBlink(uint8_t flash);
 void pushButton();
 
-#endif /* __ETEXTILE_MATRIX_SENSOR_BLOB_H__ */
+#endif /*__ETEXTILE_MATRIX_SENSOR_BLOB_H__*/
