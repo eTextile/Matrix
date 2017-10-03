@@ -13,6 +13,8 @@
 #include "blob.h"
 #include "collections.h"
 
+#include <Arduino.h>
+
 ////////////// Rectangle Stuff //////////////
 
 bool rectangle_overlap(rectangle_t *ptr0, rectangle_t *ptr1) {
@@ -50,6 +52,8 @@ void find_blobs(
   int margin
 ) {
 
+  Serial.println(), Serial.print(roi->h), Serial.print(" "), Serial.print(roi->w);
+
   bitmap_t bitmap; // Create the bitmap_t instance
   bitmap_alloc(&bitmap, ptr->w * ptr->h);   // Allocate memody for the bitmap_t instance with fb_alloc0()
 
@@ -60,15 +64,18 @@ void find_blobs(
 
   size_t code = 0;
 
-  for (int y = roi->y, yy = roi->y + roi->h; y < yy; y++) {
-
+  // for (uint16_t y = roi->y, yy = roi->y + roi->h; y < yy; y++) {
+  for (int y = 0; y < roi->h; y++) {
+    Serial.print("Y = "), Serial.print(y), Serial.println();
     uint8_t *row_ptr = IMAGE_COMPUTE_ROW_PTR(ptr, y);         // Return pointer to image curent row
     size_t row_index = BITMAP_COMPUTE_ROW_INDEX(ptr, y);      // Return bitmap curent row
 
-    for (int x = roi->x, xx = roi->x + roi->w; x < xx; x++) {
-
+    // for (int x = roi->x, xx = roi->x + roi->w; x < xx; x++) {
+    for (int x = 0; x < roi->w; x++) {
+      Serial.print("X = "), Serial.print(x), Serial.println();
       if ((!bitmap_bit_get(&bitmap, BITMAP_COMPUTE_INDEX(row_index, x)))
           && GRAYSCALE_THRESHOLD(IMAGE_GET_PIXEL_FAST(row_ptr, x), pixelThreshold)) {
+        Serial.println("OK! b");
 
         int old_x = x;
         int old_y = y;

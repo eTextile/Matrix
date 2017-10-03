@@ -5,7 +5,7 @@
 #include "blob.h"
 
 boolean DEBUG_INTERP = false;
-boolean DEBUG_BLOB = true;
+boolean DEBUG_BLOB = false;
 
 PacketSerial serial;
 
@@ -26,21 +26,6 @@ void setup() {
     pinMode(rowPins[ROWS], INPUT);        // Set rows pins in high-impedance state
   }
 
-  S.numCols = COLS;
-  S.numRows = ROWS;
-  S.pData = frameValues; // https://en.wikipedia.org/wiki/Q_(number_format)
-
-  frame.w = COLS * SCALE;
-  frame.h = ROWS * SCALE;
-  frame.data = bilinIntOutput;
-
-  roi.x = 0;
-  roi.y = 0;
-  roi.w = COLS * SCALE;
-  roi.h = ROWS * SCALE;
-
-  bootBlink(9);
-
   heap = (heap_t*)malloc(sizeof(heap_t));
   memset(heap, 0, sizeof(heap_t));
 
@@ -52,6 +37,21 @@ void setup() {
     memset(heap->bins[i], 0, sizeof(bin_t));
   }
   init_heap(heap, (uint)region);
+
+  S.numCols = COLS;
+  S.numRows = ROWS;
+  S.pData = frameValues; // https://en.wikipedia.org/wiki/Q_(number_format)
+
+  frame.w = COLS * SCALE;
+  frame.h = ROWS * SCALE;
+  frame.data = bilinIntOutput;
+
+  roi.x = 0;
+  roi.y = 0;
+  roi.w = NEW_COLS;
+  roi.h = NEW_ROWS;
+
+  bootBlink(9);
 }
 
 void loop() {
@@ -79,8 +79,8 @@ void loop() {
     for (uint8_t col = 0; col < NEW_COLS; col++) {
       float32_t rowPos = (float32_t)row / SCALE;
       float32_t colPos = (float32_t)col / SCALE;
-      bilinIntOutput[sensorID] = (uint16_t) arm_bilinear_interp_f32(&S, rowPos, colPos);
-      if (DEBUG_INTERP) Serial.print(" "), Serial.print((float)bilinIntOutput[sensorID]);
+      bilinIntOutput[sensorID] = (uint8_t) arm_bilinear_interp_f32(&S, rowPos, colPos);
+      if (DEBUG_INTERP) Serial.print(" "), Serial.print(bilinIntOutput[sensorID]);
       sensorID++;
     }
     if (DEBUG_INTERP) Serial.println();
@@ -98,9 +98,8 @@ void loop() {
     true,           // boolean merge
     0               // int margin
   );
-  
-  list_lnk_t *it;
-  for ( it = iterator_start_from_head(&blobOut); it; it = iterator_next(it)) {
+
+  for (list_lnk_t *it = iterator_start_from_head(&blobOut); it; it = iterator_next(it)) {
     find_blobs_list_lnk_data_t lnk_data;
     iterator_get(&blobOut, it, &lnk_data);
     if (DEBUG_BLOB) Serial.print(lnk_data.centroid.x);

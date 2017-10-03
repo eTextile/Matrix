@@ -23,10 +23,10 @@ typedef struct xylf {
 ////////////// Rectangle stuff //////////////
 
 typedef struct rectangle {
-  int16_t x;
-  int16_t y;
-  int16_t w;
-  int16_t h;
+  int x;
+  int y;
+  int w;
+  int h;
 } rectangle_t;
 
 bool rectangle_overlap(rectangle_t *ptr0, rectangle_t *ptr1);
@@ -46,7 +46,7 @@ void rectangle_united(rectangle_t *dst, rectangle_t *src);
 typedef struct image {
   uint8_t w;
   uint8_t h;
-  uint16_t *data;
+  uint8_t *data;
 } image_t;
 
 ////////////// Fast stuff //////////////
@@ -85,5 +85,4 @@ void find_blobs(
   bool merge,
   int margin
 );
-
 #endif /*__BLOB_H__*/

@@ -10,6 +10,8 @@
 #include <stdint.h>
 #include <string.h>
 
+#include <Arduino.h>
+
 #include "fb_alloc.h"
 #include "framebuffer.h"
 
@@ -17,8 +19,7 @@ char _fballoc;
 static char *pointer = &_fballoc;
 
 void fb_alloc_fail() {
-  // nlr_raise(mp_obj_new_exception_msg(&mp_type_MemoryError, "FB Alloc Collision!!!"));
-  // Serial.println("FB Alloc Collision!");
+  Serial.println(F("FB Alloc Collision!"));
 }
 
 // returns null pointer without error if size==0
@@ -33,7 +34,7 @@ void *fb_alloc(uint32_t size) {
 
   // Check if allocation overwrites the framebuffer pixels
   if (new_pointer < (char *) MAIN_FB_PIXELS()) {
-    // fb_alloc_fail();
+    fb_alloc_fail();
   }
 
   // size is always 4/8/12/etc. so the value below must be 8 or more.
@@ -51,6 +52,7 @@ void *fb_alloc0(uint32_t size) {
 }
 
 void *fb_alloc_all(uint32_t *size) {
+  
   int32_t temp = pointer - ((char *) MAIN_FB_PIXELS()) - sizeof(uint32_t);
   if (temp < sizeof(uint32_t)) {
     *size = 0;

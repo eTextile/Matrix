@@ -15,12 +15,12 @@
 
 typedef struct framebuffer {
   int w, h;
-  uint16_t pixels[];
+  uint8_t pixels[];
 } framebuffer_t;
 
 extern framebuffer_t *fb_framebuffer;
 
-// Use these macros to get a pointer to main or JPEG framebuffer.
+// Use these macros to get a pointer to main framebuffer.
 #define MAIN_FB() (fb_framebuffer)
 
 // Use this macro to get a pointer to the free SRAM area located after the framebuffer.
@@ -30,4 +30,4 @@ extern framebuffer_t *fb_framebuffer;
 uint32_t fb_buffer_size();
 
 
-#endif /* __FRAMEBUFFER_H__ */
+#endif /*__FRAMEBUFFER_H__*/
