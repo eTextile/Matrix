@@ -12,4 +12,3 @@ USB_TYPE     = USB_SERIAL
 
 #lazy "make clean" shortcut
 c: clean
-
