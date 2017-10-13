@@ -42,6 +42,8 @@ const int columnPins[COLS] = {
   A17, A18, A19, A0, A20, A1, A2, A3, A4, A5, A6, A7, A11, A8, A10, A9
 };
 
+int fps = 0;
+
 // volatile uint16_t minVals[ROW_FRAME] = {0};  // Array to store smallest values
 uint16_t minVals[ROW_FRAME] = {0};  // Array to store smallest values
 float32_t frameValues[ROW_FRAME] = {0};      // Array to store ofset input values
@@ -55,7 +57,6 @@ arm_bilinear_interp_instance_f32 S;
 
 char bitmap[NEW_FRAME] = {0};
 char *bitmapPtr;
-int fps = 0;
 
 image_t       inputFrame;
 node_t        tmpNode;
