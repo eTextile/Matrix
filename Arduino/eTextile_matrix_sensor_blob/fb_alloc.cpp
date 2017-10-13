@@ -7,7 +7,6 @@
 */
 
 #include <stdlib.h>
-#include <stdint.h>
 #include <string.h>
 
 #include <Arduino.h>
@@ -70,3 +69,4 @@ void fb_free() {
     pointer += *((uint32_t *) pointer); // Get size and pop.
   }
 }
+

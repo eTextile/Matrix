@@ -9,8 +9,6 @@
 #include <stddef.h>
 #include <stdbool.h>
 
-#include "heap.h"
-
 #define IM_LOG2_2(x)    (((x) &                0x2ULL) ? ( 2                        ) :             1) // NO ({ ... }) !
 #define IM_LOG2_4(x)    (((x) &                0xCULL) ? ( 2 +  IM_LOG2_2((x) >>  2)) :  IM_LOG2_2(x)) // NO ({ ... }) !
 #define IM_LOG2_8(x)    (((x) &               0xF0ULL) ? ( 4 +  IM_LOG2_4((x) >>  4)) :  IM_LOG2_4(x)) // NO ({ ... }) !
@@ -18,20 +16,33 @@
 #define IM_LOG2_32(x)   (((x) &         0xFFFF0000ULL) ? (16 + IM_LOG2_16((x) >> 16)) : IM_LOG2_16(x)) // NO ({ ... }) !
 #define IM_LOG2(x)      (((x) & 0xFFFFFFFF00000000ULL) ? (32 + IM_LOG2_32((x) >> 32)) : IM_LOG2_32(x)) // NO ({ ... }) !
 
+#define CHAR_BITS (sizeof(char) * 8)
+#define CHAR_MASK (CHAR_BITS - 1)
+#define CHAR_SHIFT IM_LOG2(CHAR_MASK)
+
 ////////////// Bitmap //////////////
 
-typedef struct bitmap {
+typedef struct {
   size_t size;
   char *data;
 } bitmap_t;
 
-void bitmap_alloc(bitmap_t *ptr, size_t size);
-void bitmap_free(bitmap_t *ptr);
-void bitmap_bit_set(bitmap_t *ptr, size_t index);
-bool bitmap_bit_get(bitmap_t *ptr, size_t index);
+void bitmap_bit_set(char *arrayPtr, int index);
+char bitmap_bit_get(char *arrayPtr, int index);
 
-#define BITMAP_COMPUTE_ROW_INDEX(image, y) (((image)->w)*(y))
-#define BITMAP_COMPUTE_INDEX(row_index, x) ((row_index)+(x))
+#define BITMAP_ROW_INDEX(image, y) \
+  ({ \
+    __typeof__ (image) _image = (image); \
+    __typeof__ (y) _y = (y); \
+    _image->w * _y; \
+  })
+
+#define BITMAP_INDEX(row_index, x) \
+  ({ \
+    __typeof__ (row_index) _row_index = (row_index); \
+    __typeof__ (x) _x = (x); \
+    _row_index + _x; \
+  })
 
 ////////////// Lifo //////////////
 
@@ -48,30 +59,28 @@ void lifo_dequeue(lifo_t *ptr, void *data);
 
 ////////////// list //////////////
 
-typedef struct list_lnk {
-  struct list_lnk *next_ptr, *prev_ptr;
+typedef struct node {
+  struct node *next_ptr, *prev_ptr; // Help! I don't understand recursive syntax!!!!!!!!!!!!!!
   char data[];
-} list_lnk_t;
+} node_t;
 
 typedef struct list {
-  list_lnk_t *head_ptr;
-  list_lnk_t *tail_ptr;
-  size_t size;
-  size_t data_len;
+  node_t *head_ptr, *tail_ptr;
+  size_t size, data_len;
 } list_t;
 
 void list_init(list_t *ptr, size_t data_len);
 void list_copy(list_t *dst, list_t *src);
 size_t list_size(list_t *ptr);
-void list_push_back(heap_t *heap, list_t *ptr, void *data);
-void list_pop_front(heap_t *heap, list_t *ptr, void *data);
+void list_push_back(list_t *ptr, void *data, node_t *tmpNode);
+void list_pop_front(list_t *ptr, void *data, node_t *tmpNode);
 
 ////////////// Iterators //////////////
 
-list_lnk_t *iterator_start_from_head(list_t *ptr);
-list_lnk_t *iterator_next(list_lnk_t *lnk);
+node_t *iterator_start_from_head(list_t *ptr);
+node_t *iterator_next(node_t *lnk);
 
-void iterator_get(list_t *ptr, list_lnk_t *lnk, void *data);
-void iterator_set(list_t *ptr, list_lnk_t *lnk, void *data);
+void iterator_get(list_t *ptr, node_t *lnk, void *data);
+// void iterator_set(list_t *ptr, node_t *lnk, void *data);
 
 #endif /*__COLLECTIONS_H__*/

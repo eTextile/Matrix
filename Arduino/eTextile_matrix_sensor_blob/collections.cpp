@@ -2,46 +2,37 @@
    Copyright (c) 2013-2017 Ibrahim Abdelkader <iabdalkader@openmv.io> & Kwabena W. Agyeman <kwagyeman@openmv.io>
    This work is licensed under the MIT license, see the file LICENSE for details.
 */
+
 #include <string.h> /* Used for memcpy() */
 #include <stdbool.h>
 
 #include "collections.h"
 #include "fb_alloc.h"
-#include "xalloc.h"
-#include "heap.h"
-
-#define CHAR_BITS (sizeof(char) * 8)
-#define CHAR_MASK (CHAR_BITS - 1)
-#define CHAR_SHIFT IM_LOG2(CHAR_MASK)
 
 ////////////// Bitmap //////////////
 
-void bitmap_alloc(bitmap_t *ptr, size_t size) {
-  ptr->size = size;
-  ptr->data = (char *) fb_alloc0(((size + CHAR_MASK) >> CHAR_SHIFT) * sizeof(char)); // Need explanation!
+void bitmap_bit_set(char *arrayPtr, int index) {
+  arrayPtr[index >> CHAR_SHIFT] |= 1 << (index & CHAR_MASK);
 }
 
-void bitmap_free(bitmap_t *ptr) {
-  if (ptr->data) {
-    fb_free();
-  }
+char bitmap_bit_get(char *arrayPtr, int index) {
+  return (arrayPtr[index >> CHAR_SHIFT] >> (index & CHAR_MASK)) & 1;
 }
 
-void bitmap_bit_set(bitmap_t *ptr, size_t index) {
-  ptr->data[index >> CHAR_SHIFT] |= 1 << (index & CHAR_MASK);
+/*
+void bitmap_clear(char *arrayPtr) {
+  memset(arrayPtr, 0, ((NEW_FRAME + CHAR_MASK) >> CHAR_SHIFT) * sizeof(char));
 }
-
-bool bitmap_bit_get(bitmap_t *ptr, size_t index) {
-  return (ptr->data[index >> CHAR_SHIFT] >> (index & CHAR_MASK)) & 1;
-}
-
+*/
 ////////////// Lifo //////////////
 
-void lifo_alloc_all(lifo_t *ptr, size_t *size, size_t data_len) {
+void lifo_alloc_all(lifo_t *ptr, size_t *size, size_t struct_size) {
+
   uint32_t tmp_size;
+
   ptr->data = (char *) fb_alloc_all(&tmp_size);
-  ptr->data_len = data_len;
-  ptr->size = tmp_size / data_len;
+  ptr->data_len = struct_size;
+  ptr->size = tmp_size / struct_size;
   ptr->len = 0;
   *size = ptr->size;
 }
@@ -86,56 +77,74 @@ size_t list_size(list_t *ptr) {
 }
 
 /////////// list_push_back() ///////////
-// Adds a new element at the end of the list container.
-// The content of *data is added to the new element.
-// This increases the container size by one.
-void list_push_back(heap_t *heap, list_t *ptr, void *data) {
+// Adds a new element at the end of the list container
+// The content of *data is added to the new element
 
-  list_lnk_t *tmp = (list_lnk_t *) xalloc(heap, sizeof(list_lnk_t) + ptr->data_len);
+// struct list_t :  node_t *head_ptr, *tail_ptr;
+//                  size, data_len;
 
-  memcpy(tmp->data, data, ptr->data_len);
+// struct node_t :  struct node *next_ptr, *prev_ptr;
+//                  char data[];
 
-  if (ptr->size++) {
-    tmp->next_ptr = NULL;
-    tmp->prev_ptr = ptr->tail_ptr;
-    ptr->tail_ptr->next_ptr = tmp;
-    ptr->tail_ptr = tmp;
+void list_push_back(list_t *ptr, void *data, node_t *tmpNode) {
+
+  // node_t *tmpNode = (node_t *) alloc(sizeof(node_t) + ptr->data_len);
+  memcpy(tmpNode->data, data, ptr->data_len); // Copy the input data to a temporary node
+
+  if (ptr->size++) { // Help! I don't understand this if() syntax!!!!!!!!!!!!!!
+    tmpNode->next_ptr = NULL;
+    tmpNode->prev_ptr = ptr->tail_ptr;
+    ptr->tail_ptr->next_ptr = tmpNode;
+    ptr->tail_ptr = tmpNode;
   } else {
-    tmp->next_ptr = NULL;
-    tmp->prev_ptr = NULL;
-    ptr->head_ptr = tmp;
-    ptr->tail_ptr = tmp;
+    tmpNode->next_ptr = NULL;
+    tmpNode->prev_ptr = NULL;
+    ptr->head_ptr = tmpNode;
+    ptr->tail_ptr = tmpNode;
   }
 }
 
-void list_pop_front(heap_t *heap, list_t *ptr, void *data) {
+// struct list_t :  node_t *head_ptr, *tail_ptr;
+//                  size, data_len;
 
-  list_lnk_t *tmp = ptr->head_ptr;
+// struct node_t :  struct node *next_ptr, *prev_ptr;
+//                  char data[];
+
+void list_pop_front(list_t *ptr, void *data, node_t *tmpNode) {
+
+  tmpNode = ptr->head_ptr;
 
   if (data) {
-    memcpy(data, tmp->data, ptr->data_len);
+    memcpy(data, tmpNode->data, ptr->data_len);
   }
-  tmp->next_ptr->prev_ptr = NULL;
-  ptr->head_ptr = tmp->next_ptr;
+  tmpNode->next_ptr->prev_ptr = NULL;
+  ptr->head_ptr = tmpNode->next_ptr;
   ptr->size -= 1;
-  xfree(heap, tmp);
+  // free(tmp); // Do I nead to free !?
 }
 
 ////////////// Iterators //////////////
 
-list_lnk_t *iterator_start_from_head(list_t *ptr) {
+node_t *iterator_start_from_head(list_t *ptr) {
   return ptr->head_ptr;
 }
 
-list_lnk_t *iterator_next(list_lnk_t *lnk) {
+node_t *iterator_next(node_t *lnk) {
   return lnk->next_ptr;
 }
 
-void iterator_get(list_t *ptr, list_lnk_t *lnk, void *data) {
+// void *memcpy(void *str1, const void *str2, size_t n)
+// str1 − This is pointer to the destination array where the content is to be copied, type-casted to a pointer of type void*.
+// str2 − This is pointer to the source of data to be copied, type-casted to a pointer of type void*.
+// n − This is the number of bytes to be copied.
+
+void iterator_get(list_t *ptr, node_t *lnk, void *data) {
   memcpy(data, lnk->data, ptr->data_len);
 }
 
-void iterator_set(list_t *ptr, list_lnk_t *lnk, void *data) {
+/*
+  void iterator_set(list_t *ptr, node_t *lnk, void *data) {
   memcpy(lnk->data, data, ptr->data_len);
-}
+  }
+*/
 

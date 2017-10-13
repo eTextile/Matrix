@@ -29,6 +29,7 @@
 #define  MIN_BLOB_SIZE        9   // Set the minimum blob size
 #define  A0_PIN               A0  // The output of multiplexerA (SIG pin) is connected to Analog pin 0
 
+#define  MAX_BLOBS            20
 
 // Digital pins array
 // See the attached home made PCB (Eagle file) to understand the Digital and Analog pin mapping
@@ -41,7 +42,8 @@ const int columnPins[COLS] = {
   A17, A18, A19, A0, A20, A1, A2, A3, A4, A5, A6, A7, A11, A8, A10, A9
 };
 
-volatile uint16_t minVals[ROW_FRAME] = {0};  // Array to store smallest values
+// volatile uint16_t minVals[ROW_FRAME] = {0};  // Array to store smallest values
+uint16_t minVals[ROW_FRAME] = {0};  // Array to store smallest values
 float32_t frameValues[ROW_FRAME] = {0};      // Array to store ofset input values
 uint8_t bilinIntOutput[NEW_FRAME] = {0};     // Bilinear interpolation Output buffer
 uint8_t myPacket[ROW_FRAME] = {0};           // Array to store values to transmit
@@ -50,9 +52,13 @@ uint8_t myPacket[ROW_FRAME] = {0};           // Array to store values to transmi
 arm_bilinear_interp_instance_f32 S;
 #endif // __CORE_TEENSY__
 
-image_t       frame;
-list_t        blobOut;
-rectangle_t   roi;
+
+char bitmap[NEW_FRAME] = {0};
+char *bitmapPtr;
+
+image_t       inputFrame;
+node_t        tmpNode;
+list_t        outputBlobs;
 
 void onPacket(const uint8_t *buffer, size_t size);
 void calibrate(volatile uint16_t *sumArray);

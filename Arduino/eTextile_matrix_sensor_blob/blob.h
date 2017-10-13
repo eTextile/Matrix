@@ -6,8 +6,11 @@
 #ifndef __BLOB_H__
 #define __BLOB_H__
 
+#include <stdint.h>
+
 #include "collections.h"
 
+// typedef struct
 #define IM_MAX(a,b) ({ __typeof__ (a) _a = (a); __typeof__ (b) _b = (b); _a > _b ? _a : _b; })
 #define IM_MIN(a,b) ({ __typeof__ (a) _a = (a); __typeof__ (b) _b = (b); _a < _b ? _a : _b; })
 
@@ -21,7 +24,6 @@ typedef struct xylf {
 } xylf_t;
 
 ////////////// Rectangle stuff //////////////
-
 typedef struct rectangle {
   int x;
   int y;
@@ -29,16 +31,16 @@ typedef struct rectangle {
   int h;
 } rectangle_t;
 
-bool rectangle_overlap(rectangle_t *ptr0, rectangle_t *ptr1);
+bool rectangle_overlap(rectangle_t *ptr0, rectangle_t *ptr);
 void rectangle_united(rectangle_t *dst, rectangle_t *src);
 
 ////////////// Threshold stuff //////////////
 
-#define GRAYSCALE_THRESHOLD(pixel, pThreshold) \
+#define PIXEL_THRESHOLD(pixel, pThreshold) \
   ({ \
     __typeof__(pixel) _pixel = (pixel); \
     __typeof__(pThreshold) _pThreshold = (pThreshold); \
-    (_pThreshold <= _pixel); \
+    _pThreshold <= _pixel; \
   })
 
 ////////////// Image stuff //////////////
@@ -51,14 +53,14 @@ typedef struct image {
 
 ////////////// Fast stuff //////////////
 
-#define IMAGE_COMPUTE_ROW_PTR(image, y) \
+#define FRAME_ROW_PTR(image, y) \
   ({ \
     __typeof__ (image) _image = (image); \
     __typeof__ (y) _y = (y); \
     ((uint8_t *) _image->data) + (_image->w * _y); \
   })
 
-#define IMAGE_GET_PIXEL_FAST(row_ptr, x) \
+#define GET_FRAME_PIXEL(row_ptr, x) \
   ({ \
     __typeof__ (row_ptr) _row_ptr = (row_ptr); \
     __typeof__ (x) _x = (x); \
@@ -67,22 +69,26 @@ typedef struct image {
 
 ////////////// Blob tracking //////////////
 
-typedef struct find_blobs_list_lnk_data {
+typedef struct blob {
   rectangle_t rect;
   uint32_t pixels;
   point_t centroid;
-  uint16_t code, count;
-} find_blobs_list_lnk_data_t;
+  uint16_t code;
+  uint16_t count;
+} blob_t;
 
 void find_blobs(
-  heap_t *heap,
-  list_t *out,
-  image_t *ptr,
-  rectangle_t *roi,
-  const unsigned int pixelThreshold,
-  const unsigned int minBlobSize,
-  const unsigned int minBlobPix,
+  image_t *input,
+  list_t *output,
+  node_t *tmpNode,
+  char *bitmapPtr,
+  const int rows,
+  const int cols,
+  const int pixelThreshold,
+  const int minBlobSize,
+  const int minBlobPix,
   bool merge,
   int margin
 );
+
 #endif /*__BLOB_H__*/

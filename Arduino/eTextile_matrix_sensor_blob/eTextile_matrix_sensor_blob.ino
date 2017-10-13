@@ -1,15 +1,15 @@
 // eTextile matrix sensor shield V2.0 (E-256)
 
 #include <PacketSerial.h> // https://github.com/bakercp/PacketSerial
-#include "eTextile_matrix_sensor_blob.h"
 #include "blob.h"
+#include "eTextile_matrix_sensor_blob.h"
+
+long lastFarme = 0;
 
 boolean DEBUG_INTERP = false;
 boolean DEBUG_BLOB = false;
 
 PacketSerial serial;
-
-heap_t *heap;
 
 void setup() {
 
@@ -22,39 +22,28 @@ void setup() {
   pinMode(BUTTON_PIN, INPUT_PULLUP);     // Set button pin as input and activate the input pullup resistor
   attachInterrupt(BUTTON_PIN, pushButton, RISING); // Attach interrrupt on button PIN
 
-  for (int i = 0; i < ROWS; i++) {
-    pinMode(rowPins[ROWS], INPUT);        // Set rows pins in high-impedance state
-  }
+  // bitmapPtr = &bitmap[0]; // Holds the address of the 1st element.
 
-  heap = (heap_t*)malloc(sizeof(heap_t));
-  memset(heap, 0, sizeof(heap_t));
-
-  void *region = malloc((byte)HEAP_INIT_SIZE);
-  memset(region, 0, (byte)HEAP_INIT_SIZE); // Added (byte) cast
-
-  for (int i = 0; i < BIN_COUNT; i++) {
-    heap->bins[i] = (bin_t*)malloc(sizeof(bin_t));
-    memset(heap->bins[i], 0, sizeof(bin_t));
-  }
-  init_heap(heap, (uint)region);
+  memset(minVals, 0, ROW_FRAME * sizeof(uint16_t)); // init minVals[] array
+  memset(bitmap, 0, NEW_FRAME * sizeof(char)); // Init bitmap[] array
+  memset(tmpNode.data, 0, NEW_FRAME * sizeof(char)); // Init tmpNode.data[] array
 
   S.numCols = COLS;
   S.numRows = ROWS;
-  S.pData = frameValues; // https://en.wikipedia.org/wiki/Q_(number_format)
+  S.pData = frameValues;
 
-  frame.w = COLS * SCALE;
-  frame.h = ROWS * SCALE;
-  frame.data = bilinIntOutput;
+  inputFrame.w = NEW_COLS;
+  inputFrame.h = NEW_ROWS;
+  inputFrame.data = bilinIntOutput;
 
-  roi.x = 0;
-  roi.y = 0;
-  roi.w = NEW_COLS;
-  roi.h = NEW_ROWS;
-
+  calibrate(minVals);
   bootBlink(9);
 }
 
 void loop() {
+
+  Serial.printf("NEW FRAME! %d \n", millis() - lastFarme );
+  lastFarme = millis();
 
   uint16_t sensorID = 0;
   for (uint8_t row = 0; row < ROWS; row++) {
@@ -80,7 +69,7 @@ void loop() {
       float32_t rowPos = (float32_t)row / SCALE;
       float32_t colPos = (float32_t)col / SCALE;
       bilinIntOutput[sensorID] = (uint8_t) arm_bilinear_interp_f32(&S, rowPos, colPos);
-      if (DEBUG_INTERP) Serial.print(" "), Serial.print(bilinIntOutput[sensorID]);
+      if (DEBUG_INTERP) Serial.printf(" %d", bilinIntOutput[sensorID]);
       sensorID++;
     }
     if (DEBUG_INTERP) Serial.println();
@@ -88,20 +77,22 @@ void loop() {
   if (DEBUG_INTERP) Serial.println();
 
   find_blobs(
-    heap,           // heap_t
-    &blobOut,       // list_t
-    &frame,         // image_t
-    &roi,           // rectangle_t
-    THRESHOLD,      // unsigned int
-    MIN_BLOB_SIZE,  // unsigned int
-    MIN_BLOB_PIX,   // unsigned int
+    &inputFrame,    // image_t
+    &outputBlobs,   // list_t
+    &tmpNode,       // node_t
+    &bitmap[0],     // Array of char
+    NEW_ROWS,       // const int
+    NEW_COLS,       // const int
+    THRESHOLD,      // const int
+    MIN_BLOB_SIZE,  // const int
+    MIN_BLOB_PIX,   // const int
     true,           // boolean merge
     0               // int margin
   );
 
-  for (list_lnk_t *it = iterator_start_from_head(&blobOut); it; it = iterator_next(it)) {
-    find_blobs_list_lnk_data_t lnk_data;
-    iterator_get(&blobOut, it, &lnk_data);
+  for (node_t *it = iterator_start_from_head(&outputBlobs); it; it = iterator_next(it)) {
+    blob_t lnk_data;
+    iterator_get(&outputBlobs, it, &lnk_data);
     if (DEBUG_BLOB) Serial.print(lnk_data.centroid.x);
     if (DEBUG_BLOB) Serial.print("_");
     if (DEBUG_BLOB) Serial.print(lnk_data.centroid.y);
@@ -118,7 +109,9 @@ void loop() {
 }
 
 /////////// Calibrate the 16x16 sensor matrix by doing average
-void calibrate(volatile uint16_t *sumArray) {
+void calibrate(uint16_t *sumArray) {
+
+  // memset(sumArray, 0, sizeof(sumArray)); TODO: set array to 0
 
   for (uint8_t i = 0; i < CALIBRATION_CYCLES; i++) {
     uint8_t pos = 0;

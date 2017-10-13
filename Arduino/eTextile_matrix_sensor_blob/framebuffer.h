@@ -29,5 +29,4 @@ extern framebuffer_t *fb_framebuffer;
 // Returns the main frame buffer size, factoring in pixel formats.
 uint32_t fb_buffer_size();
 
-
 #endif /*__FRAMEBUFFER_H__*/
