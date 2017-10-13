@@ -24,7 +24,7 @@
 #define  INC                  (1.0 / SCALE)
 
 #define  CALIBRATION_CYCLES   4   // Set the calibration cycles
-#define  THRESHOLD            50  // Set the threshold that determine toutch sensitivity (10 is low 30 is high)
+#define  THRESHOLD            100 // Set the threshold that determine toutch sensitivity (10 is low 30 is high)
 #define  MIN_BLOB_PIX         4   // Set the minimum blob pixels
 #define  MIN_BLOB_SIZE        9   // Set the minimum blob size
 #define  A0_PIN               A0  // The output of multiplexerA (SIG pin) is connected to Analog pin 0
@@ -55,6 +55,7 @@ arm_bilinear_interp_instance_f32 S;
 
 char bitmap[NEW_FRAME] = {0};
 char *bitmapPtr;
+int fps = 0;
 
 image_t       inputFrame;
 node_t        tmpNode;

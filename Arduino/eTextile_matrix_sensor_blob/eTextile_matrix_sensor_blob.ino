@@ -7,7 +7,7 @@
 long lastFarme = 0;
 
 boolean DEBUG_INTERP = false;
-boolean DEBUG_BLOB = false;
+boolean DEBUG_OUTPUT = true;
 
 PacketSerial serial;
 
@@ -24,9 +24,9 @@ void setup() {
 
   // bitmapPtr = &bitmap[0]; // Holds the address of the 1st element.
 
-  memset(minVals, 0, ROW_FRAME * sizeof(uint16_t)); // init minVals[] array
-  memset(bitmap, 0, NEW_FRAME * sizeof(char)); // Init bitmap[] array
-  memset(tmpNode.data, 0, NEW_FRAME * sizeof(char)); // Init tmpNode.data[] array
+  memset(&minVals, 0, ROW_FRAME * sizeof(uint16_t)); // init minVals[] array
+  memset(&bitmap, 0, NEW_FRAME * sizeof(char)); // Set bitmap array datas to 0
+  memset(&tmpNode, 0, sizeof(node_t) + NEW_FRAME * sizeof(char)); // Init tmpNode array
 
   S.numCols = COLS;
   S.numRows = ROWS;
@@ -41,10 +41,14 @@ void setup() {
 }
 
 void loop() {
-
-  Serial.printf("NEW FRAME! %d \n", millis() - lastFarme );
-  lastFarme = millis();
-
+  /*
+    if ((millis() - lastFarme) >= 1000) {
+      Serial.printf("\nFPS: %d", fps);  // I see 16 FPS!
+      lastFarme = millis();
+      fps = 0;
+    }
+    fps++;
+  */
   uint16_t sensorID = 0;
   for (uint8_t row = 0; row < ROWS; row++) {
     pinMode(rowPins[row], OUTPUT);  // Set row pin as output
@@ -93,10 +97,10 @@ void loop() {
   for (node_t *it = iterator_start_from_head(&outputBlobs); it; it = iterator_next(it)) {
     blob_t lnk_data;
     iterator_get(&outputBlobs, it, &lnk_data);
-    if (DEBUG_BLOB) Serial.print(lnk_data.centroid.x);
-    if (DEBUG_BLOB) Serial.print("_");
-    if (DEBUG_BLOB) Serial.print(lnk_data.centroid.y);
-    if (DEBUG_BLOB) Serial.println();
+    if (DEBUG_OUTPUT) Serial.print(lnk_data.centroid.x);
+    if (DEBUG_OUTPUT) Serial.print("_");
+    if (DEBUG_OUTPUT) Serial.print(lnk_data.centroid.y);
+    if (DEBUG_OUTPUT) Serial.println();
   }
 
   // The update() method attempts to read in
