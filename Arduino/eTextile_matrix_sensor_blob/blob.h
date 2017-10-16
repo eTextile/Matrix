@@ -6,13 +6,22 @@
 #ifndef __BLOB_H__
 #define __BLOB_H__
 
-#include <stdint.h>
-
+#include <Arduino.h>
 #include "collections.h"
 
-// typedef struct
-#define IM_MAX(a,b) ({ __typeof__ (a) _a = (a); __typeof__ (b) _b = (b); _a > _b ? _a : _b; })
-#define IM_MIN(a,b) ({ __typeof__ (a) _a = (a); __typeof__ (b) _b = (b); _a < _b ? _a : _b; })
+#define IM_MAX(a,b) \
+  ({ \
+    __typeof__ (a) _a = (a); \
+    __typeof__ (b) _b = (b); \
+    _a > _b ? _a : _b; \
+  })
+
+#define IM_MIN(a,b) \
+  ({ \
+    __typeof__ (a) _a = (a); \
+    __typeof__ (b) _b = (b); \
+    _a < _b ? _a : _b; \
+  })
 
 typedef struct point {
   int16_t x;
@@ -31,41 +40,43 @@ typedef struct rectangle {
   int h;
 } rectangle_t;
 
-bool rectangle_overlap(rectangle_t *ptr0, rectangle_t *ptr);
+boolean rectangle_overlap(rectangle_t *ptr0, rectangle_t *ptr);
 void rectangle_united(rectangle_t *dst, rectangle_t *src);
 
 ////////////// Threshold stuff //////////////
 
 #define PIXEL_THRESHOLD(pixel, pThreshold) \
   ({ \
-    __typeof__(pixel) _pixel = (pixel); \
-    __typeof__(pThreshold) _pThreshold = (pThreshold); \
+    __typeof__ (pixel) _pixel = (pixel); \
+    __typeof__ (pThreshold) _pThreshold = (pThreshold); \
     _pThreshold <= _pixel; \
   })
 
 ////////////// Image stuff //////////////
 
 typedef struct image {
-  uint8_t w;
-  uint8_t h;
-  uint8_t *data;
+  int w;
+  int h;
+  uint8_t *dataPtr;
 } image_t;
 
 ////////////// Fast stuff //////////////
 
-#define FRAME_ROW_PTR(image, y) \
+#define FRAME_ROW_PTR(imagePtr, y) \
   ({ \
-    __typeof__ (image) _image = (image); \
+    __typeof__ (imagePtr) _imagePtr = (imagePtr); \
     __typeof__ (y) _y = (y); \
-    ((uint8_t *) _image->data) + (_image->w * _y); \
+    (_imagePtr->dataPtr) + (_imagePtr->w * _y); \
   })
 
-#define GET_FRAME_PIXEL(row_ptr, x) \
+#define GET_FRAME_PIXEL(rowPtr, x) \
   ({ \
-    __typeof__ (row_ptr) _row_ptr = (row_ptr); \
+    __typeof__ (rowPtr) _rowPtr = (rowPtr); \
     __typeof__ (x) _x = (x); \
-    _row_ptr[_x]; \
+    _rowPtr[_x]; \
   })
+
+void print_frame_pixels(uint8_t *rowPtr);
 
 ////////////// Blob tracking //////////////
 
@@ -86,8 +97,8 @@ void find_blobs(
   const int cols,
   const int pixelThreshold,
   const int minBlobSize,
-  const int minBlobPix,
-  bool merge,
+  unsigned int minBlobPix,
+  boolean merge,
   int margin
 );
 

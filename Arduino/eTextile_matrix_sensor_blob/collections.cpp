@@ -3,11 +3,10 @@
    This work is licensed under the MIT license, see the file LICENSE for details.
 */
 
-#include <string.h> /* Used for memcpy() */
-#include <stdbool.h>
-
+#include <Arduino.h>
 #include "collections.h"
 #include "fb_alloc.h"
+#include "config.h"
 
 ////////////// Bitmap //////////////
 
@@ -19,22 +18,31 @@ char bitmap_bit_get(char *arrayPtr, int index) {
   return (arrayPtr[index >> CHAR_SHIFT] >> (index & CHAR_MASK)) & 1;
 }
 
-/*
 void bitmap_clear(char *arrayPtr) {
   memset(arrayPtr, 0, ((NEW_FRAME + CHAR_MASK) >> CHAR_SHIFT) * sizeof(char));
 }
-*/
+
+void bitmap_print(char *arrayPtr) {
+  Serial.printf("\n");
+  for (int i = 0; i < NEW_ROWS; i++) {
+    for (int j = 0; j < NEW_COLS; j++) {
+      Serial.printf( "%d" , bitmap_bit_get(arrayPtr, i * NEW_ROWS + j));
+    }
+    Serial.printf("\n");
+  }
+}
+
 ////////////// Lifo //////////////
 
-void lifo_alloc_all(lifo_t *ptr, size_t *size, size_t struct_size) {
+void lifo_alloc_all(lifo_t *ptr, size_t *siZe, size_t struct_size) {
 
   uint32_t tmp_size;
 
   ptr->data = (char *) fb_alloc_all(&tmp_size);
   ptr->data_len = struct_size;
-  ptr->size = tmp_size / struct_size;
+  ptr->siZe = tmp_size / struct_size;
   ptr->len = 0;
-  *size = ptr->size;
+  *siZe = ptr->siZe;
 }
 
 void lifo_free(lifo_t *ptr) {
@@ -47,11 +55,13 @@ size_t lifo_size(lifo_t *ptr) {
   return ptr->len;
 }
 
+// Add data at the end of the lifo buffer
 void lifo_enqueue(lifo_t *ptr, void *data) {
   memcpy(ptr->data + (ptr->len * ptr->data_len), data, ptr->data_len);
   ptr->len += 1;
 }
 
+// Cpoy the lifo data into data, exept the last element
 void lifo_dequeue(lifo_t *ptr, void *data) {
   if (data) {
     memcpy(data, ptr->data + ((ptr->len - 1) * ptr->data_len), ptr->data_len);
@@ -64,7 +74,7 @@ void lifo_dequeue(lifo_t *ptr, void *data) {
 void list_init(list_t *ptr, size_t data_len) {
   ptr->head_ptr = NULL;
   ptr->tail_ptr = NULL;
-  ptr->size = 0;
+  ptr->siZe = 0;
   ptr->data_len = data_len;
 }
 
@@ -73,7 +83,7 @@ void list_copy(list_t *dst, list_t *src) {
 }
 
 size_t list_size(list_t *ptr) {
-  return ptr->size;
+  return ptr->siZe;
 }
 
 /////////// list_push_back() ///////////
@@ -91,7 +101,7 @@ void list_push_back(list_t *ptr, void *data, node_t *tmpNode) {
   // node_t *tmpNode = (node_t *) alloc(sizeof(node_t) + ptr->data_len);
   memcpy(tmpNode->data, data, ptr->data_len); // Copy the input data to a temporary node
 
-  if (ptr->size++) { // Help! I don't understand this if() syntax!!!!!!!!!!!!!!
+  if (ptr->siZe++) { // Help! I don't understand this if() syntax!!!!!!!!!!!!!!
     tmpNode->next_ptr = NULL;
     tmpNode->prev_ptr = ptr->tail_ptr;
     ptr->tail_ptr->next_ptr = tmpNode;
@@ -119,8 +129,8 @@ void list_pop_front(list_t *ptr, void *data, node_t *tmpNode) {
   }
   tmpNode->next_ptr->prev_ptr = NULL;
   ptr->head_ptr = tmpNode->next_ptr;
-  ptr->size -= 1;
-  // free(tmp); // Do I nead to free !?
+  ptr->siZe -= 1;
+  // free(tmpNode); // Do I nead to free it !?
 }
 
 ////////////// Iterators //////////////

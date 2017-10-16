@@ -6,9 +6,6 @@
 #ifndef __COLLECTIONS_H__
 #define __COLLECTIONS_H__
 
-#include <stddef.h>
-#include <stdbool.h>
-
 #define IM_LOG2_2(x)    (((x) &                0x2ULL) ? ( 2                        ) :             1) // NO ({ ... }) !
 #define IM_LOG2_4(x)    (((x) &                0xCULL) ? ( 2 +  IM_LOG2_2((x) >>  2)) :  IM_LOG2_2(x)) // NO ({ ... }) !
 #define IM_LOG2_8(x)    (((x) &               0xF0ULL) ? ( 4 +  IM_LOG2_4((x) >>  4)) :  IM_LOG2_4(x)) // NO ({ ... }) !
@@ -23,37 +20,43 @@
 ////////////// Bitmap //////////////
 
 typedef struct {
-  size_t size;
+  size_t siZe;
   char *data;
 } bitmap_t;
 
 void bitmap_bit_set(char *arrayPtr, int index);
 char bitmap_bit_get(char *arrayPtr, int index);
+void bitmap_clear(char *arrayPtr);
+void bitmap_print(char *arrayPtr);
 
-#define BITMAP_ROW_INDEX(image, y) \
+#define BITMAP_ROW_INDEX(imagePtr, y) \
   ({ \
-    __typeof__ (image) _image = (image); \
+    __typeof__ (imagePtr) _imagePtr = (imagePtr); \
     __typeof__ (y) _y = (y); \
-    _image->w * _y; \
+    _imagePtr->w * _y; \
   })
 
-#define BITMAP_INDEX(row_index, x) \
+#define BITMAP_INDEX(rowIndex, x) \
   ({ \
-    __typeof__ (row_index) _row_index = (row_index); \
+    __typeof__ (rowIndex) _rowIndex = (rowIndex); \
     __typeof__ (x) _x = (x); \
-    _row_index + _x; \
+    _rowIndex + _x; \
   })
 
 ////////////// Lifo //////////////
 
 typedef struct lifo {
-  size_t len, size, data_len;
+  size_t len;
+  size_t siZe;
+  size_t data_len;
   char *data;
 } lifo_t;
 
-void lifo_alloc_all(lifo_t *ptr, size_t *size, size_t data_len);
+void lifo_alloc_all(lifo_t *ptr, size_t *siZe, size_t data_len);
 void lifo_free(lifo_t *ptr);
+
 size_t lifo_size(lifo_t *ptr);
+
 void lifo_enqueue(lifo_t *ptr, void *data);
 void lifo_dequeue(lifo_t *ptr, void *data);
 
@@ -66,7 +69,7 @@ typedef struct node {
 
 typedef struct list {
   node_t *head_ptr, *tail_ptr;
-  size_t size, data_len;
+  size_t siZe, data_len;
 } list_t;
 
 void list_init(list_t *ptr, size_t data_len);

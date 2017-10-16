@@ -4,12 +4,7 @@
 #include "blob.h"
 #include "eTextile_matrix_sensor_blob.h"
 
-long lastFarme = 0;
-
-boolean DEBUG_INTERP = false;
-boolean DEBUG_OUTPUT = true;
-
-PacketSerial serial;
+// PacketSerial serial;
 
 void setup() {
 
@@ -22,21 +17,29 @@ void setup() {
   pinMode(BUTTON_PIN, INPUT_PULLUP);     // Set button pin as input and activate the input pullup resistor
   attachInterrupt(BUTTON_PIN, pushButton, RISING); // Attach interrrupt on button PIN
 
-  // bitmapPtr = &bitmap[0]; // Holds the address of the 1st element.
+  minValsPtr = &minVals[0]; // Initialize minVals array pointer
+  memset(minValsPtr, 0, ROW_FRAME * sizeof(uint16_t)); // Set minVals array datas to 0
 
-  memset(&minVals, 0, ROW_FRAME * sizeof(uint16_t)); // init minVals[] array
-  memset(&bitmap, 0, NEW_FRAME * sizeof(char)); // Set bitmap array datas to 0
-  memset(&tmpNode, 0, sizeof(node_t) + NEW_FRAME * sizeof(char)); // Init tmpNode array
+  bitmapPtr = &bitmap[0]; // Initialize bitmap array pointer
+  memset(bitmapPtr, 0, NEW_FRAME * sizeof(char)); // Set bitmap array datas to 0
 
-  S.numCols = COLS;
-  S.numRows = ROWS;
-  S.pData = frameValues;
+  tmpNodePtr = &tmpNode; // Initialize tmpNode node_t pointer
+  memset(tmpNodePtr, 0, sizeof(node_t) + NEW_FRAME * sizeof(char)); // Initialize tmpNode size
 
-  inputFrame.w = NEW_COLS;
-  inputFrame.h = NEW_ROWS;
-  inputFrame.data = bilinIntOutput;
+  outputBlobsPtr = &outputBlobs; // Initialize outputBlobs list_t pointer
+  memset(outputBlobsPtr, 0, sizeof(list_t) + MAX_BLOBS * sizeof(&tmpNode)); // Init outputBlobs size
 
-  calibrate(minVals);
+  interpolate.numCols = COLS;
+  interpolate.numRows = ROWS;
+  interpolate.pData = &frameValues[0];
+
+  inputFramePtr = &inputFrame;
+
+  inputFramePtr->w = NEW_COLS;
+  inputFramePtr->h = NEW_ROWS;
+  inputFramePtr->dataPtr = &bilinIntOutput[0];
+
+  // calibrate(minValsPtr);
   bootBlink(9);
 }
 
@@ -57,7 +60,7 @@ void loop() {
       uint16_t rowValue = analogRead(columnPins[col]); // Read the sensor value
       int16_t value = rowValue - minVals[sensorID]; // Aplay the calibration ofset
       if (value > 0) {
-        frameValues[sensorID] = (float32_t)value;
+        frameValues[sensorID] = value;
       } else {
         frameValues[sensorID] = 0;
       }
@@ -70,9 +73,9 @@ void loop() {
   sensorID = 0;
   for (uint8_t row = 0; row < NEW_ROWS; row++) {
     for (uint8_t col = 0; col < NEW_COLS; col++) {
-      float32_t rowPos = (float32_t)row / SCALE;
-      float32_t colPos = (float32_t)col / SCALE;
-      bilinIntOutput[sensorID] = (uint8_t) arm_bilinear_interp_f32(&S, rowPos, colPos);
+      float32_t rowPos = (float32_t)(row / SCALE);
+      float32_t colPos = (float32_t)(col / SCALE);
+      bilinIntOutput[sensorID] = (uint8_t) arm_bilinear_interp_f32(&interpolate, rowPos, colPos);
       if (DEBUG_INTERP) Serial.printf(" %d", bilinIntOutput[sensorID]);
       sensorID++;
     }
@@ -81,22 +84,22 @@ void loop() {
   if (DEBUG_INTERP) Serial.println();
 
   find_blobs(
-    &inputFrame,    // image_t
-    &outputBlobs,   // list_t
-    &tmpNode,       // node_t
-    &bitmap[0],     // Array of char
-    NEW_ROWS,       // const int
-    NEW_COLS,       // const int
-    THRESHOLD,      // const int
-    MIN_BLOB_SIZE,  // const int
-    MIN_BLOB_PIX,   // const int
-    true,           // boolean merge
-    0               // int margin
+    inputFramePtr,    // image_t
+    outputBlobsPtr,   // list_t
+    tmpNodePtr,       // node_t
+    bitmapPtr,        // Array of char
+    NEW_ROWS,         // const int
+    NEW_COLS,         // const int
+    THRESHOLD,        // const int
+    MIN_BLOB_SIZE,    // const int
+    MIN_BLOB_PIX,     // const int
+    false,            // boolean merge
+    1                 // int margin
   );
 
   for (node_t *it = iterator_start_from_head(&outputBlobs); it; it = iterator_next(it)) {
     blob_t lnk_data;
-    iterator_get(&outputBlobs, it, &lnk_data);
+    iterator_get(outputBlobsPtr, it, &lnk_data);
     if (DEBUG_OUTPUT) Serial.print(lnk_data.centroid.x);
     if (DEBUG_OUTPUT) Serial.print("_");
     if (DEBUG_OUTPUT) Serial.print(lnk_data.centroid.y);
@@ -113,9 +116,7 @@ void loop() {
 }
 
 /////////// Calibrate the 16x16 sensor matrix by doing average
-void calibrate(uint16_t *sumArray) {
-
-  // memset(sumArray, 0, sizeof(sumArray)); TODO: set array to 0
+void calibrate(volatile uint16_t *sumArray) {
 
   for (uint8_t i = 0; i < CALIBRATION_CYCLES; i++) {
     uint8_t pos = 0;
@@ -146,15 +147,17 @@ void bootBlink(uint8_t flash) {
 /////////// Called with interrupt triggered with push button attached to I/O pin 32
 void pushButton() {
   cli();
-  calibrate(minVals);
+  calibrate(minValsPtr);
   bootBlink(3);
   sei();
 }
 
-// This is our packet callback.
-// The buffer is delivered already decoded.
-void onPacket(const uint8_t *buffer, size_t size) {
+/*
+  // This is our packet callback.
+  // The buffer is delivered already decoded.
+  void onPacket(const uint8_t *buffer, size_t size) {
   // The send() method will encode the buffer
   // as a packet, set packet markers, etc.
   // serial.send(myPacket, ROW_FRAME);
-}
+  }
+*/

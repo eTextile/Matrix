@@ -9,9 +9,7 @@
 #ifndef __FRAMEBUFFER_H__
 #define __FRAMEBUFFER_H__
 
-#include "blob.h"
-
-#include <stdint.h>
+#include <Arduino.h>
 
 typedef struct framebuffer {
   int w, h;

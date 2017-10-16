@@ -1,5 +1,5 @@
-AVR_TOOLS_DIR = /usr/
-ARDUINO_DIR  = $(shell dirname $(shell readlink -f `which arduino`))
+#AVR_TOOLS_DIR = /usr/include
+#ARDUINO_DIR  = $(shell dirname $(shell readlink -f `which arduino`))
 
 BOARD_TAG    = teensy31
 ARDUINO_LIBS = PacketSerial

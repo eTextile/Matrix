@@ -6,11 +6,7 @@
    Interface for using extra frame buffer RAM as a stack.
 */
 
-#include <stdlib.h>
-#include <string.h>
-
 #include <Arduino.h>
-
 #include "fb_alloc.h"
 #include "framebuffer.h"
 
@@ -49,6 +45,7 @@ void *fb_alloc0(uint32_t size) {
 void *fb_alloc_all(uint32_t *size) {
 
   int32_t temp = pointer - ((char *) MAIN_FB_PIXELS()) - sizeof(uint32_t);
+  
   if (temp < sizeof(uint32_t)) {
     *size = 0;
     return NULL;
