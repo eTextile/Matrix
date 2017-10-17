@@ -66,7 +66,7 @@ typedef struct image {
   ({ \
     __typeof__ (imagePtr) _imagePtr = (imagePtr); \
     __typeof__ (y) _y = (y); \
-    (_imagePtr->dataPtr) + (_imagePtr->w * _y); \
+    ((uint8_t *)_imagePtr->dataPtr) + (_imagePtr->w * _y); \
   })
 
 #define GET_FRAME_PIXEL(rowPtr, x) \

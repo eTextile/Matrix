@@ -24,6 +24,7 @@ void setup() {
   memset(bitmapPtr, 0, NEW_FRAME * sizeof(char)); // Set bitmap array datas to 0
 
   tmpNodePtr = &tmpNode; // Initialize tmpNode node_t pointer
+  tmpNodePtr = (node_t *) malloc(sizeof(node_t) + NEW_FRAME * sizeof(char));
   memset(tmpNodePtr, 0, sizeof(node_t) + NEW_FRAME * sizeof(char)); // Initialize tmpNode size
 
   outputBlobsPtr = &outputBlobs; // Initialize outputBlobs list_t pointer
@@ -44,14 +45,14 @@ void setup() {
 }
 
 void loop() {
-  /*
-    if ((millis() - lastFarme) >= 1000) {
-      Serial.printf("\nFPS: %d", fps);  // I see 16 FPS!
-      lastFarme = millis();
-      fps = 0;
-    }
-    fps++;
-  */
+
+  if ((millis() - lastFarme) >= 1000) {
+    Serial.printf("\nFPS: %d", fps);  // I see 16 FPS!
+    lastFarme = millis();
+    fps = 0;
+  }
+  fps++;
+
   uint16_t sensorID = 0;
   for (uint8_t row = 0; row < ROWS; row++) {
     pinMode(rowPins[row], OUTPUT);  // Set row pin as output
@@ -69,8 +70,8 @@ void loop() {
     pinMode(rowPins[row], INPUT); // Set row pin in high-impedance state
     // digitalWrite(rowPins[row], LOW); // Set row pin to GND (TO TEST!)
   }
-
   sensorID = 0;
+
   for (uint8_t row = 0; row < NEW_ROWS; row++) {
     for (uint8_t col = 0; col < NEW_COLS; col++) {
       float32_t rowPos = (float32_t)(row / SCALE);
@@ -93,18 +94,16 @@ void loop() {
     THRESHOLD,        // const int
     MIN_BLOB_SIZE,    // const int
     MIN_BLOB_PIX,     // const int
-    false,            // boolean merge
-    1                 // int margin
+    true ,            // boolean merge
+    0                 // int margin
   );
-
-  for (node_t *it = iterator_start_from_head(&outputBlobs); it; it = iterator_next(it)) {
-    blob_t lnk_data;
-    iterator_get(outputBlobsPtr, it, &lnk_data);
-    if (DEBUG_OUTPUT) Serial.print(lnk_data.centroid.x);
-    if (DEBUG_OUTPUT) Serial.print("_");
-    if (DEBUG_OUTPUT) Serial.print(lnk_data.centroid.y);
-    if (DEBUG_OUTPUT) Serial.println();
-  }
+  /*
+    for (node_t *it = iterator_start_from_head(&outputBlobs); it; it = iterator_next(it)) {
+      blob_t lnk_data;
+      iterator_get(outputBlobsPtr, it, &lnk_data);
+      if (DEBUG_OUTPUT) Serial.printf("\nposX: %d posY: %d", lnk_data.centroid.x, lnk_data.centroid.y);
+    }
+  */
 
   // The update() method attempts to read in
   // any incoming serial data and emits packets via

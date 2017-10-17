@@ -89,47 +89,63 @@ size_t list_size(list_t *ptr) {
 /////////// list_push_back() ///////////
 // Adds a new element at the end of the list container
 // The content of *data is added to the new element
+//
+// struct list_t:  node_t *head_ptr, *tail_ptr;
+//                 size, data_len;
+// struct node_t:  struct node *next_ptr, *prev_ptr;
+//                 char data[];
 
-// struct list_t :  node_t *head_ptr, *tail_ptr;
-//                  size, data_len;
+void list_push_back(list_t *listPtr, void *data, node_t *tmpNode) {
 
-// struct node_t :  struct node *next_ptr, *prev_ptr;
-//                  char data[];
+  if (DEBUG_BLOB) Serial.printf(F("\n>>>> Starting list push back"));
+  // node_t *tmpNode = (node_t *) alloc(sizeof(node_t) + listPtr->data_len);
 
-void list_push_back(list_t *ptr, void *data, node_t *tmpNode) {
+  memcpy(tmpNode->data, data, listPtr->data_len); // Copy the input data to a temporary node
 
-  // node_t *tmpNode = (node_t *) alloc(sizeof(node_t) + ptr->data_len);
-  memcpy(tmpNode->data, data, ptr->data_len); // Copy the input data to a temporary node
-
-  if (ptr->siZe++) { // Help! I don't understand this if() syntax!!!!!!!!!!!!!!
+  if (DEBUG_BLOB) Serial.printf(F("\n>>>> list_push_back copy data to tmpNode "));
+  
+  if (listPtr->siZe++) { // Help! I don't understand this if() syntax!!
     tmpNode->next_ptr = NULL;
-    tmpNode->prev_ptr = ptr->tail_ptr;
-    ptr->tail_ptr->next_ptr = tmpNode;
-    ptr->tail_ptr = tmpNode;
+    tmpNode->prev_ptr = listPtr->tail_ptr;
+    listPtr->tail_ptr->next_ptr = tmpNode;
+    listPtr->tail_ptr = tmpNode;
   } else {
     tmpNode->next_ptr = NULL;
     tmpNode->prev_ptr = NULL;
-    ptr->head_ptr = tmpNode;
-    ptr->tail_ptr = tmpNode;
+    listPtr->head_ptr = tmpNode;
+    listPtr->tail_ptr = tmpNode;
   }
 }
 
-// struct list_t :  node_t *head_ptr, *tail_ptr;
-//                  size, data_len;
+/////////// list_pop_front() ///////////
+// Remove the first element of the list container
+// struct list_t:  node_t *head_ptr, *tail_ptr;
+//                 size, data_len;
+// struct node_t:  struct node *next_ptr, *prev_ptr;
+//                 char data[];
 
-// struct node_t :  struct node *next_ptr, *prev_ptr;
-//                  char data[];
+void list_pop_front(list_t *listPtr, void *data, node_t *tmpNode) {
 
-void list_pop_front(list_t *ptr, void *data, node_t *tmpNode) {
-
-  tmpNode = ptr->head_ptr;
+  tmpNode = listPtr->head_ptr;
+  if (DEBUG_BLOB) Serial.printf("\n>>>> Set tmpNote point to the head of the list");
 
   if (data) {
-    memcpy(data, tmpNode->data, ptr->data_len);
+    memcpy(data, tmpNode->data, listPtr->data_len);
+    if (DEBUG_BLOB) Serial.printf("\n>>>> Make copy");
   }
+
   tmpNode->next_ptr->prev_ptr = NULL;
-  ptr->head_ptr = tmpNode->next_ptr;
-  ptr->siZe -= 1;
+  // tmpNode->next_ptr = tmpNode->prev_ptr;
+  // tmpNode->prev_ptr = NULL;
+
+  if (DEBUG_BLOB) Serial.printf("\n>>>> Change pointers A");
+
+  listPtr->head_ptr = tmpNode->next_ptr;
+  if (DEBUG_BLOB) Serial.printf("\n>>>> Change pointers B");
+
+  listPtr->siZe -= 1;
+  if (DEBUG_BLOB) Serial.printf("\n>>>> Exit");
+
   // free(tmpNode); // Do I nead to free it !?
 }
 

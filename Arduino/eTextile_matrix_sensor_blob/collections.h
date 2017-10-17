@@ -77,6 +77,7 @@ void list_copy(list_t *dst, list_t *src);
 size_t list_size(list_t *ptr);
 void list_push_back(list_t *ptr, void *data, node_t *tmpNode);
 void list_pop_front(list_t *ptr, void *data, node_t *tmpNode);
+// void list_pop_front(list_t *ptr, void *data);
 
 ////////////// Iterators //////////////
 

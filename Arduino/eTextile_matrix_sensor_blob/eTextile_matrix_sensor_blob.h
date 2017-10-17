@@ -43,6 +43,9 @@ image_t       *inputFramePtr;
 node_t        tmpNode;
 node_t        *tmpNodePtr;
 
+node_t        tmpNodeB;
+node_t        *tmpNodePtrB;
+
 list_t        outputBlobs;
 list_t        *outputBlobsPtr;
 
