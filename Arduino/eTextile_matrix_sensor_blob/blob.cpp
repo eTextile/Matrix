@@ -257,7 +257,7 @@ void find_blobs(
       list_t out_temp;
       list_init(&out_temp, sizeof(blob_t));
 
-      if (DEBUG_BLOB) Serial.printf("\n>>>> List init: %d", list_size(output_ptr));
+      if (DEBUG_BLOB) Serial.printf("\n>>>> List size init: %d", list_size(output_ptr));
 
       while (list_size(output_ptr)) {
 

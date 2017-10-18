@@ -76,11 +76,11 @@ void lifo_dequeue(lifo_t* ptr, void* data) {
 
 ////////////// List //////////////
 
-void list_init(list_t* ptr, size_t data_len) {
-  ptr->head_ptr = NULL;
-  ptr->tail_ptr = NULL;
-  ptr->siZe = 0;
-  ptr->data_len = data_len;
+void list_init(list_t* listPtr, size_t data_len) {
+  listPtr->head_ptr = NULL;
+  listPtr->tail_ptr = NULL;
+  listPtr->siZe = 0;
+  listPtr->data_len = data_len;
 }
 
 void list_copy(list_t* dst, list_t* src) {

@@ -74,12 +74,11 @@ typedef struct list {
   size_t siZe, data_len;
 } list_t;
 
-void list_init(list_t* ptr, size_t data_len);
+void list_init(list_t* listPtr, size_t data_len);
 void list_copy(list_t* dst, list_t* src);
 size_t list_size(list_t* ptr);
 void list_push_back(list_t* listPtr, void* data, node_t* tmpNode);
 void list_pop_front(list_t* listPtr, void* data);
-// void list_pop_front(list_t* ptr, void* data, node_t* tmpNode);
 
 ////////////// Iterators //////////////
 

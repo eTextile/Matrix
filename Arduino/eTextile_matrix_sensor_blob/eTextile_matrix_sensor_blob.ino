@@ -18,7 +18,6 @@ void setup() {
   attachInterrupt(BUTTON_PIN, pushButton, RISING); // Attach interrrupt on button PIN
 
   minValsPtr = &minVals[0]; // Initialize minVals array pointer
-  memset(minValsPtr, 0, ROW_FRAME * sizeof(uint16_t)); // Set minVals array datas to 0
 
   interpolate.numCols = COLS;
   interpolate.numRows = ROWS;
@@ -31,7 +30,7 @@ void setup() {
   inputFramePtr->dataPtr = &bilinIntOutput[0];
 
   bitmapPtr = &bitmap[0]; // Initialize bitmap array pointer
-  memset(bitmapPtr, 0, NEW_FRAME * sizeof(char)); // Set bitmap array datas to 0
+  memset(bitmapPtr, 255, NEW_FRAME * sizeof(char)); // Set bitmap array datas to 0
 
   tmpNodePushPtr = &tmpNodePush; // Initialize tmpNode node_t pointer
   tmpNodePushPtr = (node_t*) malloc(sizeof(node_t) + NEW_FRAME * sizeof(char));
@@ -77,12 +76,12 @@ void loop() {
       float rowPos = row / SCALE;
       float colPos = col / SCALE;
       bilinIntOutput[sensorID] = (uint8_t) arm_bilinear_interp_f32(&interpolate, rowPos, colPos);
-      // if (DEBUG_INTERP) Serial.printf(" %d", bilinIntOutput[sensorID]);
+      if (DEBUG_INTERP) Serial.printf(" %d", bilinIntOutput[sensorID]);
       sensorID++;
     }
-    // if (DEBUG_INTERP) Serial.println();
+    if (DEBUG_INTERP) Serial.println();
   }
-  // if (DEBUG_INTERP) Serial.println();
+  if (DEBUG_INTERP) Serial.println();
 
   find_blobs(
     inputFramePtr,    // image_t
@@ -117,7 +116,7 @@ void loop() {
 void calibrate(uint16_t *sumArray, const uint8_t cycles) {
 
   uint8_t pos;
-  memset(sumArray, 0, ROW_FRAME * sizeof(uint16_t)); // Set minVals array datas to 0
+  memset(sumArray, 255, ROW_FRAME * sizeof(uint16_t)); // Set minVals array datas to 0
 
   for (uint8_t i = 0; i < cycles; i++) {
     pos = 0;
@@ -126,9 +125,9 @@ void calibrate(uint16_t *sumArray, const uint8_t cycles) {
       digitalWrite(rowPins[row], HIGH);
       for (uint8_t col = 0; col < COLS; col++) {
         uint16_t val = analogRead(columnPins[col]); // Read the sensor value
-        // si la valeur courante est plus petite que la valeur précédente
-
-        sumArray[pos] += (uint16_t) val / cycles;
+        if (val < sumArray[pos]){
+          sumArray[pos] = val;
+        }
         pos++;
       }
       pinMode(rowPins[row], INPUT); // Set row pin in high-impedance state
@@ -136,6 +135,7 @@ void calibrate(uint16_t *sumArray, const uint8_t cycles) {
     }
   }
   bootBlink(3);
+  if (DEBUG_OUTPUT) Serial.printf("\n>>>> Calibrated!");
 }
 
 /////////// Blink
