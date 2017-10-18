@@ -9,10 +9,10 @@
 #ifndef __FB_ALLOC_H__
 #define __FB_ALLOC_H__
 
-void *fb_alloc(uint32_t size);      //
-void *fb_alloc0(uint32_t size);     //
-void *fb_alloc_all(uint32_t *size); // returns pointer and sets size
-void fb_free();
-void fb_alloc_fail();
+void* fb_alloc(uint32_t size);      //
+void* fb_alloc0(uint32_t size);     //
+void* fb_alloc_all(uint32_t *size); // returns pointer and sets size
+void  fb_free();
+void  fb_alloc_fail();
 
 #endif /*__FF_ALLOC_H__*/

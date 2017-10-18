@@ -26,6 +26,7 @@
 typedef struct point {
   int16_t x;
   int16_t y;
+  int16_t z;
 } point_t;
 
 typedef struct xylf {
@@ -40,8 +41,8 @@ typedef struct rectangle {
   int h;
 } rectangle_t;
 
-boolean rectangle_overlap(rectangle_t *ptr0, rectangle_t *ptr);
-void rectangle_united(rectangle_t *dst, rectangle_t *src);
+boolean rectangle_overlap(rectangle_t* ptr0, rectangle_t* ptr);
+void rectangle_united(rectangle_t* dst, rectangle_t* src);
 
 ////////////// Threshold stuff //////////////
 
@@ -57,7 +58,7 @@ void rectangle_united(rectangle_t *dst, rectangle_t *src);
 typedef struct image {
   int w;
   int h;
-  uint8_t *dataPtr;
+  uint8_t* dataPtr;
 } image_t;
 
 ////////////// Fast stuff //////////////
@@ -66,7 +67,7 @@ typedef struct image {
   ({ \
     __typeof__ (imagePtr) _imagePtr = (imagePtr); \
     __typeof__ (y) _y = (y); \
-    ((uint8_t *)_imagePtr->dataPtr) + (_imagePtr->w * _y); \
+    ((uint8_t*)_imagePtr->dataPtr) + (_imagePtr->w * _y); \
   })
 
 #define GET_FRAME_PIXEL(rowPtr, x) \
@@ -76,7 +77,7 @@ typedef struct image {
     _rowPtr[_x]; \
   })
 
-void print_frame_pixels(uint8_t *rowPtr);
+void print_frame_pixels(uint8_t* rowPtr);
 
 ////////////// Blob tracking //////////////
 
@@ -89,17 +90,15 @@ typedef struct blob {
 } blob_t;
 
 void find_blobs(
-  image_t *input,
-  list_t *output,
-  node_t *tmpNode,
-  char *bitmapPtr,
+  const image_t* input_ptr,
+  list_t* output_ptr,
+  node_t* tmpNode_ptr,
+  char* bitmap_ptr,
   const int rows,
   const int cols,
   const int pixelThreshold,
   const int minBlobSize,
-  unsigned int minBlobPix,
-  boolean merge,
-  int margin
+  const unsigned int minBlobPix,
+  const boolean merge
 );
-
 #endif /*__BLOB_H__*/

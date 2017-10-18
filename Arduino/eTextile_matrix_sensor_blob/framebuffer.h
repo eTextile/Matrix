@@ -16,7 +16,7 @@ typedef struct framebuffer {
   uint8_t pixels[];
 } framebuffer_t;
 
-extern framebuffer_t *fb_framebuffer;
+extern framebuffer_t* fb_framebuffer;
 
 // Use these macros to get a pointer to main framebuffer.
 #define MAIN_FB() (fb_framebuffer)

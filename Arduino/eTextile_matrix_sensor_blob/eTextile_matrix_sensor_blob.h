@@ -6,7 +6,8 @@
 #include "config.h"
 
 long lastFarme = 0;
-int fps = 0;
+uint8_t fps = 0;
+uint16_t sensorID = 0;
 
 // Digital pins array
 // See the attached home made PCB (Eagle file) to understand the Digital and Analog pin mapping
@@ -20,13 +21,13 @@ const int columnPins[COLS] = {
 };
 
 uint16_t minVals[ROW_FRAME] = {0};  // Array to store smallest values
-uint16_t *minValsPtr;
+uint16_t* minValsPtr;
 
 float32_t frameValues[ROW_FRAME] = {0};      // Array to store ofset input values
-float32_t *frameValuesPtr;
+float32_t* frameValuesPtr;
 
 uint8_t bilinIntOutput[NEW_FRAME] = {0};     // Bilinear interpolation Output buffer
-uint8_t *bilinIntOutputPtr;
+uint8_t* bilinIntOutputPtr;
 
 // uint8_t myPacket[ROW_FRAME] = {0};           // Array to store values to transmit
 
@@ -34,23 +35,17 @@ uint8_t *bilinIntOutputPtr;
 arm_bilinear_interp_instance_f32 interpolate;
 #endif // __CORE_TEENSY__
 
-char bitmap[NEW_FRAME] = {0};
-char *bitmapPtr;
+char      bitmap[NEW_FRAME] = {0};
+char*     bitmapPtr;
+image_t   inputFrame;
+image_t*  inputFramePtr;
+node_t    tmpNodePush;
+node_t*   tmpNodePushPtr;
+list_t    outputBlobs;
+list_t*   outputBlobsPtr;
 
-image_t       inputFrame;
-image_t       *inputFramePtr;
-
-node_t        tmpNode;
-node_t        *tmpNodePtr;
-
-node_t        tmpNodeB;
-node_t        *tmpNodePtrB;
-
-list_t        outputBlobs;
-list_t        *outputBlobsPtr;
-
-// void onPacket(const uint8_t *buffer, size_t size);
-void calibrate(volatile uint16_t *sumArray);
+// void onPacket(const uint8_t* buffer, size_t size);
+void calibrate(uint16_t* sumArray, const uint8_t cycles);
 void bootBlink(uint8_t flash);
 void pushButton();
 

@@ -21,13 +21,13 @@
 
 typedef struct {
   size_t siZe;
-  char *data;
+  char* data;
 } bitmap_t;
 
-void bitmap_bit_set(char *arrayPtr, int index);
-char bitmap_bit_get(char *arrayPtr, int index);
-void bitmap_clear(char *arrayPtr);
-void bitmap_print(char *arrayPtr);
+void bitmap_bit_set(char* arrayPtr, int index);
+char bitmap_bit_get(char* arrayPtr, int index);
+void bitmap_clear(char* arrayPtr);
+void bitmap_print(char* arrayPtr);
 
 #define BITMAP_ROW_INDEX(imagePtr, y) \
   ({ \
@@ -49,42 +49,42 @@ typedef struct lifo {
   size_t len;
   size_t siZe;
   size_t data_len;
-  char *data;
+  char* data;
 } lifo_t;
 
-void lifo_alloc_all(lifo_t *ptr, size_t *siZe, size_t data_len);
-void lifo_free(lifo_t *ptr);
+void lifo_alloc_all(lifo_t* ptr, size_t* siZe, size_t data_len);
+void lifo_free(lifo_t* ptr);
 
 size_t lifo_size(lifo_t *ptr);
 
-void lifo_enqueue(lifo_t *ptr, void *data);
-void lifo_dequeue(lifo_t *ptr, void *data);
+void lifo_enqueue(lifo_t *ptr, void* data);
+void lifo_dequeue(lifo_t *ptr, void* data);
 
 ////////////// list //////////////
 
 typedef struct node {
-  struct node *next_ptr, *prev_ptr; // Help! I don't understand recursive syntax!!!!!!!!!!!!!!
+  struct node* next_ptr;
+  struct node* prev_ptr;
   char data[];
 } node_t;
 
 typedef struct list {
-  node_t *head_ptr, *tail_ptr;
+  node_t* head_ptr;
+  node_t* tail_ptr;
   size_t siZe, data_len;
 } list_t;
 
-void list_init(list_t *ptr, size_t data_len);
-void list_copy(list_t *dst, list_t *src);
-size_t list_size(list_t *ptr);
-void list_push_back(list_t *ptr, void *data, node_t *tmpNode);
-void list_pop_front(list_t *ptr, void *data, node_t *tmpNode);
-// void list_pop_front(list_t *ptr, void *data);
+void list_init(list_t* ptr, size_t data_len);
+void list_copy(list_t* dst, list_t* src);
+size_t list_size(list_t* ptr);
+void list_push_back(list_t* listPtr, void* data, node_t* tmpNode);
+void list_pop_front(list_t* listPtr, void* data);
+// void list_pop_front(list_t* ptr, void* data, node_t* tmpNode);
 
 ////////////// Iterators //////////////
 
-node_t *iterator_start_from_head(list_t *ptr);
-node_t *iterator_next(node_t *lnk);
-
-void iterator_get(list_t *ptr, node_t *lnk, void *data);
-// void iterator_set(list_t *ptr, node_t *lnk, void *data);
+node_t* iterator_start_from_head(list_t* listPtr);
+node_t* iterator_next(node_t* lnk);
+void iterator_get(list_t* listPtr, node_t* lnk, void* data);
 
 #endif /*__COLLECTIONS_H__*/
