@@ -29,19 +29,20 @@ void setup() {
   inputFramePtr->h = NEW_ROWS;
   inputFramePtr->dataPtr = &bilinIntOutput[0];
 
-  bitmapPtr = &bitmap[0]; // Initialize bitmap array pointer
-  memset(bitmapPtr, 255, NEW_FRAME * sizeof(char)); // Set bitmap array datas to 0
+  bitmapPtr = &bitmap[0]; // Initialize bitmap pointer
+  memset(bitmapPtr, 0, NEW_FRAME * sizeof(char)); // Set all values to 255
 
-  tmpNodePushPtr = &tmpNodePush; // Initialize tmpNode node_t pointer
-  tmpNodePushPtr = (node_t*) malloc(sizeof(node_t) + NEW_FRAME * sizeof(char));
-  memset(tmpNodePushPtr, NULL, sizeof(node_t) + NEW_FRAME * sizeof(char)); // Initialize tmpNode size
+  tmpNodePtr = &tmpNode; // Initialize tmpNodes pointer (node_t)
+  tmpOutputNodesPtr = &tmpOutputNodes; // Initialize tmpOutputNodes pointer (list_t)
+  outputNodesPtr = &outputNodes; // Initialize outputBlobs pointer (list_t)
 
-  outputBlobsPtr = &outputBlobs; // Initialize outputBlobs list_t pointer
-  tmpNodePushPtr = (node_t*) malloc(sizeof(list_t) + MAX_BLOBS * sizeof(node_t));
-  memset(outputBlobsPtr, NULL, sizeof(list_t) + MAX_BLOBS * sizeof(node_t)); // Init outputBlobs size
+  tmpNodePtr = (node_t*) malloc(sizeof(list_t) + sizeof(node_t)); // Initialize node size
+  tmpOutputNodesPtr = (list_t*) malloc(sizeof(list_t) + sizeof(node_t) * MAX_BLOBS); // Initialize outputBlobs size
+  outputNodesPtr = (list_t*) malloc(sizeof(list_t) + sizeof(node_t) * MAX_BLOBS); // Initialize outputBlobs size
 
   calibrate(minValsPtr, CYCLES);
   bootBlink(9);
+
 }
 
 void loop() {
@@ -52,7 +53,6 @@ void loop() {
       fps = 0;
     }
   */
-  sensorID = 0;
   for (uint8_t row = 0; row < ROWS; row++) {
     pinMode(rowPins[row], OUTPUT);  // Set row pin as output
     digitalWrite(rowPins[row], HIGH);
@@ -66,8 +66,8 @@ void loop() {
       }
       sensorID++;
     }
-    pinMode(rowPins[row], INPUT); // Set row pin in high-impedance state
-    // digitalWrite(rowPins[row], LOW); // Set row pin to GND (TO TEST!)
+    // pinMode(rowPins[row], INPUT); // Set row pin in high-impedance state
+    digitalWrite(rowPins[row], LOW); // Set row pin to GND (TO TEST!)
   }
   sensorID = 0;
 
@@ -81,26 +81,30 @@ void loop() {
     }
     if (DEBUG_INTERP) Serial.println();
   }
+  sensorID = 0;
   if (DEBUG_INTERP) Serial.println();
 
   find_blobs(
-    inputFramePtr,    // image_t
-    outputBlobsPtr,   // list_t
-    tmpNodePushPtr,   // node_t
-    bitmapPtr,        // Array of char
-    NEW_ROWS,         // const int
-    NEW_COLS,         // const int
-    THRESHOLD,        // const int
-    MIN_BLOB_SIZE,    // const int
-    MIN_BLOB_PIX,     // const int
-    true              // boolean merge
+    inputFramePtr,      // image_t
+    tmpNodePtr,         // node_t
+    tmpOutputNodesPtr,  // list_t
+    outputNodesPtr,     // list_t
+    bitmapPtr,          // Array of char
+    NEW_ROWS,           // const int
+    NEW_COLS,           // const int
+    THRESHOLD,          // const int
+    MIN_BLOB_SIZE,      // const int
+    MIN_BLOB_PIX,       // const int
+    true                // boolean merge
   );
 
-  for (node_t* it = iterator_start_from_head(outputBlobsPtr); it; it = iterator_next(it)) {
+  if (DEBUG_OUTPUT) Serial.printf(F("\nBlobs: %d "), list_size(outputNodesPtr));
+  for (node_t* it = iterator_start_from_head(outputNodesPtr); it; it = iterator_next(it)) {
     blob_t lnk_data;
-    iterator_get(outputBlobsPtr, it, &lnk_data);
-    if (DEBUG_OUTPUT) Serial.printf("\nID: %d posX: %d posY: %d\t", lnk_data.code, lnk_data.centroid.x, lnk_data.centroid.y);
+    iterator_get(&lnk_data, it, outputNodesPtr);
+    if (DEBUG_OUTPUT) Serial.printf(F("\nID: %d posX: %d posY: %d\t"), lnk_data.code, lnk_data.centroid.x, lnk_data.centroid.y);
   }
+
 
   // The update() method attempts to read in
   // any incoming serial data and emits packets via
@@ -116,7 +120,7 @@ void loop() {
 void calibrate(uint16_t *sumArray, const uint8_t cycles) {
 
   uint8_t pos;
-  memset(sumArray, 255, ROW_FRAME * sizeof(uint16_t)); // Set minVals array datas to 0
+  memset(sumArray, 0, ROW_FRAME * sizeof(uint16_t)); // Set minVals array datas to 0
 
   for (uint8_t i = 0; i < cycles; i++) {
     pos = 0;
@@ -125,8 +129,10 @@ void calibrate(uint16_t *sumArray, const uint8_t cycles) {
       digitalWrite(rowPins[row], HIGH);
       for (uint8_t col = 0; col < COLS; col++) {
         uint16_t val = analogRead(columnPins[col]); // Read the sensor value
-        if (val < sumArray[pos]){
+        if (val > sumArray[pos]) {
           sumArray[pos] = val;
+        } else {
+          // NA
         }
         pos++;
       }

@@ -39,10 +39,13 @@ char      bitmap[NEW_FRAME] = {0};
 char*     bitmapPtr;
 image_t   inputFrame;
 image_t*  inputFramePtr;
-node_t    tmpNodePush;
-node_t*   tmpNodePushPtr;
-list_t    outputBlobs;
-list_t*   outputBlobsPtr;
+
+node_t    tmpNode;
+node_t*   tmpNodePtr;
+list_t    tmpOutputNodes;
+list_t*   tmpOutputNodesPtr;
+list_t    outputNodes;
+list_t*   outputNodesPtr;
 
 // void onPacket(const uint8_t* buffer, size_t size);
 void calibrate(uint16_t* sumArray, const uint8_t cycles);

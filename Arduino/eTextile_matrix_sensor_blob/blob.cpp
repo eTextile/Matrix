@@ -35,8 +35,9 @@ void rectangle_united(rectangle_t* src, rectangle_t* dst) {
 
 void find_blobs(
   const image_t*      input_ptr,
-  list_t*             output_ptr,
   node_t*             tmpNode_ptr,
+  list_t*             tmpOutputNodes_ptr,
+  list_t*             outputNodes_ptr,
   char*               bitmap_ptr,
   const int           rows,
   const int           cols,
@@ -48,11 +49,12 @@ void find_blobs(
   if (DEBUG_BLOB) Serial.printf(F("\n>>>>>>>> STARTING BLOB SCANNING"));
 
   size_t code = 0;
-
   lifo_t lifo;
   size_t lifoLen;
 
   lifo_alloc_all(&lifo, &lifoLen, sizeof(xylf_t));
+
+  list_init(outputNodes_ptr, sizeof(blob_t));
 
   if (DEBUG_BLOB) Serial.printf(F("\n>>>> A-Lifo len: %d"), lifoLen);
   if (DEBUG_BLOB) Serial.printf(F("\n>>>> A-Lifo size: %d"), lifo_size(&lifo));
@@ -230,8 +232,8 @@ void find_blobs(
         if (DEBUG_BLOB) Serial.printf(F("\n>>>> Data added to the blob"));
 
         if (((blob.rect.w * blob.rect.h) >= minBlobSize) && (blob.pixels >= minBlobPix)) {
-          list_push_back(output_ptr, &blob, tmpNode_ptr);
-          if (DEBUG_BLOB) Serial.printf(F("\n>>>> Added new blob to the output list: %d"), list_size(output_ptr));
+          list_push_back(&blob, outputNodes_ptr, tmpNode_ptr);
+          if (DEBUG_BLOB) Serial.printf(F("\n>>>> Added new blob to the output list: %d"), list_size(outputNodes_ptr));
         }
 
         posX = old_x;
@@ -247,29 +249,32 @@ void find_blobs(
 
   if (DEBUG_BITMAP) bitmap_print(bitmap_ptr);
   bitmap_clear(bitmap_ptr);
-  if (DEBUG_BITMAP) bitmap_print(bitmap_ptr);
+  // if (DEBUG_BITMAP) bitmap_print(bitmap_ptr);
   if (DEBUG_BLOB) Serial.printf(F("\n>>>> Cleared Bitmap"));
 
   if (merge) {
     for (;;) {
       boolean merge_occured = false;
 
-      list_t out_temp;
-      list_init(&out_temp, sizeof(blob_t));
+      list_init(tmpOutputNodes_ptr, sizeof(blob_t));
 
-      if (DEBUG_BLOB) Serial.printf("\n>>>> List size init: %d", list_size(output_ptr));
+      if (DEBUG_BLOB) Serial.printf("\n>>>> List size init: %d", list_size(outputNodes_ptr));
 
-      while (list_size(output_ptr)) {
+      while (list_size(outputNodes_ptr)) {
 
         blob_t blob;
-        list_pop_front(output_ptr, &blob);
-        if (DEBUG_BLOB) Serial.printf("\n>>>> Blob-A Copyed from the output list: %d", list_size(output_ptr));
 
-        for (size_t k = 0, l = list_size(output_ptr); k < l; k++) {
+        list_pop_front(&blob, outputNodes_ptr, tmpNode_ptr);
+
+        if (DEBUG_BLOB) Serial.printf("\n>>>> Blob-A Copyed from the output list: %d", list_size(outputNodes_ptr));
+
+        for (size_t k = 0, l = list_size(outputNodes_ptr); k < l; k++) {
 
           blob_t tmp_blob;
-          list_pop_front(output_ptr, &tmp_blob);
-          if (DEBUG_BLOB) Serial.printf("\n>>>> Blob-B Copyed from the output list: %d", list_size(output_ptr));
+
+          list_pop_front(&tmp_blob, outputNodes_ptr, tmpNode_ptr);
+
+          if (DEBUG_BLOB) Serial.printf("\n>>>> Blob-B Copyed from the output list: %d", list_size(outputNodes_ptr));
 
           rectangle_t temp;
 
@@ -288,12 +293,12 @@ void find_blobs(
             blob.count = IM_MAX(IM_MIN(blob.count + tmp_blob.count, UINT16_MAX), 0); // UINT16_MAX !?
             merge_occured = true;
           } else {
-            list_push_back(output_ptr, &tmp_blob, tmpNode_ptr);
+            list_push_back(&tmp_blob, outputNodes_ptr, tmpNode_ptr);
           }
         }
-        list_push_back(&out_temp, &blob, tmpNode_ptr);
+        list_push_back(&blob, tmpOutputNodes_ptr, tmpNode_ptr);
       }
-      list_copy(output_ptr, &out_temp);
+      list_copy(outputNodes_ptr, tmpOutputNodes_ptr);
 
       if (!merge_occured) {
         break;

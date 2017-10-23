@@ -46,9 +46,9 @@ void bitmap_print(char* arrayPtr);
 ////////////// Lifo //////////////
 
 typedef struct lifo {
-  size_t len;
-  size_t siZe;
-  size_t data_len;
+  size_t len;      // Number of elements
+  size_t data_len; // Size of an element
+  size_t index;    // 
   char* data;
 } lifo_t;
 
@@ -71,19 +71,22 @@ typedef struct node {
 typedef struct list {
   node_t* head_ptr;
   node_t* tail_ptr;
-  size_t siZe, data_len;
+  size_t data_len; 
+  size_t index;
 } list_t;
 
-void list_init(list_t* listPtr, size_t data_len);
+void node_init(node_t* ptr, size_t data_len); // Is it GOOD !?
+
+void list_init(list_t* ptr, size_t data_len);
 void list_copy(list_t* dst, list_t* src);
 size_t list_size(list_t* ptr);
-void list_push_back(list_t* listPtr, void* data, node_t* tmpNode);
-void list_pop_front(list_t* listPtr, void* data);
+void list_push_back(void* data, list_t* ptr, node_t* tmpNodePtr);
+void list_pop_front(void* data, list_t* ptr, node_t* tmpNodePtr);
 
 ////////////// Iterators //////////////
 
-node_t* iterator_start_from_head(list_t* listPtr);
+node_t* iterator_start_from_head(list_t* ptr);
 node_t* iterator_next(node_t* lnk);
-void iterator_get(list_t* listPtr, node_t* lnk, void* data);
+void iterator_get(void* data, node_t* lnk, list_t* ptr);
 
 #endif /*__COLLECTIONS_H__*/

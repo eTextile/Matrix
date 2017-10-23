@@ -15,9 +15,9 @@
 #define NEW_FRAME            (NEW_COLS * NEW_ROWS)
 #define INC                  (1.0 / SCALE)
 #define CYCLES               4   // Set the calibration cycles
-#define THRESHOLD            50  // Set the threshold that determine toutch sensitivity (10 is low 30 is high)
-#define MIN_BLOB_SIZE        2   // Set the minimum blob size
-#define MIN_BLOB_PIX         4   // Set the minimum blob pixels
+#define THRESHOLD            30  // Set the threshold that determine toutch sensitivity (10 is low 30 is high)
+#define MIN_BLOB_SIZE        4   // Set the minimum blob size
+#define MIN_BLOB_PIX         10   // Set the minimum blob pixels
 #define A0_PIN               A0  // The output of multiplexerA (SIG pin) is connected to Analog pin 0
 
 #define DEBUG_INPUT          false
