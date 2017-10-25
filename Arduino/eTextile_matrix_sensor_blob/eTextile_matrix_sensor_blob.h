@@ -37,13 +37,16 @@ arm_bilinear_interp_instance_f32 interpolate;
 
 char      bitmap[NEW_FRAME] = {0};
 char*     bitmapPtr;
+
 image_t   inputFrame;
 image_t*  inputFramePtr;
 
-node_t    tmpNode;
-node_t*   tmpNodePtr;
+list_t    freeNodeList;
+list_t*   freeNodeListPtr;
+
 list_t    tmpOutputNodes;
 list_t*   tmpOutputNodesPtr;
+
 list_t    outputNodes;
 list_t*   outputNodesPtr;
 

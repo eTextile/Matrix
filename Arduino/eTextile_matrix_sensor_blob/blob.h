@@ -91,7 +91,7 @@ typedef struct blob {
 
 void find_blobs(
   const image_t* input_ptr,
-  node_t* tmpNode_ptr,
+  list_t* freeNodeList_ptr,
   list_t* tmpOutputNodes_ptr,
   list_t* outputNodes_ptr,
   char* bitmap_ptr,

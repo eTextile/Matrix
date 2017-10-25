@@ -35,7 +35,7 @@ void rectangle_united(rectangle_t* src, rectangle_t* dst) {
 
 void find_blobs(
   const image_t*      input_ptr,
-  node_t*             tmpNode_ptr,
+  list_t*             freeNodeList_ptr,
   list_t*             tmpOutputNodes_ptr,
   list_t*             outputNodes_ptr,
   char*               bitmap_ptr,
@@ -54,10 +54,10 @@ void find_blobs(
 
   lifo_alloc_all(&lifo, &lifoLen, sizeof(xylf_t));
 
-  list_init(outputNodes_ptr, sizeof(blob_t));
+  // list_init(outputNodes_ptr, sizeof(blob_t));
 
-  if (DEBUG_BLOB) Serial.printf(F("\n>>>> A-Lifo len: %d"), lifoLen);
-  if (DEBUG_BLOB) Serial.printf(F("\n>>>> A-Lifo size: %d"), lifo_size(&lifo));
+  if (DEBUG_BLOB) Serial.printf(F("\n>>>>>>>> A-Lifo len: %d"), lifoLen);
+  if (DEBUG_BLOB) Serial.printf(F("\n>>>>>>>> A-Lifo size: %d"), lifo_size(&lifo));
 
   for (int posY = 0; posY < rows; posY++) {
 
@@ -72,7 +72,7 @@ void find_blobs(
       if (!bitmap_bit_get(bitmap_ptr, BITMAP_INDEX(row_index, posX)) &&
           PIXEL_THRESHOLD(GET_FRAME_PIXEL(row_ptr, posX), pixelThreshold)) {
 
-        if (DEBUG_INPUT) Serial.printf(F("\n>>>>>>>>>>>>>>>>>>>> INIT BLOB!\n"));
+        if (DEBUG_INPUT) Serial.printf(F("\n>>>>>>>> INIT BLOB!\n"));
 
         int old_x = posX;
         int old_y = posY;
@@ -92,7 +92,7 @@ void find_blobs(
           int left = posX;
           int right = posX;
 
-          uint8_t* row_ptr_B = FRAME_ROW_PTR(input_ptr, posY);         // Return pointer to image curent row
+          uint8_t* row_ptr_B = FRAME_ROW_PTR(input_ptr, posY);       // Return pointer to image curent row
           size_t row_index_B = BITMAP_ROW_INDEX(input_ptr, posY);    // Return bitmap curent row
 
           while ((left > 0) &&
@@ -113,7 +113,7 @@ void find_blobs(
           blob_x2 = IM_MAX(blob_x2, right);
           blob_y2 = IM_MAX(blob_y2, posY);
 
-          if (DEBUG_BLOB) Serial.printf(F("\n>>>> Bitmap bit set: "));
+          if (DEBUG_BLOB) Serial.printf(F("\n>>>>>>>> Bitmap bit set: "));
           for (int i = left; i <= right; i++) {
             bitmap_bit_set(bitmap_ptr, BITMAP_INDEX(row_index_B, i));
             if (DEBUG_BLOB) Serial.printf("%d ", BITMAP_INDEX(row_index_B, i));
@@ -121,7 +121,7 @@ void find_blobs(
             blob_cx += i;
             blob_cy += posY;
           }
-          if (DEBUG_BLOB) Serial.printf(F("\n>>>> Blob pixels: %d"), blob_pixels);
+          if (DEBUG_BLOB) Serial.printf(F("\n>>>>>>>> Blob pixels: %d"), blob_pixels);
 
           boolean break_out = false;
 
@@ -129,8 +129,8 @@ void find_blobs(
 
             if (lifo_size(&lifo) < lifoLen) {
 
-              if (DEBUG_BLOB) Serial.printf(F("\n>>>> B-Lifo len: %d"), lifoLen );
-              if (DEBUG_BLOB) Serial.printf(F("\n>>>> B-Lifo size: %d"), lifo_size(&lifo) );
+              if (DEBUG_BLOB) Serial.printf(F("\n>>>>>>>> B-Lifo len: %d"), lifoLen );
+              if (DEBUG_BLOB) Serial.printf(F("\n>>>>>>>> B-Lifo size: %d"), lifo_size(&lifo) );
 
               if (posY > 0) {
 
@@ -142,7 +142,7 @@ void find_blobs(
                 for (int i = left; i <= right; i++) {
                   if ((!bitmap_bit_get(bitmap_ptr, BITMAP_INDEX(row_index_B, i))) &&
                       PIXEL_THRESHOLD(GET_FRAME_PIXEL(row_ptr_B, i), pixelThreshold)) {
-                    if (DEBUG_BLOB) Serial.printf(F("\n>>>> A-Lifo add pixel"));
+                    if (DEBUG_BLOB) Serial.printf(F("\n>>>>>>>> A-Lifo add pixel"));
 
                     xylf_t context;
                     context.x = posX;
@@ -160,7 +160,7 @@ void find_blobs(
                   break;
                 }
               }
-              if (DEBUG_BLOB) Serial.printf(F("\n>>>> Break 1"));
+              if (DEBUG_BLOB) Serial.printf(F("\n>>>>>>>> Break 1"));
 
               if (posY < (rows - 1)) {
 
@@ -178,7 +178,7 @@ void find_blobs(
                     context.y = posY;
                     context.l = left;
                     context.r = right;
-                    if (DEBUG_BLOB) Serial.printf(F("\n>>>> B-Lifo add"));
+                    if (DEBUG_BLOB) Serial.printf(F("\n>>>>>>>> B-Lifo add"));
                     lifo_enqueue(&lifo, &context);
                     posX = i;
                     posY++;
@@ -190,16 +190,16 @@ void find_blobs(
                   break;
                 }
               }
-              if (DEBUG_BLOB) Serial.printf(F("\n>>>> Break 2"));
+              if (DEBUG_BLOB) Serial.printf(F("\n>>>>>>>> Break 2"));
             }
             if (!lifo_size(&lifo)) {
-              if (DEBUG_BLOB) Serial.printf(F("\n>>>> Lifo umpty: %d"), lifo_size(&lifo));
+              if (DEBUG_BLOB) Serial.printf(F("\n>>>>>>>> Lifo umpty: %d"), lifo_size(&lifo));
               break_out = true;
               break;
             }
 
             xylf_t context;
-            if (DEBUG_BLOB) Serial.printf(F("\n>>>> Lifo take pixel from the queue"));
+            if (DEBUG_BLOB) Serial.printf(F("\n>>>>>>>> Lifo take pixel from the queue"));
             lifo_dequeue(&lifo, &context);
             posX = context.x;
             posY = context.y;
@@ -211,7 +211,7 @@ void find_blobs(
             break;
           }
         }
-        if (DEBUG_BLOB) Serial.print(F("\n>>>> END of scanline flood fill algorithm"));
+        if (DEBUG_BLOB) Serial.print(F("\n>>>>>>>> END of scanline flood fill algorithm"));
 
         int mx = blob_cx / blob_pixels; // x centroid
         int my = blob_cy / blob_pixels; // y centroid
@@ -229,11 +229,13 @@ void find_blobs(
         // blob.centroid.z = mz; // TODO
         blob.code = 1 << code;
         blob.count = 1;
-        if (DEBUG_BLOB) Serial.printf(F("\n>>>> Data added to the blob"));
+        if (DEBUG_BLOB) Serial.printf(F("\n>>>>>>>> All values are added to the blob struct"));
 
         if (((blob.rect.w * blob.rect.h) >= minBlobSize) && (blob.pixels >= minBlobPix)) {
-          list_push_back(&blob, outputNodes_ptr, tmpNode_ptr);
-          if (DEBUG_BLOB) Serial.printf(F("\n>>>> Added new blob to the output list: %d"), list_size(outputNodes_ptr));
+          node_t* node;
+          list_get_freeNode(freeNodeList_ptr, node);
+          list_push_back(outputNodes_ptr, &blob, node);
+          if (DEBUG_BLOB) Serial.printf(F("\n>>>>>>>> Added node: %d to the outputNodes linked list"), list_size(outputNodes_ptr));
         }
 
         posX = old_x;
@@ -242,39 +244,34 @@ void find_blobs(
     }
   }
   code++;
-  if (DEBUG_BLOB) Serial.printf(F("\n>>>>>>>>>>>> End of scann: %d"), code);
+  if (DEBUG_BLOB) Serial.printf(F("\n>>>>>>>> End of scann: %d"), code);
 
   lifo_free(&lifo);
-  if (DEBUG_BITMAP) Serial.printf(F("\n>>>> Lifo is free"));
 
   if (DEBUG_BITMAP) bitmap_print(bitmap_ptr);
   bitmap_clear(bitmap_ptr);
-  // if (DEBUG_BITMAP) bitmap_print(bitmap_ptr);
-  if (DEBUG_BLOB) Serial.printf(F("\n>>>> Cleared Bitmap"));
+
+  if (DEBUG_BLOB) Serial.printf(F("\n>>>>>>>> Cleared Bitmap"));
 
   if (merge) {
     for (;;) {
       boolean merge_occured = false;
 
-      list_init(tmpOutputNodes_ptr, sizeof(blob_t));
-
-      if (DEBUG_BLOB) Serial.printf("\n>>>> List size init: %d", list_size(outputNodes_ptr));
+      // list_init(tmpOutputNodes_ptr, sizeof(blob_t));
 
       while (list_size(outputNodes_ptr)) {
 
+        node_t* tmpNode;
+
         blob_t blob;
-
-        list_pop_front(&blob, outputNodes_ptr, tmpNode_ptr);
-
-        if (DEBUG_BLOB) Serial.printf("\n>>>> Blob-A Copyed from the output list: %d", list_size(outputNodes_ptr));
+        list_pop_front(outputNodes_ptr, &blob, tmpNode);
+        list_save_node(freeNodeList_ptr, tmpNode);
 
         for (size_t k = 0, l = list_size(outputNodes_ptr); k < l; k++) {
 
           blob_t tmp_blob;
-
-          list_pop_front(&tmp_blob, outputNodes_ptr, tmpNode_ptr);
-
-          if (DEBUG_BLOB) Serial.printf("\n>>>> Blob-B Copyed from the output list: %d", list_size(outputNodes_ptr));
+          list_pop_front(outputNodes_ptr, &tmp_blob, tmpNode);
+          list_save_node(freeNodeList_ptr, tmpNode);
 
           rectangle_t temp;
 
@@ -293,10 +290,12 @@ void find_blobs(
             blob.count = IM_MAX(IM_MIN(blob.count + tmp_blob.count, UINT16_MAX), 0); // UINT16_MAX !?
             merge_occured = true;
           } else {
-            list_push_back(&tmp_blob, outputNodes_ptr, tmpNode_ptr);
+            list_get_freeNode(freeNodeList_ptr, tmpNode);
+            list_push_back(outputNodes_ptr, &tmp_blob, tmpNode); // <<<<<<<<<<<<<<<<<<<<<<<<< STOP!?
           }
         }
-        list_push_back(&blob, tmpOutputNodes_ptr, tmpNode_ptr);
+        list_get_freeNode(freeNodeList_ptr, tmpNode);
+        list_push_back(tmpOutputNodes_ptr, &blob, tmpNode);
       }
       list_copy(outputNodes_ptr, tmpOutputNodes_ptr);
 

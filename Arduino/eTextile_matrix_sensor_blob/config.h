@@ -23,7 +23,8 @@
 #define DEBUG_INPUT          false
 #define DEBUG_INTERP         false
 #define DEBUG_BITMAP         false
-#define DEBUG_BLOB           false
-#define DEBUG_OUTPUT         true
+#define DEBUG_LIST           true
+#define DEBUG_BLOB           true
+#define DEBUG_OUTPUT         false
 
 #endif /*__CONFIG_H__*/

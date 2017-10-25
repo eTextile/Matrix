@@ -1,4 +1,5 @@
 // eTextile matrix sensor shield V2.0 (E-256)
+// See http://eTextile.org
 
 #include <PacketSerial.h> // https://github.com/bakercp/PacketSerial
 #include "blob.h"
@@ -32,13 +33,17 @@ void setup() {
   bitmapPtr = &bitmap[0]; // Initialize bitmap pointer
   memset(bitmapPtr, 0, NEW_FRAME * sizeof(char)); // Set all values to 255
 
-  tmpNodePtr = &tmpNode; // Initialize tmpNodes pointer (node_t)
-  tmpOutputNodesPtr = &tmpOutputNodes; // Initialize tmpOutputNodes pointer (list_t)
-  outputNodesPtr = &outputNodes; // Initialize outputBlobs pointer (list_t)
+  freeNodeListPtr = &freeNodeList; // Setup the freeNodeListPtr pointer (list_t)
+  list_init(freeNodeListPtr, sizeof(blob_t));
+  list_alloc_all(freeNodeListPtr, sizeof(blob_t));
 
-  tmpNodePtr = (node_t*) malloc(sizeof(list_t) + sizeof(node_t)); // Initialize node size
-  tmpOutputNodesPtr = (list_t*) malloc(sizeof(list_t) + sizeof(node_t) * MAX_BLOBS); // Initialize outputBlobs size
-  outputNodesPtr = (list_t*) malloc(sizeof(list_t) + sizeof(node_t) * MAX_BLOBS); // Initialize outputBlobs size
+  tmpOutputNodesPtr = &tmpOutputNodes; // Setup the tmpOutputNodes pointer (list_t)
+  list_init(tmpOutputNodesPtr, sizeof(blob_t));
+  list_alloc_all(tmpOutputNodesPtr, sizeof(blob_t));
+
+  outputNodesPtr = &outputNodes; // Setup the outputBlobs pointer (list_t)
+  list_init(outputNodesPtr, sizeof(blob_t));
+  list_alloc_all(outputNodesPtr, sizeof(blob_t));
 
   calibrate(minValsPtr, CYCLES);
   bootBlink(9);
@@ -86,7 +91,7 @@ void loop() {
 
   find_blobs(
     inputFramePtr,      // image_t
-    tmpNodePtr,         // node_t
+    freeNodeListPtr,    // list_t
     tmpOutputNodesPtr,  // list_t
     outputNodesPtr,     // list_t
     bitmapPtr,          // Array of char
@@ -101,10 +106,9 @@ void loop() {
   if (DEBUG_OUTPUT) Serial.printf(F("\nBlobs: %d "), list_size(outputNodesPtr));
   for (node_t* it = iterator_start_from_head(outputNodesPtr); it; it = iterator_next(it)) {
     blob_t lnk_data;
-    iterator_get(&lnk_data, it, outputNodesPtr);
+    iterator_get(it, &lnk_data, outputNodesPtr);
     if (DEBUG_OUTPUT) Serial.printf(F("\nID: %d posX: %d posY: %d\t"), lnk_data.code, lnk_data.centroid.x, lnk_data.centroid.y);
   }
-
 
   // The update() method attempts to read in
   // any incoming serial data and emits packets via
