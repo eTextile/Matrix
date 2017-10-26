@@ -12,6 +12,7 @@ void setup() {
   // serial.setPacketHandler(&onPacket); // We must specify a packet handler method so that
   // serial.begin(BAUD_RATE);            // Start the serial module
   Serial.begin(BAUD_RATE);               // Arduino serial standard library
+  while (!Serial.dtr()) ;                // wait for user to start the serial monitor
 
   analogReadRes(10);                     // Set the ADC converteur resolution to 10 bit
   pinMode(BUILTIN_LED, OUTPUT);          // Set BUILTIN_LED pin as output
@@ -39,11 +40,10 @@ void setup() {
 
   tmpOutputNodesPtr = &tmpOutputNodes; // Setup the tmpOutputNodes pointer (list_t)
   list_init(tmpOutputNodesPtr, sizeof(blob_t));
-  list_alloc_all(tmpOutputNodesPtr, sizeof(blob_t));
 
   outputNodesPtr = &outputNodes; // Setup the outputBlobs pointer (list_t)
   list_init(outputNodesPtr, sizeof(blob_t));
-  list_alloc_all(outputNodesPtr, sizeof(blob_t));
+
 
   calibrate(minValsPtr, CYCLES);
   bootBlink(9);
@@ -100,14 +100,14 @@ void loop() {
     THRESHOLD,          // const int
     MIN_BLOB_SIZE,      // const int
     MIN_BLOB_PIX,       // const int
-    true                // boolean merge
+    MERGE_BLOBS         // boolean
   );
 
   if (DEBUG_OUTPUT) Serial.printf(F("\nBlobs: %d "), list_size(outputNodesPtr));
   for (node_t* it = iterator_start_from_head(outputNodesPtr); it; it = iterator_next(it)) {
-    blob_t lnk_data;
-    iterator_get(it, &lnk_data, outputNodesPtr);
-    if (DEBUG_OUTPUT) Serial.printf(F("\nID: %d posX: %d posY: %d\t"), lnk_data.code, lnk_data.centroid.x, lnk_data.centroid.y);
+    blob_t blob;
+    iterator_get(it, &blob, outputNodesPtr);
+    if (DEBUG_OUTPUT) Serial.printf(F("\nID: %d posX: %d posY: %d\t"), blob.code, blob.centroid.x, blob.centroid.y);
   }
 
   // The update() method attempts to read in
@@ -121,10 +121,10 @@ void loop() {
 }
 
 /////////// Calibrate the 16x16 sensor matrix by doing average
-void calibrate(uint16_t *sumArray, const uint8_t cycles) {
+void calibrate(uint16_t *arrayMax, const uint8_t cycles) {
 
   uint8_t pos;
-  memset(sumArray, 0, ROW_FRAME * sizeof(uint16_t)); // Set minVals array datas to 0
+  memset(arrayMax, 0, ROW_FRAME * sizeof(uint16_t)); // Set minVals array datas to 0
 
   for (uint8_t i = 0; i < cycles; i++) {
     pos = 0;
@@ -133,8 +133,8 @@ void calibrate(uint16_t *sumArray, const uint8_t cycles) {
       digitalWrite(rowPins[row], HIGH);
       for (uint8_t col = 0; col < COLS; col++) {
         uint16_t val = analogRead(columnPins[col]); // Read the sensor value
-        if (val > sumArray[pos]) {
-          sumArray[pos] = val;
+        if (val > arrayMax[pos]) {
+          arrayMax[pos] = val;
         } else {
           // NA
         }

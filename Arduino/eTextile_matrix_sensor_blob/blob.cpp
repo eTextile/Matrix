@@ -54,7 +54,7 @@ void find_blobs(
 
   lifo_alloc_all(&lifo, &lifoLen, sizeof(xylf_t));
 
-  // list_init(outputNodes_ptr, sizeof(blob_t));
+  list_init(outputNodes_ptr, sizeof(blob_t));
 
   if (DEBUG_BLOB) Serial.printf(F("\n>>>>>>>> A-Lifo len: %d"), lifoLen);
   if (DEBUG_BLOB) Serial.printf(F("\n>>>>>>>> A-Lifo size: %d"), lifo_size(&lifo));
@@ -232,10 +232,9 @@ void find_blobs(
         if (DEBUG_BLOB) Serial.printf(F("\n>>>>>>>> All values are added to the blob struct"));
 
         if (((blob.rect.w * blob.rect.h) >= minBlobSize) && (blob.pixels >= minBlobPix)) {
-          node_t* node;
-          list_get_freeNode(freeNodeList_ptr, node);
-          list_push_back(outputNodes_ptr, &blob, node);
-          if (DEBUG_BLOB) Serial.printf(F("\n>>>>>>>> Added node: %d to the outputNodes linked list"), list_size(outputNodes_ptr));
+          if (DEBUG_BLOB) Serial.printf(F("\n>>>>>>>> Find a good blob"));
+          list_push_back(outputNodes_ptr, &blob, list_get_freeNode(freeNodeList_ptr));
+          if (DEBUG_BLOB) Serial.printf(F("\n>>>>>>>> Added node to the outputNodes linked list: %d"), list_size(outputNodes_ptr));
         }
 
         posX = old_x;
@@ -249,7 +248,9 @@ void find_blobs(
   lifo_free(&lifo);
 
   if (DEBUG_BITMAP) bitmap_print(bitmap_ptr);
-  bitmap_clear(bitmap_ptr);
+  bitmap_clear(bitmap_ptr); // Can be optimized
+
+  list_save_nodes(freeNodeList_ptr, outputNodes_ptr);
 
   if (DEBUG_BLOB) Serial.printf(F("\n>>>>>>>> Cleared Bitmap"));
 
@@ -257,30 +258,29 @@ void find_blobs(
     for (;;) {
       boolean merge_occured = false;
 
-      // list_init(tmpOutputNodes_ptr, sizeof(blob_t));
+      list_init(tmpOutputNodes_ptr, sizeof(blob_t));
+
+      node_t* tmpNodeA = list_get_freeNode(freeNodeList_ptr);
+      node_t* tmpNodeB = list_get_freeNode(freeNodeList_ptr);
 
       while (list_size(outputNodes_ptr)) {
 
-        node_t* tmpNode;
-
         blob_t blob;
-        list_pop_front(outputNodes_ptr, &blob, tmpNode);
-        list_save_node(freeNodeList_ptr, tmpNode);
+        list_pop_front(outputNodes_ptr, &blob, tmpNodeA);
 
         for (size_t k = 0, l = list_size(outputNodes_ptr); k < l; k++) {
 
           blob_t tmp_blob;
-          list_pop_front(outputNodes_ptr, &tmp_blob, tmpNode);
-          list_save_node(freeNodeList_ptr, tmpNode);
+          list_pop_front(outputNodes_ptr, &tmp_blob, tmpNodeB);
 
-          rectangle_t temp;
+          rectangle_t tempRect;
 
-          temp.x = IM_MAX(IM_MIN(tmp_blob.rect.x, INT16_MAX), INT16_MIN);
-          temp.y = IM_MAX(IM_MIN(tmp_blob.rect.y, INT16_MAX), INT16_MIN);
-          temp.w = IM_MAX(IM_MIN(tmp_blob.rect.w, INT16_MAX), 0);
-          temp.h = IM_MAX(IM_MIN(tmp_blob.rect.h, INT16_MAX), 0);
+          tempRect.x = IM_MAX(IM_MIN(tmp_blob.rect.x, INT16_MAX), INT16_MIN);
+          tempRect.y = IM_MAX(IM_MIN(tmp_blob.rect.y, INT16_MAX), INT16_MIN);
+          tempRect.w = IM_MAX(IM_MIN(tmp_blob.rect.w, INT16_MAX), 0);
+          tempRect.h = IM_MAX(IM_MIN(tmp_blob.rect.h, INT16_MAX), 0);
 
-          if (rectangle_overlap(&(blob.rect), &temp)) {
+          if (rectangle_overlap(&(blob.rect), &tempRect)) {
             rectangle_united(&(tmp_blob.rect), &(blob.rect));
             blob.centroid.x = ((blob.centroid.x * blob.pixels) + (tmp_blob.centroid.x * tmp_blob.pixels)) / (blob.pixels + tmp_blob.pixels);
             blob.centroid.y = ((blob.centroid.y * blob.pixels) + (tmp_blob.centroid.y * tmp_blob.pixels)) / (blob.pixels + tmp_blob.pixels);
@@ -290,14 +290,13 @@ void find_blobs(
             blob.count = IM_MAX(IM_MIN(blob.count + tmp_blob.count, UINT16_MAX), 0); // UINT16_MAX !?
             merge_occured = true;
           } else {
-            list_get_freeNode(freeNodeList_ptr, tmpNode);
-            list_push_back(outputNodes_ptr, &tmp_blob, tmpNode); // <<<<<<<<<<<<<<<<<<<<<<<<< STOP!?
+            list_push_back(outputNodes_ptr, &tmp_blob, tmpNodeB);
           }
         }
-        list_get_freeNode(freeNodeList_ptr, tmpNode);
-        list_push_back(tmpOutputNodes_ptr, &blob, tmpNode);
+        list_push_back(tmpOutputNodes_ptr, &blob, tmpNodeA);
+        list_save_node(freeNodeList_ptr, tmpNodeB);
       }
-      list_copy(outputNodes_ptr, tmpOutputNodes_ptr);
+      list_copy(outputNodes_ptr, tmpOutputNodes_ptr); // Nead to be update to save the nodes
 
       if (!merge_occured) {
         break;
