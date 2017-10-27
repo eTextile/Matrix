@@ -75,12 +75,12 @@ typedef struct list {
 
 void list_init(list_t* ptr, size_t data_len);
 void list_alloc_all(list_t* ptr, size_t data_len);
-void list_copy(list_t* dst, list_t* src);
+void list_list_memcpy(list_t* dst, list_t* src);
 size_t list_size(list_t* ptr);
 
 node_t* list_get_freeNode(list_t* ptr);
 void list_save_node(list_t* ptr, node_t* node);
-void list_save_nodes(list_t* freePtr, list_t* ptr);
+void list_copy(list_t* dst, list_t* src);
 
 void list_push_back(list_t* ptr, void* data, node_t* freeNode);
 void list_pop_front(list_t* ptr, void* data, node_t* freeNode);

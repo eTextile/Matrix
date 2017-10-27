@@ -71,7 +71,8 @@ void lifo_dequeue(lifo_t* ptr, void* data) {
   ptr->len--;
 }
 
-////////////// List //////////////
+////////////// List ////////////// (head) node_3 > node_2 > node_1 > node_0 > (next_ptr = NULL)
+
 /*
      eTextile.org / list_init();
      Initialise the linked list
@@ -84,7 +85,6 @@ void list_init(list_t* ptr, size_t data_len) {
 }
 /*
     eTextile.org / list_alloc_all();
-    (head) node_3 > node_2 > node_1 > node_0 > (next_ptr = NULL)
 */
 void list_alloc_all(list_t* ptr, size_t data_len) {
   // Linked list push front
@@ -113,7 +113,6 @@ void list_alloc_all(list_t* ptr, size_t data_len) {
 }
 /*
     eTextile.org / list_get_node_ptr(); / ok!
-    (head) node_3 > node_2 > node_1 > node_0 > (next_ptr = NULL)
 */
 node_t* list_get_freeNode(list_t* ptr) {
   if (DEBUG_LIST) Serial.printf(F("\n>>>> list_get_freeNode / Start"));
@@ -136,7 +135,7 @@ node_t* list_get_freeNode(list_t* ptr) {
   }
 }
 /*
-    eTextile.org / list_set_node_ptr(); / ok!
+    eTextile.org / list_save_node(); / ok!
     Copy a node address to a list of nodes address
 */
 void list_save_node(list_t* ptr, node_t* node) {
@@ -162,40 +161,7 @@ void list_save_node(list_t* ptr, node_t* node) {
 }
 
 /*
-    eTextile.org / list_save_nodes(list_t* dst, list_t* src); / FIXME!!!!!!!!!!!!!!!!!!!!
-    Copy all nodes address from src to dst
-*/
-void list_save_nodes(list_t* dst, list_t* src) {
-
-  node_t* node;
-
-  if (DEBUG_LIST) Serial.printf(F("\n>>>> list_save_nodes / Start"));
-  while (src->head_ptr != NULL) {
-    node = src->head_ptr;
-    if (DEBUG_LIST) Serial.printf(F("\n>>>> list_save_nodes / Get the SRC linked list head address: %p"), src->head_ptr);
-
-    if (dst->head_ptr != NULL) {
-      node->next_ptr = dst->head_ptr;
-      dst->head_ptr = node;
-      if (DEBUG_LIST) Serial.printf(F("\n>>>> list_save_nodes / Add the node to the DST linked list: %p"), dst->head_ptr);
-      // ptr->index--;
-      // dst->index++;
-    } else {
-      dst->head_ptr = node;
-      dst->head_ptr->next_ptr = NULL;
-      if (DEBUG_LIST) Serial.printf(F("\n>>>> list_save_nodes / Add the first node to the DST linked list index: %d"), dst->index);
-      // ptr->index--;
-      // dst->index++;
-    }
-    src->head_ptr = node->next_ptr;
-    src->head_ptr = NULL;
-    if (DEBUG_LIST) Serial.printf(F("\n>>>> list_save_nodes / Move the head to the next node of the SRC linked list"));
-  }
-  if (DEBUG_LIST) Serial.printf(F("\n>>>> list_save_nodes / Exit"));
-}
-/*
     eTextile.org / list_push_back();
-    (head) node_3 > node_2 > node_1 > node_0 > (next_ptr = NULL)
 */
 void list_push_back(list_t* ptr, void* data, node_t* node) {
   if (DEBUG_LIST) Serial.printf(F("\n>>>> list_push_back / Start whis node: %p"), node);
@@ -222,7 +188,10 @@ void list_push_back(list_t* ptr, void* data, node_t* node) {
     if (DEBUG_LIST) Serial.printf(F("\n>>>> list_push_back / Blob values copyed to the node: %d"), ptr->index);
     ptr->head_ptr = node;
     if (DEBUG_LIST) Serial.printf(F("\n>>>> list_push_back / Set the node as head of the linked list"));
-    ptr->head_ptr->next_ptr = NULL;
+    // ptr->head_ptr->next_ptr = NULL; // Same than below
+    node->next_ptr = (node_t*) NULL;
+    if (DEBUG_LIST) Serial.printf(F("\n>>>> list_push_back / Get the adress of the head->next_ptr: %p"), node->next_ptr);
+
     if (DEBUG_LIST) Serial.printf(F("\n>>>> list_push_back / Exit"));
     ptr->index++;
     return;
@@ -230,7 +199,6 @@ void list_push_back(list_t* ptr, void* data, node_t* node) {
 }
 /*
     eTextile.org / list_pop_front();
-    (head) node_3 > node_2 > node_1 > node_0 > (next_ptr = NULL)
 */
 void list_pop_front(list_t* ptr, void* data, node_t* node) {
 
@@ -251,9 +219,49 @@ void list_pop_front(list_t* ptr, void* data, node_t* node) {
   }
 }
 
-// TODO update it to collect unused nodes
-void list_copy(list_t* dst, list_t* src) {
+void list_memcpy(list_t* dst, list_t* src) {
   memcpy(dst, src, sizeof(list_t));
+}
+
+/*
+    eTextile.org / list_save_nodes(list_t* dst, list_t* src); - V1.0
+    Copy all nodes address from src to dst
+*/
+void list_copy(list_t* dst, list_t* src) {
+
+  node_t* node;
+
+  if (DEBUG_LIST) Serial.printf(F("\n>>>> list_copy / Start"));
+  while (src->head_ptr != NULL) {
+    node = src->head_ptr;
+    if (DEBUG_LIST) Serial.printf(F("\n>>>> list_copy / SRC: get the linked list head address: %p"), src->head_ptr);
+    if (dst->head_ptr != NULL) {
+      if (node->next_ptr != NULL) {
+        src->head_ptr = node->next_ptr ;
+        if (DEBUG_LIST) Serial.printf(F("\n>>>> list_copy / SRC: change the head node of the linked list to: %p"), src->head_ptr);
+      } else {
+        src->head_ptr = NULL;
+        if (DEBUG_LIST) Serial.printf(F("\n>>>> list_copy / SRC: linked list is umpty: %p"), src->head_ptr);
+        src->index = 0;
+        if (DEBUG_LIST) Serial.printf(F("\n>>>> list_copy / SRC: no more node in the linked list & Exit"));
+        return;
+      }
+      node->next_ptr = dst->head_ptr;
+      if (DEBUG_LIST) Serial.printf(F("\n>>>> list_copy / DST: plug the node next_ptr to the linked list: %p"), node->next_ptr);
+      dst->head_ptr = node;
+      if (DEBUG_LIST) Serial.printf(F("\n>>>> list_copy / DST: change the head node of the linked list to: %p"), dst->head_ptr);
+      src->index--;
+      dst->index++;
+    } else {
+      node->next_ptr = NULL;
+      if (DEBUG_LIST) Serial.printf(F("\n>>>> list_copy / DST: set the next_ptr of the node to NULL: %p"), node->next_ptr);
+      dst->head_ptr = node;
+      if (DEBUG_LIST) Serial.printf(F("\n>>>> list_copy / DST: add the node to the linked list: %p"), node->next_ptr);
+      src->index--;
+      dst->index++;
+    }
+  }
+  if (DEBUG_LIST) Serial.printf(F("\n>>>> list_copy / SRC: no more node in the linked list & Exit"));
 }
 
 size_t list_size(list_t* ptr) {
@@ -261,13 +269,12 @@ size_t list_size(list_t* ptr) {
 }
 
 ////////////// Iterators //////////////
-
 node_t* iterator_start_from_head(list_t* ptr) {
   return ptr->head_ptr;
 }
 
-node_t* iterator_next(node_t* lnk) {
-  return lnk->next_ptr;
+node_t* iterator_next(node_t* ptr) {
+  return ptr->next_ptr;
 }
 
 void iterator_get(node_t* lnk, void* data, list_t* ptr) {

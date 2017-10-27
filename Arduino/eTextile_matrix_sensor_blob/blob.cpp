@@ -250,7 +250,6 @@ void find_blobs(
   if (DEBUG_BITMAP) bitmap_print(bitmap_ptr);
   bitmap_clear(bitmap_ptr); // Can be optimized
 
-  list_save_nodes(freeNodeList_ptr, outputNodes_ptr);
 
   if (DEBUG_BLOB) Serial.printf(F("\n>>>>>>>> Cleared Bitmap"));
 
@@ -296,7 +295,7 @@ void find_blobs(
         list_push_back(tmpOutputNodes_ptr, &blob, tmpNodeA);
         list_save_node(freeNodeList_ptr, tmpNodeB);
       }
-      list_copy(outputNodes_ptr, tmpOutputNodes_ptr); // Nead to be update to save the nodes
+      list_copy(outputNodes_ptr, tmpOutputNodes_ptr);
 
       if (!merge_occured) {
         break;

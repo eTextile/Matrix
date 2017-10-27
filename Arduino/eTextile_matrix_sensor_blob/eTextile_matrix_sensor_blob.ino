@@ -44,20 +44,19 @@ void setup() {
   outputNodesPtr = &outputNodes; // Setup the outputBlobs pointer (list_t)
   list_init(outputNodesPtr, sizeof(blob_t));
 
-
   calibrate(minValsPtr, CYCLES);
   bootBlink(9);
 
 }
 
 void loop() {
-  /*
-    if ((millis() - lastFarme) >= 1000) {
-      Serial.printf("\nFPS: %d", fps);  // I see 16 FPS!
-      lastFarme = millis();
-      fps = 0;
-    }
-  */
+
+  if ((millis() - lastFarme) >= 1000) {
+    Serial.printf("\nFPS: %d", fps);  // I see 16 FPS! // after replacing list_copy(): 18 
+    lastFarme = millis();
+    fps = 0;
+  }
+
   for (uint8_t row = 0; row < ROWS; row++) {
     pinMode(rowPins[row], OUTPUT);  // Set row pin as output
     digitalWrite(rowPins[row], HIGH);
@@ -104,11 +103,13 @@ void loop() {
   );
 
   if (DEBUG_OUTPUT) Serial.printf(F("\nBlobs: %d "), list_size(outputNodesPtr));
-  for (node_t* it = iterator_start_from_head(outputNodesPtr); it; it = iterator_next(it)) {
+  for (node_t* it = iterator_start_from_head(outputNodesPtr); list_size(outputNodesPtr); it = iterator_next(it)) {
     blob_t blob;
     iterator_get(it, &blob, outputNodesPtr);
     if (DEBUG_OUTPUT) Serial.printf(F("\nID: %d posX: %d posY: %d\t"), blob.code, blob.centroid.x, blob.centroid.y);
   }
+  
+  list_copy(freeNodeListPtr, outputNodesPtr);
 
   // The update() method attempts to read in
   // any incoming serial data and emits packets via
@@ -117,7 +118,7 @@ void loop() {
   // The update() method should be called at the end of the loop().
   // serial.update();
 
-  // fps++;
+  fps++;
 }
 
 /////////// Calibrate the 16x16 sensor matrix by doing average
