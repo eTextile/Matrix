@@ -38,11 +38,22 @@ void setup() {
   list_init(freeNodeListPtr, sizeof(blob_t));
   list_alloc_all(freeNodeListPtr, sizeof(blob_t));
 
-  tmpOutputNodesPtr = &tmpOutputNodes; // Setup the tmpOutputNodes pointer (list_t)
-  list_init(tmpOutputNodesPtr, sizeof(blob_t));
+  nodesPtr = &nodes;
+  list_init(nodesPtr, sizeof(blob_t));
+
+  oldNodesToUpdatePtr = &oldNodesToUpdate;
+  list_init(oldNodesToUpdatePtr, sizeof(blob_t));
+
+  nodesToUpdatePtr = &nodesToUpdate;
+  list_init(nodesToUpdatePtr, sizeof(blob_t));
+
+  nodesToAddPtr = &nodesToAdd;
+  list_init(nodesToAddPtr, sizeof(blob_t));
 
   outputNodesPtr = &outputNodes; // Setup the outputBlobs pointer (list_t)
   list_init(outputNodesPtr, sizeof(blob_t));
+
+  tmpBlobPtr =  &tmpBlob;
 
   calibrate(minValsPtr, CYCLES);
   bootBlink(9);
@@ -52,7 +63,7 @@ void setup() {
 void loop() {
 
   if ((millis() - lastFarme) >= 1000) {
-    Serial.printf("\nFPS: %d", fps);  // I see 16 FPS! // after replacing list_copy(): 18 
+    Serial.printf(F("\nFPS: %d"), fps);  // 22 FPS - with CPU speed to 120 MHz (overclock) - 45ms by frame
     lastFarme = millis();
     fps = 0;
   }
@@ -83,33 +94,25 @@ void loop() {
       if (DEBUG_INTERP) Serial.printf(" %d", bilinIntOutput[sensorID]);
       sensorID++;
     }
-    if (DEBUG_INTERP) Serial.println();
+    if (DEBUG_INTERP) Serial.printf("\n\n");
   }
   sensorID = 0;
-  if (DEBUG_INTERP) Serial.println();
 
   find_blobs(
-    inputFramePtr,      // image_t
-    freeNodeListPtr,    // list_t
-    tmpOutputNodesPtr,  // list_t
-    outputNodesPtr,     // list_t
-    bitmapPtr,          // Array of char
-    NEW_ROWS,           // const int
-    NEW_COLS,           // const int
-    THRESHOLD,          // const int
-    MIN_BLOB_SIZE,      // const int
-    MIN_BLOB_PIX,       // const int
-    MERGE_BLOBS         // boolean
+    inputFramePtr,          // image_t*
+    bitmapPtr,              // char Array*
+    NEW_ROWS,               // const int
+    NEW_COLS,               // const int
+    THRESHOLD,              // const int
+    MIN_BLOB_PIX,           // const int
+    MAX_BLOB_PIX,           // const int
+    freeNodeListPtr,        // list_t*
+    nodesPtr,               // list_t*
+    oldNodesToUpdatePtr,    // list_t*
+    nodesToUpdatePtr,       // list_t*
+    nodesToAddPtr,          // list_t*
+    outputNodesPtr          // list_t*
   );
-
-  if (DEBUG_OUTPUT) Serial.printf(F("\nBlobs: %d "), list_size(outputNodesPtr));
-  for (node_t* it = iterator_start_from_head(outputNodesPtr); list_size(outputNodesPtr); it = iterator_next(it)) {
-    blob_t blob;
-    iterator_get(it, &blob, outputNodesPtr);
-    if (DEBUG_OUTPUT) Serial.printf(F("\nID: %d posX: %d posY: %d\t"), blob.code, blob.centroid.x, blob.centroid.y);
-  }
-  
-  list_copy(freeNodeListPtr, outputNodesPtr);
 
   // The update() method attempts to read in
   // any incoming serial data and emits packets via
@@ -146,7 +149,7 @@ void calibrate(uint16_t *arrayMax, const uint8_t cycles) {
     }
   }
   bootBlink(3);
-  if (DEBUG_OUTPUT) Serial.printf("\n>>>> Calibrated!");
+  Serial.printf("\n>>>> Calibrated!");
 }
 
 /////////// Blink

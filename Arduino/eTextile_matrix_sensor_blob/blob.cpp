@@ -8,53 +8,31 @@
 #include "collections.h"
 #include "config.h"
 
-////////////// Rectangle Stuff //////////////
-
-boolean rectangle_overlap(rectangle_t* ptr0, rectangle_t* ptr1) {
-  int x0 = ptr0->x;
-  int y0 = ptr0->y;
-  int w0 = ptr0->w;
-  int h0 = ptr0->h;
-  int x1 = ptr1->x;
-  int y1 = ptr1->y;
-  int w1 = ptr1->w;
-  int h1 = ptr1->h;
-  return (x0 < (x1 + w1)) && (y0 < (y1 + h1)) && (x1 < (x0 + w0)) && (y1 < (y0 + h0));
-}
-
-void rectangle_united(rectangle_t* src, rectangle_t* dst) {
-  int leftX = IM_MIN(dst->x, src->x);
-  int topY = IM_MIN(dst->y, src->y);
-  int rightX = IM_MAX(dst->x + dst->w, src->x + src->w);
-  int bottomY = IM_MAX(dst->y + dst->h, src->y + src->h);
-  dst->x = leftX;
-  dst->y = topY;
-  dst->w = rightX - leftX;
-  dst->h = bottomY - topY;
-}
-
 void find_blobs(
   const image_t*      input_ptr,
-  list_t*             freeNodeList_ptr,
-  list_t*             tmpOutputNodes_ptr,
-  list_t*             outputNodes_ptr,
   char*               bitmap_ptr,
   const int           rows,
   const int           cols,
   const int           pixelThreshold,
-  const int           minBlobSize,
   const unsigned int  minBlobPix,
-  const boolean       merge
+  const unsigned int  maxBlobPix,
+  list_t*             freeNodeList_ptr,
+  list_t*             nodes_ptr,
+  list_t*             oldNodesToUpdate_ptr,
+  list_t*             nodesToUpdate_ptr,
+  list_t*             nodesToAdd_ptr,
+  list_t*             outputNodes_ptr
 ) {
+
   if (DEBUG_BLOB) Serial.printf(F("\n>>>>>>>> STARTING BLOB SCANNING"));
 
-  size_t code = 0;
   lifo_t lifo;
   size_t lifoLen;
 
   lifo_alloc_all(&lifo, &lifoLen, sizeof(xylf_t));
+  int count = 0;
 
-  list_init(outputNodes_ptr, sizeof(blob_t));
+  // list_copy(freeNodeList_ptr, nodes_ptr);            // Remove & save node from the nodes_ptr linked list
 
   if (DEBUG_BLOB) Serial.printf(F("\n>>>>>>>> A-Lifo len: %d"), lifoLen);
   if (DEBUG_BLOB) Serial.printf(F("\n>>>>>>>> A-Lifo size: %d"), lifo_size(&lifo));
@@ -63,8 +41,6 @@ void find_blobs(
 
     uint8_t* row_ptr = FRAME_ROW_PTR(input_ptr, posY);       // Return pointer to image curent row
     size_t row_index = BITMAP_ROW_INDEX(input_ptr, posY);    // Return bitmap curent row
-
-    // if (DEBUG_BLOB) Serial.printf("\nROW index: %d ", row_index / rows);
 
     for (int posX = 0; posX < cols; posX++) {
       if (DEBUG_INPUT) Serial.printf("%d ", GET_FRAME_PIXEL(row_ptr, posX)); // <<<< INPUT VALUES!!
@@ -84,6 +60,7 @@ void find_blobs(
         int blob_pixels = 0;
         int blob_cx = 0;
         int blob_cy = 0;
+        int blob_cz = 0;
 
         ////////// Scanline flood fill algorithm //////////
 
@@ -118,6 +95,7 @@ void find_blobs(
             bitmap_bit_set(bitmap_ptr, BITMAP_INDEX(row_index_B, i));
             if (DEBUG_BLOB) Serial.printf("%d ", BITMAP_INDEX(row_index_B, i));
             blob_pixels += 1;
+            // if (blob_pixels > 255) blob_pixels = 255;
             blob_cx += i;
             blob_cy += posY;
           }
@@ -213,94 +191,194 @@ void find_blobs(
         }
         if (DEBUG_BLOB) Serial.print(F("\n>>>>>>>> END of scanline flood fill algorithm"));
 
-        int mx = blob_cx / blob_pixels; // x centroid
-        int my = blob_cy / blob_pixels; // y centroid
-        // int myz = blob_cz; // z centroid // TODO
+        int16_t cx = blob_cx / blob_pixels; // x centroid
+        int16_t cy = blob_cy / blob_pixels; // y centroid
+
+        row_ptr = FRAME_ROW_PTR(input_ptr, cy); // Return pointer to image curent row
+        int16_t cz = GET_FRAME_PIXEL(row_ptr, cx);  //
 
         blob_t blob;
 
-        blob.rect.x = blob_x1;
-        blob.rect.y = blob_y1;
-        blob.rect.w = blob_x2 - blob_x1;
-        blob.rect.h = blob_y2 - blob_y1;
         blob.pixels = blob_pixels;
-        blob.centroid.x = mx;
-        blob.centroid.y = my;
-        // blob.centroid.z = mz; // TODO
-        blob.code = 1 << code;
-        blob.count = 1;
-        if (DEBUG_BLOB) Serial.printf(F("\n>>>>>>>> All values are added to the blob struct"));
+        blob.centroid.x = cx;
+        blob.centroid.y = cy;
+        blob.centroid.z = cz - THRESHOLD;
+        blob.isDead = false;
 
-        if (((blob.rect.w * blob.rect.h) >= minBlobSize) && (blob.pixels >= minBlobPix)) {
-          if (DEBUG_BLOB) Serial.printf(F("\n>>>>>>>> Find a good blob"));
-          list_push_back(outputNodes_ptr, &blob, list_get_freeNode(freeNodeList_ptr));
-          if (DEBUG_BLOB) Serial.printf(F("\n>>>>>>>> Added node to the outputNodes linked list: %d"), list_size(outputNodes_ptr));
+        if (DEBUG_BLOB) Serial.printf(F("\n>>>>>>>> Add values to the blob"));
+
+        if ((blob.pixels <= maxBlobPix) && (blob.pixels >= minBlobPix)) {
+          blob.UID = count;
+          if (DEBUG_BLOB) Serial.printf(F("\n>>>>>>>> Blob ID: %d"), count);
+          count++;
+          list_push_back(nodes_ptr, list_get_freeNode(freeNodeList_ptr), &blob);
+          if (DEBUG_BLOB) Serial.printf(F("\n>>>>>>>> Added node to the nodes_ptr linked list: %d"), list_size(nodes_ptr));
         }
-
         posX = old_x;
         posY = old_y;
       }
     }
   }
-  code++;
-  if (DEBUG_BLOB) Serial.printf(F("\n>>>>>>>> End of scann: %d"), code);
 
-  lifo_free(&lifo);
+  ///////////////////////////////////////////////////////////////////////////////////////// Percistant blobs/nodes
 
-  if (DEBUG_BITMAP) bitmap_print(bitmap_ptr);
-  bitmap_clear(bitmap_ptr); // Can be optimized
+  // Look for the nearest blob between curent blob position (nodes_ptr) and last blob position (outputNodes_ptr)
+  for (node_t* nodeA = iterator_start_from_head(nodes_ptr); nodeA != NULL; nodeA = iterator_next(nodeA)) {
 
+    float minDist = 1000;
+    int nearestBlobIndex = -1;
+    int index = 0;
 
-  if (DEBUG_BLOB) Serial.printf(F("\n>>>>>>>> Cleared Bitmap"));
+    blob_t blobA;
+    iterator_get(nodes_ptr, nodeA, &blobA);
 
-  if (merge) {
-    for (;;) {
-      boolean merge_occured = false;
+    for (node_t* nodeB = iterator_start_from_head(outputNodes_ptr); nodeB != NULL; nodeB = iterator_next(nodeB)) {
 
-      list_init(tmpOutputNodes_ptr, sizeof(blob_t));
+      blob_t blobB;
+      iterator_get(outputNodes_ptr, nodeB, &blobB);
 
-      node_t* tmpNodeA = list_get_freeNode(freeNodeList_ptr);
-      node_t* tmpNodeB = list_get_freeNode(freeNodeList_ptr);
+      int16_t xa = blobA.centroid.x;
+      int16_t ya = blobA.centroid.y;
+      int16_t xb = blobB.centroid.x;
+      int16_t yb = blobB.centroid.y;
 
-      while (list_size(outputNodes_ptr)) {
+      int dist = (int) sqrt(pow(xa - xb, 2) + pow(ya - yb, 2)); // fast_sqrt? & fast_pow?
 
-        blob_t blob;
-        list_pop_front(outputNodes_ptr, &blob, tmpNodeA);
+      if (dist < minDist) {
+        minDist = dist;
+        nearestBlobIndex = index;
+      }
+      index++;
+    }
 
-        for (size_t k = 0, l = list_size(outputNodes_ptr); k < l; k++) {
+    // Compare the distance between current blobs (nodes_ptr) and last blobs (outputNodes_ptr)
+    // If the distance is less than a cetain threshold select the blob
+    if (minDist < 10) {
 
-          blob_t tmp_blob;
-          list_pop_front(outputNodes_ptr, &tmp_blob, tmpNodeB);
+      list_push_back(nodesToUpdate_ptr, list_get_freeNode(freeNodeList_ptr), &blobA); // From nodes_ptr
 
-          rectangle_t tempRect;
+      node_t nearestNode;
+      list_get_node(outputNodes_ptr, nearestBlobIndex, &nearestNode); // Do not remove the node from the SRC linked list
+      list_push_back(oldNodesToUpdate_ptr, list_get_freeNode(freeNodeList_ptr), nearestNode.data); // From outputNodes_ptr
+      
+    } else {
+      // Found a new blob! we nead to geave it an ID.
+      // We look through the outputNodes linked list to get the minimum unused ID.
 
-          tempRect.x = IM_MAX(IM_MIN(tmp_blob.rect.x, INT16_MAX), INT16_MIN);
-          tempRect.y = IM_MAX(IM_MIN(tmp_blob.rect.y, INT16_MAX), INT16_MIN);
-          tempRect.w = IM_MAX(IM_MIN(tmp_blob.rect.w, INT16_MAX), 0);
-          tempRect.h = IM_MAX(IM_MIN(tmp_blob.rect.h, INT16_MAX), 0);
+      bool reachEnd = false;
+      int minID = 0;
 
-          if (rectangle_overlap(&(blob.rect), &tempRect)) {
-            rectangle_united(&(tmp_blob.rect), &(blob.rect));
-            blob.centroid.x = ((blob.centroid.x * blob.pixels) + (tmp_blob.centroid.x * tmp_blob.pixels)) / (blob.pixels + tmp_blob.pixels);
-            blob.centroid.y = ((blob.centroid.y * blob.pixels) + (tmp_blob.centroid.y * tmp_blob.pixels)) / (blob.pixels + tmp_blob.pixels);
-            // blob.centroid.z =  // TODO
-            blob.pixels += tmp_blob.pixels; // won't overflow
-            blob.code |= tmp_blob.code;
-            blob.count = IM_MAX(IM_MIN(blob.count + tmp_blob.count, UINT16_MAX), 0); // UINT16_MAX !?
-            merge_occured = true;
-          } else {
-            list_push_back(outputNodes_ptr, &tmp_blob, tmpNodeB);
+      while (!reachEnd) {
+        reachEnd = true;
+        for (node_t* node = iterator_start_from_head(outputNodes_ptr); node != NULL; node = iterator_next(node)) {
+          blob_t blob;
+          iterator_get(outputNodes_ptr, node, &blob);
+          if (blob.UID == minID) {
+            minID ++;
+            reachEnd = false;
+            break;
           }
         }
-        list_push_back(tmpOutputNodes_ptr, &blob, tmpNodeA);
-        list_save_node(freeNodeList_ptr, tmpNodeB);
       }
-      list_copy(outputNodes_ptr, tmpOutputNodes_ptr);
+      blobA.UID = minID;
+      list_push_back(nodesToAdd_ptr, list_get_freeNode(freeNodeList_ptr), &blobA);
+    }
 
-      if (!merge_occured) {
+  }
+
+  // Update outputNodes linked list with nodesToUpdate linked list
+  for (node_t* nodeA = iterator_start_from_head(outputNodes_ptr); nodeA != NULL; nodeA = iterator_next(nodeA)) {
+    bool found = false;
+    blob_t blobA;
+    iterator_get(outputNodes_ptr, nodeA, &blobA);
+
+    for (node_t* nodeB = iterator_start_from_head(nodesToUpdate_ptr); nodeB != NULL; nodeB = iterator_next(nodeB)) {
+      blob_t blobB;
+      iterator_get(nodesToUpdate_ptr, nodeB, &blobB);
+
+      blob_t oldBlob;
+      iterator_get(oldNodesToUpdate_ptr, nodeB, &oldBlob);
+
+      if (oldBlob.UID == blobB.UID) {
+        found = true;
+        blobA.centroid.x = blobB.centroid.x;
+        blobA.centroid.y = blobB.centroid.y;
+        blobA.centroid.z = blobB.centroid.z;
+        blobA.pixels = blobB.pixels;
+      }
+    }
+    if (!found) {
+      // message.addIntArg(blobA.UID);
+      // message.addIntArg(-1);
+      // message.addIntArg(-1);
+      // message.addIntArg(-1);
+      // message.addIntArg(-1);
+      // bundle.addMessage(message);
+      blobA.isDead = true;
+    }
+  }
+
+  // Suppres dead blobs from the outputNodes linked list
+  bool deadExists = true;
+  while (deadExists) {
+    int index = 0;
+    int deadBlob = -1;
+
+    for (node_t* node = iterator_start_from_head(outputNodes_ptr); node != NULL; node = iterator_next(node)) {
+      blob_t blob;
+      iterator_get(outputNodes_ptr, node, &blob);
+
+      if (blob.isDead) {
+        deadBlob = index;
         break;
+      }
+      index++;
+    }
+    if (deadBlob != -1) {
+      node_t node;
+      list_remove_node(outputNodes_ptr, &node, deadBlob); // Remove a node from the outputNodes linked list
+      list_save_node(freeNodeList_ptr, &node); // Save this node to the freeNodeList linked list
+    } else {
+      deadExists = false;
+    }
+  }
+
+  for (node_t* node = iterator_start_from_head(nodesToAdd_ptr); node != NULL; node = iterator_next(node)) {
+    list_push_back(outputNodes_ptr, list_get_freeNode(freeNodeList_ptr), node->data); // Is it good!?
+  }
+
+  for (node_t* node = iterator_start_from_head(outputNodes_ptr); node != NULL; node = iterator_next(node)) {
+    blob_t blob;
+    iterator_get(outputNodes_ptr, node, &blob);
+
+    if (!blob.isDead) {
+      // message.addIntArg(blob.UID);
+      // message.addIntArg(blob.centroid.x);
+      // message.addIntArg(blob.centroid.y);
+      // message.addIntArg(blob.centroid.z);
+      // message.addIntArg(blob.pixels);
+      // bundle.addMessage(message);
+      if (DEBUG_OSC) {
+        Serial.printf(F("\n>>>> UID: %d\tX: %d\tY: %d\tZ: %d\tPIX: %d"),
+                      blob.UID,
+                      blob.centroid.x,
+                      blob.centroid.y,
+                      blob.centroid.z,
+                      blob.pixels
+                     );
       }
     }
   }
+  // sender.sendBundle(bundle);
+
+  lifo_free(&lifo);
+  if (DEBUG_BITMAP) bitmap_print(bitmap_ptr);
+  bitmap_clear(bitmap_ptr); // TODO: optimizing!
+  if (DEBUG_BLOB) Serial.printf(F("\n>>>>>>>> Cleared bitmap"));
   if (DEBUG_BLOB) Serial.printf(F("\n>>>>>>>> END OFF BLOB FONCTION"));
+
+  list_copy(freeNodeList_ptr, nodes_ptr);            // Remove & save node from the nodes_ptr linked list
+  list_copy(freeNodeList_ptr, oldNodesToUpdate_ptr); // Remove & save node from the oldNodesToUpdate_ptr linked list
+  list_copy(freeNodeList_ptr, nodesToUpdate_ptr);    // Remove & save node from the nodesToUpdate_ptr linked list
+  list_copy(freeNodeList_ptr, nodesToAdd_ptr);       // Remove & save node from the nodesToAdd_ptr linked list
 }

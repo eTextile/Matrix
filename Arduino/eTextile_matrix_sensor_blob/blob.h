@@ -27,22 +27,12 @@ typedef struct point {
   int16_t x;
   int16_t y;
   int16_t z;
+  int16_t dist;
 } point_t;
 
 typedef struct xylf {
   int16_t x, y, l, r;
 } xylf_t;
-
-////////////// Rectangle stuff //////////////
-typedef struct rectangle {
-  int x;
-  int y;
-  int w;
-  int h;
-} rectangle_t;
-
-boolean rectangle_overlap(rectangle_t* ptr0, rectangle_t* ptr);
-void rectangle_united(rectangle_t* dst, rectangle_t* src);
 
 ////////////// Threshold stuff //////////////
 
@@ -82,24 +72,26 @@ void print_frame_pixels(uint8_t* rowPtr);
 ////////////// Blob tracking //////////////
 
 typedef struct blob {
-  rectangle_t rect;
-  uint32_t pixels;
+  uint8_t UID;
   point_t centroid;
-  uint16_t code;
-  uint16_t count;
+  uint32_t pixels;
+  boolean isDead;
 } blob_t;
 
 void find_blobs(
   const image_t* input_ptr,
-  list_t* freeNodeList_ptr,
-  list_t* tmpOutputNodes_ptr,
-  list_t* outputNodes_ptr,
   char* bitmap_ptr,
   const int rows,
   const int cols,
   const int pixelThreshold,
-  const int minBlobSize,
   const unsigned int minBlobPix,
-  const boolean merge
+  const unsigned int  maxBlobPix,
+  list_t* freeNodeList_ptr,
+  list_t* nodes_ptr,
+  list_t* oldNodesToUpdate_ptr,
+  list_t* nodesToUpdate_ptr,
+  list_t* nodesToAdd_ptr,
+  list_t* outputNodes_ptr
 );
+
 #endif /*__BLOB_H__*/

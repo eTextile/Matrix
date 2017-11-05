@@ -44,11 +44,23 @@ image_t*  inputFramePtr;
 list_t    freeNodeList;
 list_t*   freeNodeListPtr;
 
-list_t    tmpOutputNodes;
-list_t*   tmpOutputNodesPtr;
+list_t    nodes;
+list_t*   nodesPtr;
+
+list_t    oldNodesToUpdate;
+list_t*   oldNodesToUpdatePtr;
+
+list_t    nodesToUpdate;
+list_t*   nodesToUpdatePtr;
+
+list_t    nodesToAdd;
+list_t*   nodesToAddPtr;
 
 list_t    outputNodes;
 list_t*   outputNodesPtr;
+
+blob_t    tmpBlob;
+blob_t*   tmpBlobPtr;
 
 // void onPacket(const uint8_t* buffer, size_t size);
 void calibrate(uint16_t* sumArray, const uint8_t cycles);
