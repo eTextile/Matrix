@@ -24,10 +24,9 @@
   })
 
 typedef struct point {
-  int16_t x;
-  int16_t y;
+  uint16_t x;
+  uint16_t y;
   int16_t z;
-  int16_t dist;
 } point_t;
 
 typedef struct xylf {
@@ -66,8 +65,6 @@ typedef struct image {
     __typeof__ (x) _x = (x); \
     _rowPtr[_x]; \
   })
-
-void print_frame_pixels(uint8_t* rowPtr);
 
 ////////////// Blob tracking //////////////
 

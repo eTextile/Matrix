@@ -1,4 +1,4 @@
-/* This file is part of the OpenMV project.
+/* This file is part of the OpenMV project.node
    Copyright (c) 2013-2017 Ibrahim Abdelkader <iabdalkader@openmv.io> & Kwabena W. Agyeman <kwagyeman@openmv.io>
    This work is licensed under the MIT license, see the file LICENSE for details.
 */
@@ -191,11 +191,11 @@ void find_blobs(
         }
         if (DEBUG_BLOB) Serial.print(F("\n>>>>>>>> END of scanline flood fill algorithm"));
 
-        int16_t cx = blob_cx / blob_pixels; // x centroid
-        int16_t cy = blob_cy / blob_pixels; // y centroid
+        uint16_t cx = (uint16_t) blob_cx / blob_pixels; // x centroid
+        uint16_t cy = (uint16_t) blob_cy / blob_pixels; // y centroid
 
         row_ptr = FRAME_ROW_PTR(input_ptr, cy); // Return pointer to image curent row
-        int16_t cz = GET_FRAME_PIXEL(row_ptr, cx);  //
+        uint16_t cz = GET_FRAME_PIXEL(row_ptr, cx);  //
 
         blob_t blob;
 
@@ -210,9 +210,9 @@ void find_blobs(
         if ((blob.pixels <= maxBlobPix) && (blob.pixels >= minBlobPix)) {
           blob.UID = count;
           if (DEBUG_BLOB) Serial.printf(F("\n>>>>>>>> Blob ID: %d"), count);
-          count++;
           list_push_back(nodes_ptr, list_get_freeNode(freeNodeList_ptr), &blob);
           if (DEBUG_BLOB) Serial.printf(F("\n>>>>>>>> Added node to the nodes_ptr linked list: %d"), list_size(nodes_ptr));
+          count++;
         }
         posX = old_x;
         posY = old_y;
@@ -224,46 +224,45 @@ void find_blobs(
 
   // Look for the nearest blob between curent blob position (nodes_ptr) and last blob position (outputNodes_ptr)
   for (node_t* nodeA = iterator_start_from_head(nodes_ptr); nodeA != NULL; nodeA = iterator_next(nodeA)) {
-
-    float minDist = 1000;
-    int nearestBlobIndex = -1;
-    int index = 0;
-
-    blob_t blobA;
+     blob_t blobA;
     iterator_get(nodes_ptr, nodeA, &blobA);
 
-    for (node_t* nodeB = iterator_start_from_head(outputNodes_ptr); nodeB != NULL; nodeB = iterator_next(nodeB)) {
+    float minDist = 1000.0;
+    int nearestBlob = -1;
+    int index = 0;
 
+    for (node_t* nodeB = iterator_start_from_head(outputNodes_ptr); nodeB != NULL; nodeB = iterator_next(nodeB)) {
       blob_t blobB;
       iterator_get(outputNodes_ptr, nodeB, &blobB);
-
+      
       int16_t xa = blobA.centroid.x;
       int16_t ya = blobA.centroid.y;
       int16_t xb = blobB.centroid.x;
       int16_t yb = blobB.centroid.y;
-
-      int dist = (int) sqrt(pow(xa - xb, 2) + pow(ya - yb, 2)); // fast_sqrt? & fast_pow?
+      float dist = sqrt(pow(xa - xb, 2) + pow(ya - yb, 2)); // fast_sqrt? & fast_pow?
 
       if (dist < minDist) {
         minDist = dist;
-        nearestBlobIndex = index;
+        nearestBlob = index;
       }
       index++;
     }
-
-    // Compare the distance between current blobs (nodes_ptr) and last blobs (outputNodes_ptr)
-    // If the distance is less than a cetain threshold select the blob
-    if (minDist < 10) {
+    // If the distance betwin curent blob and last blob position is less than minDist:
+    // We save the curentNode from nodes_ptr to nodesToUpdate &
+    // We save the old node from outputNodes to oldNodesToUpdate
+    if (minDist < 10.0) {
 
       list_push_back(nodesToUpdate_ptr, list_get_freeNode(freeNodeList_ptr), &blobA); // From nodes_ptr
 
+      Serial.printf(F("\n>>>>>>>>>>>>>>>>>>>>> nearestBlobIndex: %d"), nearestBlob);
       node_t nearestNode;
-      list_get_node(outputNodes_ptr, nearestBlobIndex, &nearestNode); // Do not remove the node from the SRC linked list
+      list_read_node(outputNodes_ptr, nearestBlob, &nearestNode); // Read SRC linked list node
       list_push_back(oldNodesToUpdate_ptr, list_get_freeNode(freeNodeList_ptr), nearestNode.data); // From outputNodes_ptr
-      
+
     } else {
       // Found a new blob! we nead to geave it an ID.
-      // We look through the outputNodes linked list to get the minimum unused ID.
+      // We look for the minimum unused ID through the outputNodes linked list
+      // and add the new blob to the nodesToAdd linked list
 
       bool reachEnd = false;
       int minID = 0;
@@ -293,7 +292,8 @@ void find_blobs(
     iterator_get(outputNodes_ptr, nodeA, &blobA);
 
     for (node_t* nodeB = iterator_start_from_head(nodesToUpdate_ptr); nodeB != NULL; nodeB = iterator_next(nodeB)) {
-      blob_t blobB;
+
+      blob_t  blobB;
       iterator_get(nodesToUpdate_ptr, nodeB, &blobB);
 
       blob_t oldBlob;
@@ -305,6 +305,7 @@ void find_blobs(
         blobA.centroid.y = blobB.centroid.y;
         blobA.centroid.z = blobB.centroid.z;
         blobA.pixels = blobB.pixels;
+        iterator_set(outputNodes_ptr, nodeA, &blobA);
       }
     }
     if (!found) {
@@ -314,12 +315,24 @@ void find_blobs(
       // message.addIntArg(-1);
       // message.addIntArg(-1);
       // bundle.addMessage(message);
+      if (DEBUG_OSC) {
+        Serial.printf(F("\n>>>> UID: %d\tX: %d\tY: %d\tZ: %d\tPIX: %d"),
+                      blobA.UID,
+                      -1,
+                      -1,
+                      -1,
+                      -1
+                     );
+      }
       blobA.isDead = true;
+      iterator_set(outputNodes_ptr, nodeA, &blobA);
+      if (DEBUG_LIST) Serial.printf(F("\n>>>>>>>>>>>>>>>>>>>>> Set BlobID DEAD: %d"), blobA.isDead);
     }
   }
 
-  // Suppres dead blobs from the outputNodes linked list
+  // Suppress all dead blobs from the outputNodes linked list
   bool deadExists = true;
+
   while (deadExists) {
     int index = 0;
     int deadBlob = -1;
@@ -330,21 +343,21 @@ void find_blobs(
 
       if (blob.isDead) {
         deadBlob = index;
+        Serial.printf(F("\n>>>>>>>>>>>>>>>>>>>>> Set dead blob index to remove: %d"), index);
         break;
       }
       index++;
     }
     if (deadBlob != -1) {
-      node_t node;
-      list_remove_node(outputNodes_ptr, &node, deadBlob); // Remove a node from the outputNodes linked list
-      list_save_node(freeNodeList_ptr, &node); // Save this node to the freeNodeList linked list
+      Serial.printf(F("\n>>>>>>>>>>>>>>>>>>>>> Remove dead blob: %d"), deadBlob);
+      list_save_node(freeNodeList_ptr, list_remove_node(outputNodes_ptr, deadBlob)); // Save this node to the freeNodeList linked list
     } else {
       deadExists = false;
     }
   }
 
   for (node_t* node = iterator_start_from_head(nodesToAdd_ptr); node != NULL; node = iterator_next(node)) {
-    list_push_back(outputNodes_ptr, list_get_freeNode(freeNodeList_ptr), node->data); // Is it good!?
+    list_push_back(outputNodes_ptr, list_get_freeNode(freeNodeList_ptr), node->data);
   }
 
   for (node_t* node = iterator_start_from_head(outputNodes_ptr); node != NULL; node = iterator_next(node)) {

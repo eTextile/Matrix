@@ -75,24 +75,26 @@ typedef struct list {
 
 void list_init(list_t* ptr, size_t data_len);
 void list_alloc_all(list_t* ptr, size_t data_len);
-void list_push_back(list_t* dst, node_t* freeNode, void* data);
 void list_pop_front(list_t* src, void* data, node_t* node);
-void list_copy(list_t* dst, list_t* src);
-void list_list_memcpy(list_t* dst, list_t* src); // Unfashionable
-size_t list_size(list_t* ptr);
-
-void list_save_node(list_t* ptr, node_t* node);
+void list_push_back(list_t* dst, node_t* freeNode, void* data);
 
 node_t* list_get_freeNode(list_t* ptr);
 
-void list_get_node(list_t* src, size_t index, void* data);
+void list_read_node(list_t* src, size_t index, void* data);
+node_t* list_remove_node(list_t* src, size_t index);
 
-void list_remove_node(list_t* src, node_t* node, size_t index);
+void list_save_node(list_t* ptr, node_t* node);
+
+void list_copy(list_t* dst, list_t* src);
+void list_memcpy(list_t* dst, list_t* src); // Unfashionable
+// void list_swap(list_t* dst, node_t* dst, list_t* src, node_t* src);
 
 ////////////// Iterators //////////////
-
+size_t list_size(list_t* ptr);
 node_t* iterator_start_from_head(list_t* src);
 node_t* iterator_next(node_t* src);
 void iterator_get(list_t* src, node_t* node, void* data);
+void iterator_set(list_t* ptr, node_t* node, void* data);
+
 
 #endif /*__COLLECTIONS_H__*/
