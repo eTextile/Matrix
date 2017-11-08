@@ -191,10 +191,6 @@ void ofApp::update() {
             }
         }
 
-
-        vector<centroid> centroidsToRemove;
-        vector<int> indexesToRemove;
-
         for(uint32_t j = 0; j < centroids.size(); j++) {
             bool found = false;
             for(uint32_t i = 0; i < centroidsToUpdate.size(); i++) {
