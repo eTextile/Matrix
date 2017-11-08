@@ -1,4 +1,9 @@
 /* This file is part of the OpenMV project.
+list_t    freeNodes;
+list_t*   freeNodesPtr;
+
+list_t    nodes;
+list_t*   nodesPtr;
    Copyright (c) 2013-2017 Ibrahim Abdelkader <iabdalkader@openmv.io> & Kwabena W. Agyeman <kwagyeman@openmv.io>
    This work is licensed under the MIT license, see the file LICENSE for details.
 */
@@ -255,12 +260,13 @@ void list_push_back(list_t* dst, node_t* node, void* data) {
   if (DEBUG_LIST) Serial.printf(F("\n>>>> list_push_back / A-copy the blob values to the tmpNode: %p"), tmpNode);
   tmpNode->next_ptr = NULL;
   if (DEBUG_LIST) Serial.printf(F("\n>>>> list_push_back / A-set the tmpNode next_ptr to NULL: %p"), tmpNode->next_ptr);
+  
   if (dst->head_ptr != NULL) {
-    node = dst->head_ptr;
+    node->next_ptr = dst->head_ptr;
     if (DEBUG_LIST) Serial.printf(F("\n>>>> list_push_back / Get the DST linked list head address: %p"), node);
     while (node->next_ptr != NULL) {
       node = node->next_ptr;
-      if (DEBUG_LIST) Serial.printf(F("\n>>>> list_push_back / Look for the last node: %p"), node);
+      if (DEBUG_LIST) Serial.printf(F("\n>>>> list_push_back / Go to the next node in the linked list: %p"), node);
     } // node->next_ptr == NULL
     if (DEBUG_LIST) Serial.printf(F("\n>>>> list_push_back / Reach the end of the linked list"));
     node->next_ptr = tmpNode;

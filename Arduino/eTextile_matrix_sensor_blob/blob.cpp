@@ -233,6 +233,7 @@ void find_blobs(
 
     for (node_t* nodeB = iterator_start_from_head(outputNodes_ptr); nodeB != NULL; nodeB = iterator_next(nodeB)) {
       blob_t blobB;
+      
       iterator_get(outputNodes_ptr, nodeB, &blobB);
       
       int16_t xa = blobA.centroid.x;
@@ -292,7 +293,6 @@ void find_blobs(
     iterator_get(outputNodes_ptr, nodeA, &blobA);
 
     for (node_t* nodeB = iterator_start_from_head(nodesToUpdate_ptr); nodeB != NULL; nodeB = iterator_next(nodeB)) {
-
       blob_t  blobB;
       iterator_get(nodesToUpdate_ptr, nodeB, &blobB);
 
