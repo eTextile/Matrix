@@ -17,17 +17,20 @@
 #define CHAR_MASK (CHAR_BITS - 1)
 #define CHAR_SHIFT IM_LOG2(CHAR_MASK)
 
-////////////// Bitmap //////////////
 
-typedef struct {
-  size_t siZe;
-  char* data;
-} bitmap_t;
+#define FRAME_ROW_PTR(imagePtr, y) \
+  ({ \
+    __typeof__ (imagePtr) _imagePtr = (imagePtr); \
+    __typeof__ (y) _y = (y); \
+    ((uint8_t*)_imagePtr->dataPtr) + (_imagePtr->w * _y); \
+  })
 
-void bitmap_bit_set(char* arrayPtr, int index);
-char bitmap_bit_get(char* arrayPtr, int index);
-void bitmap_clear(char* arrayPtr);
-void bitmap_print(char* arrayPtr);
+#define GET_FRAME_PIXEL(rowPtr, x) \
+  ({ \
+    __typeof__ (rowPtr) _rowPtr = (rowPtr); \
+    __typeof__ (x) _x = (x); \
+    _rowPtr[_x]; \
+  })
 
 #define BITMAP_ROW_INDEX(imagePtr, y) \
   ({ \
@@ -43,6 +46,26 @@ void bitmap_print(char* arrayPtr);
     _rowIndex + _x; \
   })
 
+#define PIXEL_THRESHOLD(pixel, pThreshold) \
+  ({ \
+    __typeof__ (pixel) _pixel = (pixel); \
+    __typeof__ (pThreshold) _pThreshold = (pThreshold); \
+    _pThreshold <= _pixel; \
+  })
+
+#define IM_MAX(a,b) \
+  ({ \
+    __typeof__ (a) _a = (a); \
+    __typeof__ (b) _b = (b); \
+    _a > _b ? _a : _b; \
+  })
+
+#define IM_MIN(a,b) \
+  ({ \
+    __typeof__ (a) _a = (a); \
+    __typeof__ (b) _b = (b); \
+    _a < _b ? _a : _b; \
+  })
 ////////////// Lifo //////////////
 
 typedef struct lifo {
@@ -60,41 +83,82 @@ size_t lifo_size(lifo_t *ptr);
 void lifo_enqueue(lifo_t *ptr, void* data);
 void lifo_dequeue(lifo_t *ptr, void* data);
 
-////////////// list //////////////
+////////////// Image stuff //////////////
 
-typedef struct node {
-  struct node* next_ptr;
-  char data[];
-} node_t;
+typedef struct image {
+  int w;
+  int h;
+  uint8_t* dataPtr;
+} image_t;
+
+////////////// Bitmap //////////////
+
+typedef struct {
+  size_t siZe;
+  char* data;
+} bitmap_t;
+
+void bitmap_bit_set(char* arrayPtr, int index);
+char bitmap_bit_get(char* arrayPtr, int index);
+void bitmap_clear(char* arrayPtr);
+void bitmap_print(char* arrayPtr);
+
+typedef struct xylf {
+  int16_t x, y, l, r;
+} xylf_t;
+
+////////////// Blob //////////////
+
+typedef struct point {
+  uint16_t x;
+  uint16_t y;
+  int16_t z;
+} point_t;
+
+typedef struct blob {
+  int8_t UID;
+  uint32_t pixels;
+  point_t centroid;
+  boolean isDead;
+  struct blob* next_ptr;
+} blob_t;
 
 typedef struct list {
-  node_t* head_ptr;
-  size_t data_len;
-  size_t index;
+  blob_t* head_ptr;
+  blob_t* tail_ptr;
+  int8_t index;
 } list_t;
 
-void list_init(list_t* ptr, size_t data_len);
-void list_alloc_all(list_t* ptr, size_t data_len);
-void list_pop_front(list_t* src, void* data, node_t* node);
-void list_push_back(list_t* dst, node_t* freeNode, void* data);
+////////////// list //////////////
 
-node_t* list_get_freeNode(list_t* ptr);
+void list_init(list_t* ptr);
+void list_alloc_all(list_t* dst, blob_t* blobs);
+void list_push_back(list_t* dst, blob_t* blob);
+void list_save_blobs(list_t* dst, list_t* src);
+// void list_swap_blobs(const list_t* dst, const list_t* src, size_t dstIndex, size_t srcIndex);
+blob_t* list_pop_front(list_t* src);
+blob_t* list_read_blob(list_t* src, uint8_t index);
+blob_t* list_get_blob(list_t* src, uint8_t index);
 
-void list_read_node(list_t* src, size_t index, void* data);
-node_t* list_remove_node(list_t* src, size_t index);
-
-void list_save_node(list_t* ptr, node_t* node);
-
-void list_copy(list_t* dst, list_t* src);
-void list_memcpy(list_t* dst, list_t* src); // Unfashionable
-// void list_swap(list_t* dst, node_t* dst, list_t* src, node_t* src);
+void find_blobs(
+  image_t* input_ptr,
+  char* bitmap_ptr,
+  const int rows,
+  const int cols,
+  const int pixelThreshold,
+  const unsigned int minBlobPix,
+  const unsigned int maxBlobPix,
+  list_t* freeBlobList_ptr,
+  list_t* blobs_ptr,
+  list_t* oldBlobsToUpdate_ptr,
+  list_t* blobsToUpdate_ptr,
+  list_t* blobsToAdd_ptr,
+  list_t* outputBlobs_ptr
+);
 
 ////////////// Iterators //////////////
-size_t list_size(list_t* ptr);
-node_t* iterator_start_from_head(list_t* src);
-node_t* iterator_next(node_t* src);
-void iterator_get(list_t* src, node_t* node, void* data);
-void iterator_set(list_t* ptr, node_t* node, void* data);
-
+int8_t list_size(list_t* ptr);
+blob_t* iterator_start_from_head(list_t* src);
+blob_t* iterator_next(blob_t* src);
 
 #endif /*__COLLECTIONS_H__*/

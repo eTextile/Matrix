@@ -1,17 +1,12 @@
 /* This file is part of the OpenMV project.
-list_t    freeNodes;
-list_t*   freeNodesPtr;
-
-list_t    nodes;
-list_t*   nodesPtr;
    Copyright (c) 2013-2017 Ibrahim Abdelkader <iabdalkader@openmv.io> & Kwabena W. Agyeman <kwagyeman@openmv.io>
    This work is licensed under the MIT license, see the file LICENSE for details.
 */
 
 #include <Arduino.h>
-#include "collections.h"
 #include "fb_alloc.h"
 #include "config.h"
+#include "collections.h"
 
 ////////////// Bitmap //////////////
 
@@ -24,7 +19,8 @@ char bitmap_bit_get(char* arrayPtr, int index) {
 }
 
 void bitmap_clear(char* arrayPtr) {
-  memset(arrayPtr, 0, ((NEW_FRAME + CHAR_MASK) >> CHAR_SHIFT) * sizeof(char));
+  // memset(ptr->data, 0, ((ptr->size + CHAR_MASK) >> CHAR_SHIFT) * sizeof(char));
+  memset(arrayPtr, 0, NEW_FRAME * sizeof(char));
 }
 
 void bitmap_print(char* arrayPtr) {
@@ -32,7 +28,7 @@ void bitmap_print(char* arrayPtr) {
   Serial.printf(F("\n>>>> Bitmap <<<<\n"));
   for (int i = 0; i < NEW_ROWS; i++) {
     for (int j = 0; j < NEW_COLS; j++) {
-      Serial.printf( "%d " , bitmap_bit_get(arrayPtr, i * NEW_ROWS + j));
+      Serial.printf("%d ", bitmap_bit_get(arrayPtr, i * NEW_ROWS + j));
     }
     Serial.printf("\n");
   }
@@ -75,306 +71,145 @@ void lifo_dequeue(lifo_t* ptr, void* data) {
   }
   ptr->len--;
 }
-/*
-    Linked List fonctions
-    The linked list is a sigel direction (from head to tail)
-    (head) node_3 > node_2 > node_1 > node_0 > (tail)
-*/
-/*
-    eTextile.org / list_init();
-    Initialise a linked list
-*/
-void list_init(list_t* ptr, size_t data_len) {
-  ptr->head_ptr = NULL;
-  ptr->data_len = data_len;
-  ptr->index = 0;
-  if (DEBUG_LIST) Serial.printf(F("\n>>>> list_init(); / init done"));
-}
-/*
-    eTextile.org / list_alloc_all();
-    Linked list - push front
-*/
-void list_alloc_all(list_t* dst, size_t data_len) {
-  if (DEBUG_LIST) Serial.printf(F("\n>>>>>>>> list_alloc_all / Start"));
 
-  for (int i = 0; i < MAX_NODES; i++) {
-    node_t* node = (node_t*) malloc(data_len);
-    if (DEBUG_LIST) Serial.printf(F("\n>>>> list_alloc_all / Create and allocate the node: %p"), node);
-    if (node == NULL) {
-      if (DEBUG_LIST) Serial.printf(F("\n>>>> list_alloc_all / ALLOC_FAILURE"));
-    } else {
-      memcpy(node->data, 0, data_len);
-      if (dst->head_ptr != NULL) {
-        node->next_ptr = dst->head_ptr;
-        dst->head_ptr = node;
-        if (DEBUG_LIST) Serial.printf(F("\n>>>> list_alloc_all / Add a node to the linked list: %d"), dst->index);
-        dst->index++;
-      } else {
-        node->next_ptr = NULL;
-        dst->head_ptr = node;
-        if (DEBUG_LIST) Serial.printf(F("\n>>>> list_alloc_all / Add the first node to the linked list: %d"), dst->index);
-        dst->index++;
-      }
-    }
+////////////////////////////// linked list  //////////////////////////////
+
+void list_init(list_t *ptr) {
+  ptr->tail_ptr = ptr->head_ptr = NULL;
+  ptr->index = -1;
+}
+
+void list_alloc_all(list_t* dst, blob_t* blobs) {
+
+  dst->head_ptr = dst->tail_ptr = &blobs[0];
+  if (DEBUG_LIST) Serial.printf(("\n>>>> list_alloc_all\t%d: %p"), 0, &blobs[0]);
+  dst->index++;
+
+  for (int i = 1; i < MAX_NODES; i++) {
+    blobs[i - 1].next_ptr = &blobs[i];
+    dst->tail_ptr = &blobs[i];
+    blobs[i].UID = -1;
+    if (DEBUG_LIST) Serial.printf(("\n>>>> list_alloc_all\t%d: %p"), i, &blobs[i]);
+    dst->index++;
   }
+  dst->tail_ptr->next_ptr = NULL;
 }
-/*
-    eTextile.org / list_get_freeNode(); / V0.1
-    Return the adress/pointer of the first node in the freeNode linked list
-    Remove the node from the SRC linked list
-*/
-node_t* list_get_freeNode(list_t* src) {
-  if (DEBUG_LIST) Serial.printf(F("\n>>>>>>>> list_get_freeNode / Start"));
-  node_t* node;
 
-  if (src->head_ptr != NULL) {
-    node = src->head_ptr;
-    if (DEBUG_LIST) Serial.printf(F("\n>>>> list_get_freeNode / Get the first node address in the linked list: %p"), src->head_ptr);
-    if (node->next_ptr != NULL) {
-      src->head_ptr = node->next_ptr;
-      if (DEBUG_LIST) Serial.printf(F("\n>>>> list_get_freeNode / Move the head to the next node: %p"), src->head_ptr);
-      src->index--;
-      if (DEBUG_LIST) Serial.printf(F("\n>>>> list_get_freeNode / Exit"));
-      return node;
-    } else { // node->next_ptr == NULL
-      src->head_ptr = NULL;
-      if (DEBUG_LIST) Serial.printf(F("\n>>>> list_get_freeNode / Set the liked list head pointer to NULL: %p"), src->head_ptr);
-      src->index--;
-      if (DEBUG_LIST) Serial.printf(F("\n>>>> list_get_freeNode / Exit"));
-      return node;
-    }
-  } else { // src->head_ptr == NULL
-    if (DEBUG_LIST) Serial.printf(F("\n>>>> list_get_freeNode / Linked list is umpty"));
+blob_t* list_pop_front(list_t* src) {
+  if (src->index > -1) {
+
+    blob_t* blob = src->head_ptr;
+    src->head_ptr = src->head_ptr->next_ptr;
+    blob->next_ptr = NULL;
+    src->index--;
+    return blob;
+  } else {
+    Serial.printf(F("\n>>>>>>>>> list_pop_front / list is umpty : ERROR"));
     return NULL;
   }
 }
-/*
-    eTextile.org / list_read_node(); / V0.3
-    Return the adress/pointer of a linked list node
-    Do not remove the node from the SRC linked list
-*/
-void list_read_node(list_t* src, size_t index, void* data) {
-  if (DEBUG_LIST) Serial.printf(F("\n>>>>>>>> list_read_node / Read node: %d"), index);
 
-  node_t* tmpNode;
+void list_push_back(list_t* dst, blob_t* blob) {
 
-  if (src->head_ptr != NULL) {
-    tmpNode = src->head_ptr; // node_0
-    if (DEBUG_LIST) Serial.printf(F("\n>>>> list_read_node / Get the linked list head adress: %p"), src->head_ptr);
-
-    for (int i = 0; i < index; i++) {
-      tmpNode = tmpNode->next_ptr;
-      if (DEBUG_LIST) Serial.printf(F("\n>>>> list_read_node / Get the next node address: %p"), tmpNode);
-    }
-    memcpy(data, tmpNode->data, src->data_len);
-    if (DEBUG_LIST) Serial.printf(F("\n>>>> list_read_node / Write the node values to the external node: %p"), data);
-  } // src->head_ptr == NULL
-  else {
-    if (DEBUG_LIST) Serial.printf(F("\n>>>> list_read_node / SRC linked list is umpty)); : %p"), src->head_ptr);
-  }
-}
-/*
-    eTextile.org / list_remove_node(); / V0.4
-    Remove a node from a linked list
-    Return the adress/pointer of the removed linked list node
-*/
-node_t* list_remove_node(list_t* src, size_t index) {
-  if (DEBUG_LIST) Serial.printf(F("\n>>>>>>>> list_remove_node / Start with node: %d"), index);
-
-  node_t* prevNode = NULL;
-  node_t* node;
-
-  node = src->head_ptr;
-  if (DEBUG_LIST) Serial.printf(F("\n>>>> list_remove_node / Get the head adress of the linked list: %p"), node);
-
-  if (index == 0) {
-    if (DEBUG_LIST) Serial.printf(F("\n>>>> list_remove_node / A: Remove the head of the linked list: %p"), src->head_ptr);
-    if (node->next_ptr != NULL) {
-      src->head_ptr = node->next_ptr;
-      if (DEBUG_LIST) Serial.printf(F("\n>>>> list_remove_node / B: Move the SRC linked list head address to the next_ptr: %p"), node->next_ptr);
-      src->index--;
-      if (DEBUG_LIST) Serial.printf(F("\n>>>> list_remove_node / B: Change the index of the SRC linked list: %d"), src->index);
-    } else { // node->next_ptr == NULL
-      src->head_ptr = NULL;
-      if (DEBUG_LIST) Serial.printf(F("\n>>>> list_remove_node / C: Clear the SRC linked list head adress: %p"), src->head_ptr);
-      src->index--;
-      if (DEBUG_LIST) Serial.printf(F("\n>>>> list_remove_node / C: Change the index of the SRC linked list: %d"), src->index);
-    }
-    return node;
-  } else { // index != 0
-    for (int i = 0; i < index; i++) {
-      prevNode = node;
-      if (DEBUG_LIST) Serial.printf(F("\n>>>> list_remove_node / D: Save the previus node address: %p"), prevNode);
-      if (node->next_ptr != NULL) {
-        node = node->next_ptr;
-        if (DEBUG_LIST) Serial.printf(F("\n>>>> list_remove_node /D: Get the next node address: %p"), node);
-      }
-      else { // node->next_ptr == NULL
-        prevNode->next_ptr = NULL;
-        if (DEBUG_LIST) Serial.printf(F("\n>>>> list_remove_node / E: Update the tail of the linked list: %p"), prevNode->next_ptr);
-        src->index--;
-        if (DEBUG_LIST) Serial.printf(F("\n>>>> list_remove_node / E: Change the index of the SRC linked list: %d"), src->index);
-        return node;
-      }
-    }
-    prevNode->next_ptr = node->next_ptr;
-    if (DEBUG_LIST) Serial.printf(F("\n>>>> list_remove_node / F: Connect the next & previous nodes of the removed node: %p -> %p"), prevNode->next_ptr, node->next_ptr);
-    src->index--;
-    if (DEBUG_LIST) Serial.printf(F("\n>>>> list_remove_node / F: Change the index of the SRC linked list: %d"), src->index);
-    return node;
-  }
-}
-
-/*
-    eTextile.org / list_save_node(); / V1.0
-    Save the address/ponter of a node to a linked list of nodes
-*/
-void list_save_node(list_t* dst, node_t* node) {
-  if (DEBUG_LIST) Serial.printf(F("\n>>>>>>>> list_save_node / Start: %p"), node);
-
-  if (dst->head_ptr != NULL) {
-    node->next_ptr = dst->head_ptr;
-    if (DEBUG_LIST) Serial.printf(F("\n>>>> list_save_node / Set the node->next_ptr to point the DST linked list head address: %p"), dst->head_ptr);
-    dst->head_ptr = node;
-    if (DEBUG_LIST) Serial.printf(F("\n>>>> list_save_node / Move the DST linked list head address to the new node: %p"), dst->head_ptr);
+  if (dst->index == -1) {
+    dst->head_ptr = dst->tail_ptr = blob;
     dst->index++;
-    if (DEBUG_LIST) Serial.printf(F("\n>>>> list_save_node / Exit"));
   } else {
-    if (DEBUG_LIST) Serial.printf(F("\n>>>> list_save_node / Linked list is umpty"));
-    node->next_ptr = NULL;
-    dst->head_ptr = node;
-    if (DEBUG_LIST) Serial.printf(F("\n>>>> list_save_node / Set the node as head of the linked list"));
-    if (DEBUG_LIST) Serial.printf(F("\n>>>> list_save_node / Exit"));
+    dst->tail_ptr->next_ptr = blob;
+    dst->tail_ptr = blob;
+    dst->index++;
   }
 }
-/*
-    eTextile.org / list_push_back(); / V1.1
-    Add a node addres/pointer to the end of a linked list
-*/
-void list_push_back(list_t* dst, node_t* node, void* data) {
-  if (DEBUG_LIST) Serial.printf(F("\n>>>>>>>> list_push_back / Start"));
 
-  node_t* tmpNode = node;
-  if (DEBUG_LIST) Serial.printf(F("\n>>>> list_push_back / A-create a tmpNode to hold the node address: %p"), tmpNode);
-  memcpy(tmpNode->data, data, dst->data_len);
-  if (DEBUG_LIST) Serial.printf(F("\n>>>> list_push_back / A-copy the blob values to the tmpNode: %p"), tmpNode);
-  tmpNode->next_ptr = NULL;
-  if (DEBUG_LIST) Serial.printf(F("\n>>>> list_push_back / A-set the tmpNode next_ptr to NULL: %p"), tmpNode->next_ptr);
-  
-  if (dst->head_ptr != NULL) {
-    node->next_ptr = dst->head_ptr;
-    if (DEBUG_LIST) Serial.printf(F("\n>>>> list_push_back / Get the DST linked list head address: %p"), node);
-    while (node->next_ptr != NULL) {
-      node = node->next_ptr;
-      if (DEBUG_LIST) Serial.printf(F("\n>>>> list_push_back / Go to the next node in the linked list: %p"), node);
-    } // node->next_ptr == NULL
-    if (DEBUG_LIST) Serial.printf(F("\n>>>> list_push_back / Reach the end of the linked list"));
-    node->next_ptr = tmpNode;
-    if (DEBUG_LIST) Serial.printf(F("\n>>>> list_push_back / Add the node to the end of the linked list: %p"), node->next_ptr);
-    dst->index++;
-  } else { // dst->head_ptr == NULL
-    dst->head_ptr = tmpNode;
-    if (DEBUG_LIST) Serial.printf(F("\n>>>> list_push_back / Set the node as head of the linked list: %p"), dst->head_ptr);
-    dst->index++;
-    if (DEBUG_LIST) Serial.printf(F("\n>>>> list_push_back / Exit"));
-  }
-}
-/*
-    eTextile.org / list_pop_front(); / V1.1
-    Read & remove the first node of a linked list
-*/
-void list_pop_front(list_t* src, void* data, node_t* node ) {
-  if (DEBUG_LIST) Serial.printf(F("\n>>>>>>>> list_pop_front / Start"));
+blob_t* list_read_blob(list_t* src, uint8_t index) {
 
-  if (src->head_ptr != NULL) {
-    node = src->head_ptr;
-    if (DEBUG_LIST) Serial.printf(F("\n>>>> list_pop_front / Use a node to point the linked list head address"));
-    memcpy(node->data, data, src->data_len);
-    if (DEBUG_LIST) Serial.printf(F("\n>>>> list_pop_front / Copy the head node values to the node"));
-    if (node->next_ptr != NULL) {
-      src->head_ptr = node->next_ptr;
-      if (DEBUG_LIST) Serial.printf(F("\n>>>> list_pop_front / Change the head node of the linked list to: %d"), src->index);
-      src->index--;
-      if (DEBUG_LIST) Serial.printf(F("\n>>>> list_pop_front / Exit"));
-      // return node;
-    } else { // src->head_ptr == NULL
-      src->head_ptr = NULL;
-      if (DEBUG_LIST) Serial.printf(F("\n>>>> list_pop_front / Change the head node of the linked list to: %d"), src->index);
-      src->index--;
-      if (DEBUG_LIST) Serial.printf(F("\n>>>> list_pop_front / Exit"));
-      // return node;
+  blob_t* blob;
+
+  if ((src->index > -1) && (index <= src->index)) {
+    blob = src->head_ptr;
+    for (int i = 0; i < index; i++) {
+      blob = blob->next_ptr;
     }
+    return blob;
+  } else {
+    Serial.printf(F("\n>>>>>>>>> list_read_blob / ERROR"));
+    return NULL;
   }
-  if (DEBUG_LIST) Serial.printf(F("\n>>>> list_pop_front / Linked list is umpty"));
-  // return NULL;
 }
 
-void list_memcpy(list_t* dst, list_t* src) {
-  memcpy(dst, src, sizeof(list_t));
-}
-/*
-    eTextile.org / list_save_nodes(); / V1.1
-    Copy all nodes address from src to dst
-*/
-void list_copy(list_t* dst, list_t* src) {
-  if (DEBUG_LIST) Serial.printf(F("\n>>>>>>>> list_copy / Start: DST: %d <- SRC: %d"), dst->index, src->index);
+blob_t* list_get_blob(list_t* src, uint8_t index) {
 
-  node_t* node;
+  blob_t* prevBlob = NULL;
+  blob_t* blob = src->head_ptr;
 
-  while (src->head_ptr != NULL) {
-    node = src->head_ptr;
-    if (DEBUG_LIST) Serial.printf(F("\n>>>> list_copy / SRC: get the linked list head address: %p"), src->head_ptr);
-    if (dst->head_ptr != NULL) {
-      if (node->next_ptr != NULL) {
-        src->head_ptr = node->next_ptr ;
-        if (DEBUG_LIST) Serial.printf(F("\n>>>> list_copy / SRC-A: change the head node of the linked list to: %p"), src->head_ptr);
-        node->next_ptr = dst->head_ptr;
-        if (DEBUG_LIST) Serial.printf(F("\n>>>> list_copy / DST-A: plug the node next_ptr to the linked list: %p"), node->next_ptr);
-        dst->head_ptr = node;
-        if (DEBUG_LIST) Serial.printf(F("\n>>>> list_copy / DST-A: change the head node of the linked list to: %p"), dst->head_ptr);
-        dst->index++;
+  if ((src->index > -1) && (index <= src->index)) {
+    if (index == 0) { // If I whant to take the head blob
+      if (src->index > 0) {
+        src->head_ptr = src->head_ptr->next_ptr;
+        // blob->next_ptr = NULL;
         src->index--;
-      } else { // node->next_ptr == NULL
-        node->next_ptr = dst->head_ptr;
-        if (DEBUG_LIST) Serial.printf(F("\n>>>> list_copy / DST-B: plug the node next_ptr to the linked list: %p"), node->next_ptr);
-        dst->head_ptr = node;
-        if (DEBUG_LIST) Serial.printf(F("\n>>>> list_copy / DST-B: change the head node of the linked list to: %p"), dst->head_ptr);
-        src->head_ptr = NULL;
-        if (DEBUG_LIST) Serial.printf(F("\n>>>> list_copy / SRC-B: clear the head pointer: %p"), src->head_ptr);
-        dst->index++;
+        return blob;
+      } else {
+        src->tail_ptr = src->head_ptr = NULL;
+        // blob->next_ptr = NULL;
         src->index--;
-        if (DEBUG_LIST) Serial.printf(F("\n>>>> list_copy / Exit"));
-        return;
+        return blob;
       }
-    } else {
-      src->head_ptr = node->next_ptr ;
-      if (DEBUG_LIST) Serial.printf(F("\n>>>> list_copy / SRC-C: change the head node of the linked list to: %p"), src->head_ptr);
-      node->next_ptr = NULL;
-      if (DEBUG_LIST) Serial.printf(F("\n>>>> list_copy / DST-C: set the next_ptr of the node to NULL: %p"), node->next_ptr);
-      dst->head_ptr = node;
-      if (DEBUG_LIST) Serial.printf(F("\n>>>> list_copy / DST-C: add the first node to the linked list: %p"), dst->head_ptr);
+    } else { // If I whant to take an other blob
+      for (int i = 0; i < index; i++) {
+        prevBlob = blob;
+        if (blob->next_ptr != NULL) {
+          blob = blob->next_ptr;
+        } else {
+          prevBlob->next_ptr = src->tail_ptr; // We take the last blob in the list
+          src->index--;
+          return blob;
+        }
+      }
+      prevBlob->next_ptr = blob->next_ptr;
+      blob->next_ptr = NULL;
       src->index--;
-      dst->index++;
+      return blob;
     }
-  } // src->head_ptr == NULL
-  if (DEBUG_LIST) Serial.printf(F("\n>>>> list_copy / SRC: no more node in the linked list & Exit"));
-  // return;
+  } else {
+    Serial.printf(F("\n>>>>>>>>> list_get_blob / ERROR"));
+    return NULL;
+  }
+}
+
+void list_save_blobs(list_t* dst, list_t* src) {
+  if (DEBUG_LIST) Serial.printf(F("\n>>>> list_save_blobs / START"));
+
+  blob_t* blob = src->head_ptr;
+
+  while (src->index != -1) {
+
+    if (dst->index == -1) {
+      dst->head_ptr = dst->tail_ptr = blob;
+      if (DEBUG_LIST) Serial.printf(F("\n>>>> list_save_blobs / Add the first blob to the list"));
+    } else { // dst->index != -1
+      dst->tail_ptr->next_ptr = blob;
+      dst->tail_ptr = blob;
+      if (DEBUG_LIST) Serial.printf(F("\n>>>> list_save_blobs / Add a new blob to the list"));
+    }
+    src->index--;
+    dst->index++;
+    blob = blob->next_ptr;
+    if (DEBUG_LIST) Serial.printf(F("\n>>>> list_save_blobs / Move to the next_ptr: %p"), blob);
+  }
+  dst->tail_ptr->next_ptr = NULL;
+  src->tail_ptr = src->head_ptr = NULL;
+  if (DEBUG_LIST) Serial.printf(F("\n>>>> list_save_blobs / SRC is umpty: %p"), src->index);
 }
 
 ////////////// Linked list iterators //////////////
 
-node_t* iterator_start_from_head(list_t* src) {
+blob_t* iterator_start_from_head(list_t* src) {
   return src->head_ptr;
 }
-void iterator_get(list_t* src, node_t* node, void* data) { // Can be optimised !?
-  memcpy(data, node->data, src->data_len);
-}
-void iterator_set(list_t *ptr, node_t *node, void *data) {
-  memcpy(node->data, data, ptr->data_len);
-}
-node_t* iterator_next(node_t* src) {
+blob_t* iterator_next(blob_t* src) {
   return src->next_ptr;
 }
-size_t list_size(list_t* ptr) {
-  return ptr->index;
+int8_t list_size(list_t* src) {
+  return src->index;
 }

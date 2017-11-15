@@ -2,7 +2,7 @@
 // See http://eTextile.org
 
 #include <PacketSerial.h> // https://github.com/bakercp/PacketSerial
-#include "blob.h"
+#include "collections.h"
 #include "eTextile_matrix_sensor_blob.h"
 
 // PacketSerial serial;
@@ -19,43 +19,27 @@ void setup() {
   pinMode(BUTTON_PIN, INPUT_PULLUP);     // Set button pin as input and activate the input pullup resistor
   attachInterrupt(BUTTON_PIN, pushButton, RISING); // Attach interrrupt on button PIN
 
-  minValsPtr = &minVals[0]; // Initialize minVals array pointer
-
   interpolate.numCols = COLS;
   interpolate.numRows = ROWS;
   interpolate.pData = &frameValues[0];
 
-  inputFramePtr = &inputFrame;
+  inputFrame.w = NEW_COLS;
+  inputFrame.h = NEW_ROWS;
+  inputFrame.dataPtr = &bilinIntOutput[0];
 
-  inputFramePtr->w = NEW_COLS;
-  inputFramePtr->h = NEW_ROWS;
-  inputFramePtr->dataPtr = &bilinIntOutput[0];
+  memset(&bitmap[0], 0, NEW_FRAME * sizeof(char)); // Set all values to 255
 
-  bitmapPtr = &bitmap[0]; // Initialize bitmap pointer
-  memset(bitmapPtr, 0, NEW_FRAME * sizeof(char)); // Set all values to 255
+  list_init(&freeBlobs);
+  list_alloc_all(&freeBlobs, &blobsArray[0]);
 
-  freeNodeListPtr = &freeNodeList; // Setup the freeNodeListPtr pointer (list_t)
-  list_init(freeNodeListPtr, sizeof(blob_t));
-  list_alloc_all(freeNodeListPtr, sizeof(blob_t));
+  list_init(&blobs);
+  list_init(&oldBlobsToUpdate);
+  list_init(&blobsToUpdate);
+  list_init(&blobsToAdd);
+  list_init(&outputBlobs);
+  if (DEBUG_BLOB) Serial.printf(F("\n>>>>>>>> outputBlobs head_ptr: %p"), outputBlobs.head_ptr);
 
-  nodesPtr = &nodes;
-  list_init(nodesPtr, sizeof(blob_t));
-
-  oldNodesToUpdatePtr = &oldNodesToUpdate;
-  list_init(oldNodesToUpdatePtr, sizeof(blob_t));
-
-  nodesToUpdatePtr = &nodesToUpdate;
-  list_init(nodesToUpdatePtr, sizeof(blob_t));
-
-  nodesToAddPtr = &nodesToAdd;
-  list_init(nodesToAddPtr, sizeof(blob_t));
-
-  outputNodesPtr = &outputNodes; // Setup the outputBlobs pointer (list_t)
-  list_init(outputNodesPtr, sizeof(blob_t));
-
-  tmpBlobPtr =  &tmpBlob;
-
-  calibrate(minValsPtr, CYCLES);
+  calibrate(&minVals[0], CYCLES);
   bootBlink(9);
 
 }
@@ -99,19 +83,19 @@ void loop() {
   sensorID = 0;
 
   find_blobs(
-    inputFramePtr,          // image_t*
-    bitmapPtr,              // char Array*
+    &inputFrame,            // image_t*
+    &bitmap[0],             // char Array*
     NEW_ROWS,               // const int
     NEW_COLS,               // const int
     THRESHOLD,              // const int
     MIN_BLOB_PIX,           // const int
     MAX_BLOB_PIX,           // const int
-    freeNodeListPtr,        // list_t*
-    nodesPtr,               // list_t*
-    oldNodesToUpdatePtr,    // list_t*
-    nodesToUpdatePtr,       // list_t*
-    nodesToAddPtr,          // list_t*
-    outputNodesPtr          // list_t*
+    &freeBlobs,             // list_t*
+    &blobs,                 // list_t*
+    &oldBlobsToUpdate,      // list_t*
+    &blobsToUpdate,         // list_t*
+    &blobsToAdd,            // list_t*
+    &outputBlobs            // list_t*
   );
 
   // The update() method attempts to read in
@@ -165,7 +149,7 @@ void bootBlink(uint8_t flash) {
 /////////// Called with interrupt triggered with push button attached to I/O pin 32
 void pushButton() {
   cli();
-  calibrate(minValsPtr, CYCLES);
+  calibrate(&minVals[0], CYCLES);
   sei();
 }
 
