@@ -117,8 +117,8 @@ typedef struct point {
 
 typedef struct blob {
   int8_t UID;
-  uint32_t pixels;
   point_t centroid;
+  uint32_t pixels;
   boolean isDead;
   struct blob* next_ptr;
 } blob_t;
@@ -135,7 +135,9 @@ void list_init(list_t* ptr);
 void list_alloc_all(list_t* dst, blob_t* blobs);
 void list_push_back(list_t* dst, blob_t* blob);
 void list_save_blobs(list_t* dst, list_t* src);
-// void list_swap_blobs(const list_t* dst, const list_t* src, size_t dstIndex, size_t srcIndex);
+void list_copy_blob(blob_t* blobA, blob_t* blobB, size_t blobSize);
+void list_clear_blobs(list_t* src);
+
 blob_t* list_pop_front(list_t* src);
 blob_t* list_read_blob(list_t* src, uint8_t index);
 blob_t* list_get_blob(list_t* src, uint8_t index);

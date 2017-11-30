@@ -238,15 +238,19 @@ void find_blobs(
         }
         indexB++;
       }
-      if (DEBUG_BLOB) Serial.printf(F("\n>>>>>>>> Exit for blobB"));
+      if (DEBUG_BLOB) Serial.printf(F("\n>>>>>>>> BLOB / found the nearest blob: %d"), nearestBlob);
 
       // If the distance betwin curent blob and last blob position is less than minDist:
       // We save the curentNode from blobs_ptr to nodesToUpdate &
       // We save the old node from outputNodes to oldNodesToUpdate
       if (minDist < 10.0) {
+        if (DEBUG_BLOB) Serial.printf(F("\n>>>>>>>> BLOB / blob is valid save it to a list: %d"), minDist);
 
         list_push_back(blobsToUpdate_ptr, list_get_blob(blobs_ptr, indexA));
-        list_push_back(oldBlobsToUpdate_ptr, list_get_blob(outputBlobs_ptr, nearestBlob));
+
+        blob_t *newBlob = list_pop_front(freeBlobList_ptr);
+        list_copy_blob(newBlob, list_read_blob(outputBlobs_ptr, nearestBlob), sizeof(blob_t));
+        list_push_back(oldBlobsToUpdate_ptr, newBlob);
 
       } else {
         // Found a new blob! we nead to geave it an ID.
@@ -272,7 +276,7 @@ void find_blobs(
       indexA++;
     }
 
-    // Update outputNodes linked list with nodesToUpdate linked list
+    // Update outputBlobs linked list with blobsToUpdate linked list
     for (blob_t* blobA = iterator_start_from_head(outputBlobs_ptr); blobA != NULL; blobA = iterator_next(blobA)) {
       bool found = false;
       int i = 0;
@@ -358,16 +362,20 @@ void find_blobs(
     }
     // sender.sendBundle(bundle);
 
-    list_save_blobs(freeBlobList_ptr, oldBlobsToUpdate_ptr); // Remove & save node from the oldBlobsToUpdate_ptr linked list
-    list_save_blobs(freeBlobList_ptr, blobsToUpdate_ptr);    // Remove & save node from the blobsToUpdate_ptr linked list
-    list_save_blobs(freeBlobList_ptr, blobsToAdd_ptr);       // Remove & save node from the blobsToAdd_ptr linked list
+    //list_save_blobs(freeBlobList_ptr, oldBlobsToUpdate_ptr); // Remove & save node from the oldBlobsToUpdate_ptr linked list
+    // list_clear_blobs(oldBlobsToUpdate_ptr);
+    //list_save_blobs(freeBlobList_ptr, blobsToUpdate_ptr);    // Remove & save node from the blobsToUpdate_ptr linked list
+    // list_clear_blobs(blobsToUpdate_ptr);
+    //list_save_blobs(freeBlobList_ptr, blobsToAdd_ptr);       // Remove & save node from the blobsToAdd_ptr linked list
+    // list_clear_blobs(blobsToAdd_ptr);
+
   }
 
   lifo_free(&lifo);
   if (DEBUG_BITMAP) bitmap_print(bitmap_ptr);
   bitmap_clear(bitmap_ptr); // TODO: optimizing!
   if (DEBUG_BLOB) Serial.printf(F("\n>>>>>>>> Cleared bitmap"));
+  // list_save_blobs(freeBlobList_ptr, blobs_ptr); // Save & remove blobs/nodes from the blobs_ptr linked list
   if (DEBUG_BLOB) Serial.printf(F("\n>>>>>>>> END OFF BLOB FONCTION"));
 
-  list_save_blobs(freeBlobList_ptr, blobs_ptr);            // Remove & save node from the blobs_ptr linked list
 }
