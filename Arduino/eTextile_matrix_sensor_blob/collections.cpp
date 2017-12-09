@@ -231,7 +231,7 @@ void list_copy_blob(blob_t* blobA, blob_t* blobB, size_t blobSize) {
   // blobA->pixels;
   // blobA->isDead;
 
-  memset(&blobA, &blobB, blobSize);
+  memcpy(blobA, blobB, blobSize);
 }
 
 
