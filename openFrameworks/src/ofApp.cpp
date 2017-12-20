@@ -143,7 +143,7 @@ void ofApp::update() {
             c.position = ofVec2f(posX, posY);
             c.pressure = posZ;
             c.perimeter = blobPerimeter;
-            c.UID = i;
+            c.UID = i; // Do we nead to set it to -1 (NULL)?
             c.isDead = false;
             currentCentroids.push_back(c);
             if (DEBUG_PRINT) {

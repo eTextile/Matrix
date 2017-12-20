@@ -147,16 +147,21 @@ blob_t* list_get_blob(list_t* src, uint8_t index) {
   blob_t* prevBlob = NULL;
   blob_t* blob = src->head_ptr;
 
-  if ((src->index > -1) && (index <= src->index)) {
+  if (DEBUG_LIST) Serial.printf(F("\n>>>>>>>>> list_get_blob / index = %d"), src->index);
+
+  if ((src->index != -1) && (index <= src->index)) {
     if (src->index == 0) { // If we whant to take the head blob
+      if (DEBUG_LIST) Serial.printf(F("\n>>>>>>>>> list_get_blob / B")); // STOP!?
       if (src->index > 0) {
         src->head_ptr = src->head_ptr->next_ptr;
-        // blob->next_ptr = NULL; //  We do it in the list_push_back()
+        // blob->next_ptr = NULL; //  We do it in the list_push_back();
         src->index--;
         return blob;
       } else {
+        if (DEBUG_LIST) Serial.printf(F("\n>>>>>>>>> list_get_blob / C"));
         src->tail_ptr = src->head_ptr = NULL;
-        // blob->next_ptr = NULL; // I do it in the list_push_back()
+        if (DEBUG_LIST) Serial.printf(F("\n>>>>>>>>> list_get_blob / D"));
+        // blob->next_ptr = NULL; // We do it in the list_push_back();
         src->index--;
         return blob;
       }
@@ -166,18 +171,18 @@ blob_t* list_get_blob(list_t* src, uint8_t index) {
         if (blob->next_ptr != NULL) {
           blob = blob->next_ptr;
         } else {
-          prevBlob->next_ptr = src->tail_ptr; // We take the last blob in the list
+          prevBlob->next_ptr = src->tail_ptr; // If we take the last blob in the list
           src->index--;
           return blob;
         }
       }
       prevBlob->next_ptr = blob->next_ptr;
-      // blob->next_ptr = NULL; // I do it in the list_push_back()
+      // blob->next_ptr = NULL; // We do it in the list_push_back();
       src->index--;
       return blob;
     }
   } else {
-    if (DEBUG_LIST) Serial.printf(F("\n>>>>>>>>> list_get_blob / ERROR / this node is not in the list"));
+    if (DEBUG_LIST) Serial.printf(F("\n>>>>>>>>> list_get_blob / the blob is not in the list!"));
     return NULL;
   }
 }
@@ -188,7 +193,6 @@ void list_save_blobs(list_t* dst, list_t* src) {
   blob_t* blob;
 
   while (src->index != -1) {
-
     // SRC pop front
     if (src->index == 0) {
       blob = src->head_ptr;
@@ -201,6 +205,8 @@ void list_save_blobs(list_t* dst, list_t* src) {
       if (DEBUG_LIST) Serial.printf(F("\n>>>> list_save_blobs / SRC Move the list hed to next_ptr: %p"), src->head_ptr);
     }
     src->index--;
+    if (DEBUG_LIST) Serial.printf(F("\n>>>> list_save_blobs / SRC set index to: %d"), src->index);
+
     // DST push back
     if (dst->index == -1) {
       dst->head_ptr = dst->tail_ptr = blob;
@@ -215,22 +221,18 @@ void list_save_blobs(list_t* dst, list_t* src) {
     dst->index++;
     if (DEBUG_LIST) Serial.printf(F("\n>>>> list_save_blobs / DST set index to: %d"), dst->index);
   }
-  if (DEBUG_LIST) Serial.printf(F("\n>>>> list_save_blobs / SRC linked list is umpty"));
-}
-
-void list_clear_blobs(list_t* src) {
-  src->tail_ptr = src->head_ptr = NULL;
+  if (DEBUG_LIST) Serial.printf(F("\n>>>> list_save_blobs / SRC linked list is umpty: %d"), src->index);
 }
 
 void list_copy_blob(blob_t* blobA, blob_t* blobB, size_t blobSize) {
-
-  // blobA->UID = blobB->UID;
-  // blobA->centroid.x = blobB->centroid.x;
-  // blobA->centroid.y = blobB->centroid.y;
-  // blobA->centroid.z = blobB->centroid.z;
-  // blobA->pixels;
-  // blobA->isDead;
-
+  /*
+    blobA->UID = blobB->UID;
+    blobA->centroid.x = blobB->centroid.x;
+    blobA->centroid.y = blobB->centroid.y;
+    blobA->centroid.z = blobB->centroid.z;
+    blobA->pixels;
+    blobA->isDead;
+  */
   memcpy(blobA, blobB, blobSize);
 }
 

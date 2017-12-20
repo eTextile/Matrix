@@ -7,28 +7,26 @@
 #include "ofxCvGrayscaleImage.h"
 #include "ofxCvContourFinder.h"
 
-#define USB_PORT        "/dev/ttyACM0"
-#define BAUD_RATE       230400  // With Teensy, it's always the same native speed. The baud rate setting is ignored.
-#define DATAS           256     // numbur of bytes received from the teensy
-#define ROWS            16
-#define COLS            16
-#define X_NEWSIZE       64
-#define Y_NEWSIZE       64
+#define USB_PORT         "/dev/ttyACM0"
+#define BAUD_RATE        230400  // With Teensy, it's always the same native speed. The baud rate setting is ignored.
+#define DATAS            256     // Numbur of bytes received from the teensy
+#define ROWS             16      // Number of rows in the hardwear sensor matrix
+#define COLS             16      // Number of colums in the hardwear sensor matrix
+#define X_NEWSIZE        64      // Number of rows after the softwear interpolation
+#define Y_NEWSIZE        64      // Number of colums after the softwear interpolation
 
 #define HOST             "localhost"
 //#define HOST           "10.42.0.255"
 #define UDP_OUTPUT_PORT  7771
 #define UDP_INPUT_PORT   1234
 
-struct centroid
-{
+struct centroid {
     ofVec2f position;
     uint8_t pressure;
     float perimeter;
     int UID;
     bool isDead;
 };
-
 
 
 using namespace ofx::IO;
@@ -66,9 +64,9 @@ public:
     void                    sliderTresholdValue(float & sliderValue_B);
     void                    keyPressed(int key);
     ofxPanel                gui;
-    ofxToggle               toggleDsp;         // DSP switch
-    ofxFloatSlider          sliderVolume;      // Audio volume
-    ofxFloatSlider          sliderTreshold;    // Threshold
+    ofxToggle               toggleDsp;         // OSC DSP switch
+    ofxFloatSlider          sliderVolume;      // OSC audio volume
+    ofxFloatSlider          sliderTreshold;    // OSC threshold
     ofMesh                  mesh;
     ofxOscSender            sender;
     ofxOscReceiver          receiver;

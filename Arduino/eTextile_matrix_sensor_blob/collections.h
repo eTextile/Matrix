@@ -112,11 +112,11 @@ typedef struct xylf {
 typedef struct point {
   uint16_t x;
   uint16_t y;
-  int16_t z;
+  uint16_t z;
 } point_t;
 
 typedef struct blob {
-  int8_t UID;
+  int8_t UID; // if no ID set UID = -1
   point_t centroid;
   uint32_t pixels;
   boolean isDead;
