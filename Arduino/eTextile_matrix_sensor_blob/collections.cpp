@@ -143,21 +143,32 @@ blob_t* list_read_blob(list_t* src, uint8_t index) {
 }
 
 // Look for a blob in a linked list
-blob_t* list_remove_blob(list_t* src, blob_t* blob) {
+void list_remove_blob(list_t* src, blob_t* blob) {
 
   blob_t* prevBlob = NULL;
 
   for (blob_t* tmpBlob = iterator_start_from_head(src); tmpBlob != NULL; tmpBlob = iterator_next(tmpBlob)) {
 
-    if ( blob == tmpBlob ) {
-      if (DEBUG_LIST) Serial.printf(F("\n>>>> list_remove_blob / Found : %p"), blob);
-      prevBlob->next_ptr = blob->next_ptr;
-      return tmpBlob;
+    if (tmpBlob == blob) {
+      if (DEBUG_LIST) Serial.printf(F("\n>>>> list_remove_blob / Found it : %p"), blob);
+
+      if (tmpBlob == src->head_ptr && tmpBlob == src->tail_ptr) {
+        src->head_ptr = src->tail_ptr = NULL;
+        return;
+      }
+      else if (blob == src->tail_ptr) {
+        prevBlob = src->tail_ptr;
+        return;
+      }
+      else {
+        prevBlob->next_ptr = tmpBlob->next_ptr;
+        return;
+      }
     }
     prevBlob = tmpBlob;
   }
-  if (DEBUG_LIST) Serial.printf(F("\n>>>> list_remove_blob / Not found"));
-  return NULL;
+  if (DEBUG_LIST) Serial.printf(F("\n>>>> list_remove_blob / ERROR / Not found"));
+  // return NULL;
 }
 
 

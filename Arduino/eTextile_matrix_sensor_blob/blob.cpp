@@ -241,7 +241,8 @@ void find_blobs(
 
         if (DEBUG_BLOB) Serial.printf(F("\n>>>>>>>> BLOB / we found this blob in the outputBlobs linked list: %d"), nearestBlob);
         blobA->UID = nearestBlob->UID;
-        list_push_back(blobsToUpdate_ptr, blobA); // ERROR blobA must be removed from blobs linked list!
+        list_remove_blob(blobs_ptr, blobA);  // Remove the blob from the blobs linked list
+        list_push_back(blobsToUpdate_ptr, blobA); // Save the blob to the blobsToUpdate linked list
         if (DEBUG_BLOB) Serial.printf(F("\n>>>>>>>> BLOB / move the node from blobs to blobsToUpdate linked list"));
       } else {
 
@@ -311,7 +312,8 @@ void find_blobs(
         }
       }
       if (deadBlob != NULL) {
-        list_push_back(freeBlobList_ptr, list_remove_blob(outputBlobs_ptr, deadBlob)); // Remove the blob from the outputBlobs linked list & save it to the freeNodeList linked list
+        list_remove_blob(outputBlobs_ptr, deadBlob); // Remove the blob from the outputBlobs linked list
+        list_push_back(freeBlobList_ptr, deadBlob);  // Save it to the freeNodeList linked list
         Serial.printf(F("\n>>>> Removed blob: %p"), deadBlob);
       } else {
         deadExists = false;

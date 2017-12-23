@@ -140,7 +140,7 @@ void list_clear_blobs(list_t* src);
 
 blob_t* list_pop_front(list_t* src);
 blob_t* list_read_blob(list_t* src, uint8_t index);
-blob_t* list_remove_blob(list_t* src, blob_t* blob);
+void list_remove_blob(list_t* src, blob_t* blob);
 
 void find_blobs(
   image_t* input_ptr,
