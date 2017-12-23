@@ -142,50 +142,24 @@ blob_t* list_read_blob(list_t* src, uint8_t index) {
   }
 }
 
-blob_t* list_get_blob(list_t* src, uint8_t index) {
+// Look for a blob in a linked list
+blob_t* list_remove_blob(list_t* src, blob_t* blob) {
 
   blob_t* prevBlob = NULL;
-  blob_t* blob = src->head_ptr;
 
-  if (DEBUG_LIST) Serial.printf(F("\n>>>>>>>>> list_get_blob / index = %d"), src->index);
+  for (blob_t* tmpBlob = iterator_start_from_head(src); tmpBlob != NULL; tmpBlob = iterator_next(tmpBlob)) {
 
-  if ((src->index != -1) && (index <= src->index)) {
-    if (src->index == 0) { // If we whant to take the head blob
-      if (DEBUG_LIST) Serial.printf(F("\n>>>>>>>>> list_get_blob / B")); // STOP!?
-      if (src->index > 0) {
-        src->head_ptr = src->head_ptr->next_ptr;
-        // blob->next_ptr = NULL; //  We do it in the list_push_back();
-        src->index--;
-        return blob;
-      } else {
-        if (DEBUG_LIST) Serial.printf(F("\n>>>>>>>>> list_get_blob / C"));
-        src->tail_ptr = src->head_ptr = NULL;
-        if (DEBUG_LIST) Serial.printf(F("\n>>>>>>>>> list_get_blob / D"));
-        // blob->next_ptr = NULL; // We do it in the list_push_back();
-        src->index--;
-        return blob;
-      }
-    } else { // If we whant to take an other blob
-      for (int i = 0; i < index; i++) {
-        prevBlob = blob;
-        if (blob->next_ptr != NULL) {
-          blob = blob->next_ptr;
-        } else {
-          prevBlob->next_ptr = src->tail_ptr; // If we take the last blob in the list
-          src->index--;
-          return blob;
-        }
-      }
+    if ( blob == tmpBlob ) {
+      if (DEBUG_LIST) Serial.printf(F("\n>>>> list_remove_blob / Found : %p"), blob);
       prevBlob->next_ptr = blob->next_ptr;
-      // blob->next_ptr = NULL; // We do it in the list_push_back();
-      src->index--;
-      return blob;
+      return tmpBlob;
     }
-  } else {
-    if (DEBUG_LIST) Serial.printf(F("\n>>>>>>>>> list_get_blob / the blob is not in the list!"));
-    return NULL;
+    prevBlob = tmpBlob;
   }
+  if (DEBUG_LIST) Serial.printf(F("\n>>>> list_remove_blob / Not found"));
+  return NULL;
 }
+
 
 void list_save_blobs(list_t* dst, list_t* src) {
   if (DEBUG_LIST) Serial.printf(F("\n>>>> list_save_blobs / START"));
