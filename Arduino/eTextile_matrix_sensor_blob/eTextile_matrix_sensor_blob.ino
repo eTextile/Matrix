@@ -1,4 +1,6 @@
-// eTextile matrix sensor shield V2.0 (E-256)
+// eTextile matrix sensor
+// shield V2.0 (E-256) solution that enable
+// Embedded blob detection
 // See http://eTextile.org
 
 #include <PacketSerial.h> // https://github.com/bakercp/PacketSerial
@@ -27,13 +29,14 @@ void setup() {
   inputFrame.h = NEW_ROWS;
   inputFrame.dataPtr = &bilinIntOutput[0];
 
-  memset(&bitmap[0], 0, NEW_FRAME * sizeof(char)); // Set all values to 255
+  memset(&bitmap[0], 0, NEW_FRAME * sizeof(char)); // Set all values to 0
+
+  lifo_alloc_all(&lifo, &cclArray[0], sizeof(xylf_t));
 
   list_init(&freeBlobs);
   list_alloc_all(&freeBlobs, &blobsArray[0]);
 
   list_init(&blobs);
-  list_init(&oldBlobsToUpdate);
   list_init(&blobsToUpdate);
   list_init(&blobsToAdd);
   list_init(&outputBlobs);
@@ -83,19 +86,19 @@ void loop() {
   sensorID = 0;
 
   find_blobs(
-    &inputFrame,            // image_t*
-    &bitmap[0],             // char Array*
-    NEW_ROWS,               // const int
-    NEW_COLS,               // const int
-    THRESHOLD,              // const int
-    MIN_BLOB_PIX,           // const int
-    MAX_BLOB_PIX,           // const int
-    &freeBlobs,             // list_t*
-    &blobs,                 // list_t*
-    &oldBlobsToUpdate,      // list_t*
-    &blobsToUpdate,         // list_t*
-    &blobsToAdd,            // list_t*
-    &outputBlobs            // list_t*
+    &inputFrame,        // image_t
+    &bitmap[0],         // char Array
+    NEW_ROWS,           // const int
+    NEW_COLS,           // const int
+    THRESHOLD,          // const int
+    MIN_BLOB_PIX,       // const int
+    MAX_BLOB_PIX,       // const int
+    &lifo,              // lifo_t
+    &freeBlobs,         // list_t
+    &blobs,             // list_t
+    &blobsToUpdate,     // list_t
+    &blobsToAdd,        // list_t
+    &outputBlobs        // list_t
   );
 
   // The update() method attempts to read in

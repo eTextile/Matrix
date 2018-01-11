@@ -4,7 +4,6 @@
 */
 
 #include <Arduino.h>
-#include "fb_alloc.h"
 #include "config.h"
 #include "collections.h"
 
@@ -19,7 +18,6 @@ char bitmap_bit_get(char* arrayPtr, int index) {
 }
 
 void bitmap_clear(char* arrayPtr) {
-  // memset(ptr->data, 0, ((ptr->size + CHAR_MASK) >> CHAR_SHIFT) * sizeof(char));
   memset(arrayPtr, 0, NEW_FRAME * sizeof(char));
 }
 
@@ -35,41 +33,39 @@ void bitmap_print(char* arrayPtr) {
   Serial.printf("\n");
 }
 
-////////////// Lifo //////////////
+////////////////////////////// Lifo //////////////////////////////
 
-void lifo_alloc_all(lifo_t* ptr, size_t* lifo_len, size_t struct_size) {
+void lifo_alloc_all(lifo_t* ptr, xylf_t* array_ptr, size_t struct_size) {
 
-  uint32_t tmp_size;
+  memset(array_ptr, 0, NEW_FRAME * struct_size); // Init lifo
 
-  ptr->data = (char*) fb_alloc_all(&tmp_size);
-  ptr->data_len = struct_size;
-  ptr->index = tmp_size / struct_size;
-  ptr->len = 0;
-  *lifo_len = ptr->index;
-}
-
-void lifo_free(lifo_t* ptr) {
-  if (ptr->data) {
-    fb_free();
-  }
+  ptr->data_size = struct_size;
+  ptr->data = (char*) array_ptr;
+  ptr->index = 0;
 }
 
 size_t lifo_size(lifo_t* ptr) {
-  return ptr->len;
+  return ptr->index;
 }
 
 // Add data at the end of the lifo buffer
 void lifo_enqueue(lifo_t* ptr, void* data) {
-  memcpy(ptr->data + (ptr->len * ptr->data_len), data, ptr->data_len);
-  ptr->len++;
+  memcpy(ptr->data + (ptr->index * ptr->data_size), data, ptr->data_size);
+  ptr->index++;
 }
 
 // Cpoy the lifo data into data, exept the last element
 void lifo_dequeue(lifo_t* ptr, void* data) {
   if (data) {
-    memcpy(data, ptr->data + ((ptr->len - 1) * ptr->data_len), ptr->data_len);
+    memcpy(data, ptr->data + ((ptr->index - 1) * ptr->data_size), ptr->data_size);
   }
-  ptr->len--;
+  ptr->index--;
+}
+
+void lifo_init(lifo_t* ptr) {
+  if (ptr->data) {
+    ptr->index = 0;
+  }
 }
 
 ////////////////////////////// linked list  //////////////////////////////
@@ -99,16 +95,17 @@ blob_t* list_pop_front(list_t* src) {
 
   if (src->index > -1) {
     blob_t* blob = src->head_ptr;
-    if (src->index == 0) {
-      src->tail_ptr = src->head_ptr = NULL;
-      src->index--;
-      return blob;
-    } else {
+    // blob->next_ptr = NULL; // Not nead! see list_push_back();
+
+    if (src->index > 0) {
       src->head_ptr = src->head_ptr->next_ptr;
       src->index--;
-      return blob;
+    } else {
+      src->tail_ptr = src->head_ptr = NULL;
+      src->index--;
     }
-  } else {
+    return blob;
+  } else { // SRC list is umpty!
     if (DEBUG_LIST) Serial.printf(F("\n>>>>>>>>> list_pop_front / ERROR : SRC list is umpty!"));
     return NULL;
   }
@@ -116,13 +113,13 @@ blob_t* list_pop_front(list_t* src) {
 
 void list_push_back(list_t* dst, blob_t* blob) {
 
-  if (dst->index == -1) {
-    dst->head_ptr = dst->tail_ptr = blob;
-  } else {
+  if (dst->index > -1) {
     dst->tail_ptr->next_ptr = blob;
     dst->tail_ptr = blob;
+  } else {
+    dst->head_ptr = dst->tail_ptr = blob;
   }
-  blob->next_ptr = NULL;
+  dst->tail_ptr->next_ptr = NULL;
   dst->index++;
 }
 
@@ -142,26 +139,35 @@ blob_t* list_read_blob(list_t* src, uint8_t index) {
   }
 }
 
-// Look for a blob in a linked list
+// Look for a blob in a linked list & remove it
 void list_remove_blob(list_t* src, blob_t* blob) {
 
   blob_t* prevBlob = NULL;
 
   for (blob_t* tmpBlob = iterator_start_from_head(src); tmpBlob != NULL; tmpBlob = iterator_next(tmpBlob)) {
+    if (DEBUG_LIST) Serial.printf(F("\n>>>> list_remove_blob / blob to remove: %p"), tmpBlob);
 
     if (tmpBlob == blob) {
-      if (DEBUG_LIST) Serial.printf(F("\n>>>> list_remove_blob / Found it : %p"), blob);
+      if (DEBUG_LIST) Serial.printf(F("\n>>>> list_remove_blob / found the blob to remove: %p"), tmpBlob);
 
       if (tmpBlob == src->head_ptr && tmpBlob == src->tail_ptr) {
+        src->index--;
         src->head_ptr = src->tail_ptr = NULL;
+        if (DEBUG_LIST) Serial.printf(F("\n>>>> list_remove_blob / this blob is the first & last in the linked list: %p"), blob);
         return;
       }
-      else if (blob == src->tail_ptr) {
+      else if (tmpBlob->next_ptr == NULL) {
         prevBlob = src->tail_ptr;
+        prevBlob->next_ptr == NULL;
+        src->index--;
+        if (DEBUG_LIST) Serial.printf(F("\n>>>> list_remove_blob / this blob is the tail of the linked list: %p"), blob);
         return;
       }
       else {
+        if (DEBUG_LIST) Serial.printf(F("\n>>>> list_remove_blob / Remove: %p"), tmpBlob);
         prevBlob->next_ptr = tmpBlob->next_ptr;
+        src->index--;
+        if (DEBUG_LIST) Serial.printf(F("\n>>>> list_remove_blob / this blob is in the middle of the linked list: %p"), blob);
         return;
       }
     }
@@ -171,42 +177,39 @@ void list_remove_blob(list_t* src, blob_t* blob) {
   // return NULL;
 }
 
-
 void list_save_blobs(list_t* dst, list_t* src) {
   if (DEBUG_LIST) Serial.printf(F("\n>>>> list_save_blobs / START"));
 
-  blob_t* blob;
+  blob_t* blob = NULL;
 
-  while (src->index != -1) {
+  while (src->index > -1) {
     // SRC pop front
-    if (src->index == 0) {
-      blob = src->head_ptr;
-      src->tail_ptr = src->head_ptr = NULL;
-      if (DEBUG_LIST) Serial.printf(F("\n>>>> list_save_blobs / SRC pop the last blob in the list: %p"), blob);
-    } else { // dst->index != -1
-      blob = src->head_ptr;
+    blob = src->head_ptr;
+    if (src->index > 0) {
       if (DEBUG_LIST) Serial.printf(F("\n>>>> list_save_blobs / SRC pop a blob in the list: %p"), blob);
       src->head_ptr = src->head_ptr->next_ptr;
       if (DEBUG_LIST) Serial.printf(F("\n>>>> list_save_blobs / SRC Move the list hed to next_ptr: %p"), src->head_ptr);
+    } else { // src->index == 0
+      src->tail_ptr = src->head_ptr = NULL;
+      if (DEBUG_LIST) Serial.printf(F("\n>>>> list_save_blobs / SRC pop the last blob in the list: %p"), blob);
     }
     src->index--;
     if (DEBUG_LIST) Serial.printf(F("\n>>>> list_save_blobs / SRC set index to: %d"), src->index);
 
     // DST push back
-    if (dst->index == -1) {
+    if (dst->index > -1) {
+      dst->tail_ptr->next_ptr = blob;
+      if (DEBUG_LIST) Serial.printf(F("\n>>>> list_save_blobs / DST add the blob to the list: %p"), blob);
+      dst->tail_ptr = blob;
+    } else { // dst->index == -1
       dst->head_ptr = dst->tail_ptr = blob;
       if (DEBUG_LIST) Serial.printf(F("\n>>>> list_save_blobs / DST add the first blob to the list"));
-      dst->tail_ptr->next_ptr = NULL;
-    } else { // dst->index != -1
-      dst->tail_ptr->next_ptr = blob;
-      dst->tail_ptr = blob;
-      if (DEBUG_LIST) Serial.printf(F("\n>>>> list_save_blobs / DST add a new blob to the list: %p"), blob);
-      dst->tail_ptr->next_ptr = NULL;
     }
+    dst->tail_ptr->next_ptr = NULL; // Same than blob->next_ptr = NULL;
     dst->index++;
     if (DEBUG_LIST) Serial.printf(F("\n>>>> list_save_blobs / DST set index to: %d"), dst->index);
   }
-  if (DEBUG_LIST) Serial.printf(F("\n>>>> list_save_blobs / SRC linked list is umpty: %d"), src->index);
+  if (DEBUG_LIST) Serial.printf(F("\n>>>> list_save_blobs / SRC linked list is umpty!"));
 }
 
 void list_copy_blob(blob_t* blobA, blob_t* blobB, size_t blobSize) {
@@ -230,6 +233,8 @@ blob_t* iterator_start_from_head(list_t* src) {
 blob_t* iterator_next(blob_t* src) {
   return src->next_ptr;
 }
-int8_t list_size(list_t* src) {
+/*
+  int8_t list_size(list_t* src) {
   return src->index;
-}
+  }
+*/

@@ -33,7 +33,12 @@ uint8_t bilinIntOutput[NEW_FRAME] = {0};     // Bilinear interpolation Output bu
 arm_bilinear_interp_instance_f32 interpolate;
 #endif // __CORE_TEENSY__
 
+
 char      bitmap[NEW_FRAME] = {0};
+
+xylf_t    cclArray[NEW_FRAME] = {0};
+lifo_t    lifo;
+
 blob_t    blobsArray[MAX_NODES];
 
 image_t   inputFrame;

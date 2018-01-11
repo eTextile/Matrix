@@ -66,17 +66,21 @@
     __typeof__ (b) _b = (b); \
     _a < _b ? _a : _b; \
   })
+
 ////////////// Lifo //////////////
 
+typedef struct {
+  int16_t x, y, l, r;
+} xylf_t;
+
 typedef struct lifo {
-  size_t len;      // Number of elements
-  size_t data_len; // Size of an element
-  size_t index;    //
-  char* data;
+  size_t data_size; // Size of an element
+  char* data;       // Data pointer
+  size_t index;     // Number of elements
 } lifo_t;
 
-void lifo_alloc_all(lifo_t* ptr, size_t* siZe, size_t data_len);
-void lifo_free(lifo_t* ptr);
+void lifo_alloc_all(lifo_t* ptr, xylf_t* array_ptr, size_t struct_size);
+void lifo_init(lifo_t* ptr);
 
 size_t lifo_size(lifo_t *ptr);
 
@@ -102,10 +106,6 @@ void bitmap_bit_set(char* arrayPtr, int index);
 char bitmap_bit_get(char* arrayPtr, int index);
 void bitmap_clear(char* arrayPtr);
 void bitmap_print(char* arrayPtr);
-
-typedef struct xylf {
-  int16_t x, y, l, r;
-} xylf_t;
 
 ////////////// Blob //////////////
 
@@ -150,15 +150,16 @@ void find_blobs(
   const int pixelThreshold,
   const unsigned int minBlobPix,
   const unsigned int maxBlobPix,
+  lifo_t* lifo_ptr,
   list_t* freeBlobList_ptr,
   list_t* blobs_ptr,
-  list_t* oldBlobsToUpdate_ptr,
   list_t* blobsToUpdate_ptr,
   list_t* blobsToAdd_ptr,
   list_t* outputBlobs_ptr
 );
 
 ////////////// Iterators //////////////
+
 int8_t list_size(list_t* ptr);
 blob_t* iterator_start_from_head(list_t* src);
 blob_t* iterator_next(blob_t* src);
