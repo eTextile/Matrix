@@ -1,4 +1,5 @@
-/* This file is part of the OpenMV project.
+/* 
+   This file is part of the OpenMV project.
    Copyright (c) 2013-2017 Ibrahim Abdelkader <iabdalkader@openmv.io> & Kwabena W. Agyeman <kwagyeman@openmv.io>
    This work is licensed under the MIT license, see the file LICENSE for details.
 */
@@ -18,21 +19,21 @@
 #define CHAR_SHIFT IM_LOG2(CHAR_MASK)
 
 
-#define FRAME_ROW_PTR(imagePtr, y) \
+#define ROW_PTR(imagePtr, y) \
   ({ \
     __typeof__ (imagePtr) _imagePtr = (imagePtr); \
     __typeof__ (y) _y = (y); \
     ((uint8_t*)_imagePtr->dataPtr) + (_imagePtr->w * _y); \
   })
 
-#define GET_FRAME_PIXEL(rowPtr, x) \
+#define GET_PIXEL(rowPtr, x) \
   ({ \
     __typeof__ (rowPtr) _rowPtr = (rowPtr); \
     __typeof__ (x) _x = (x); \
     _rowPtr[_x]; \
   })
 
-#define BITMAP_ROW_INDEX(imagePtr, y) \
+#define ROW_INDEX(imagePtr, y) \
   ({ \
     __typeof__ (imagePtr) _imagePtr = (imagePtr); \
     __typeof__ (y) _y = (y); \
@@ -102,10 +103,10 @@ typedef struct {
   char* data;
 } bitmap_t;
 
-void bitmap_bit_set(char* arrayPtr, int index);
-char bitmap_bit_get(char* arrayPtr, int index);
-void bitmap_clear(char* arrayPtr);
-void bitmap_print(char* arrayPtr);
+void bitmap_bit_set(char* array_ptr, int index);
+char bitmap_bit_get(char* array_ptr, int index);
+void bitmap_clear(char* array_ptr);
+void bitmap_print(char* array_ptr);
 
 ////////////// Blob //////////////
 
@@ -129,7 +130,7 @@ typedef struct list {
   int8_t index;
 } list_t;
 
-////////////// list //////////////
+////////////// Linked list //////////////
 
 void list_init(list_t* ptr);
 void list_alloc_all(list_t* dst, blob_t* blobs);

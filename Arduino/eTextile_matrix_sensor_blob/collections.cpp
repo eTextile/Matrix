@@ -1,4 +1,5 @@
-/* This file is part of the OpenMV project.
+/*
+   This file is part of the OpenMV project.
    Copyright (c) 2013-2017 Ibrahim Abdelkader <iabdalkader@openmv.io> & Kwabena W. Agyeman <kwagyeman@openmv.io>
    This work is licensed under the MIT license, see the file LICENSE for details.
 */
@@ -9,24 +10,24 @@
 
 ////////////// Bitmap //////////////
 
-void bitmap_bit_set(char* arrayPtr, int index) {
-  arrayPtr[index >> CHAR_SHIFT] |= 1 << (index & CHAR_MASK);
+void bitmap_bit_set(char* array_ptr, int index) {
+  array_ptr[index >> CHAR_SHIFT] |= 1 << (index & CHAR_MASK);
 }
 
-char bitmap_bit_get(char* arrayPtr, int index) {
-  return (arrayPtr[index >> CHAR_SHIFT] >> (index & CHAR_MASK)) & 1;
+char bitmap_bit_get(char* array_ptr, int index) {
+  return (array_ptr[index >> CHAR_SHIFT] >> (index & CHAR_MASK)) & 1;
 }
 
-void bitmap_clear(char* arrayPtr) {
-  memset(arrayPtr, 0, NEW_FRAME * sizeof(char));
+void bitmap_clear(char* array_ptr) {
+  memset(array_ptr, 0, NEW_FRAME * sizeof(char));
 }
 
-void bitmap_print(char* arrayPtr) {
+void bitmap_print(char* array_ptr) {
 
   Serial.printf(F("\n>>>> Bitmap <<<<\n"));
   for (int i = 0; i < NEW_ROWS; i++) {
     for (int j = 0; j < NEW_COLS; j++) {
-      Serial.printf("%d ", bitmap_bit_get(arrayPtr, i * NEW_ROWS + j));
+      Serial.printf("%d ", bitmap_bit_get(array_ptr, i * NEW_ROWS + j));
     }
     Serial.printf("\n");
   }
@@ -37,11 +38,11 @@ void bitmap_print(char* arrayPtr) {
 
 void lifo_alloc_all(lifo_t* ptr, xylf_t* array_ptr, size_t struct_size) {
 
-  memset(array_ptr, 0, NEW_FRAME * struct_size); // Init lifo
+  memset(array_ptr, 0, struct_size * NEW_FRAME); // Init lifo
 
   ptr->data_size = struct_size;
   ptr->data = (char*) array_ptr;
-  ptr->index = 0;
+  ptr->index = -1;
 }
 
 size_t lifo_size(lifo_t* ptr) {
@@ -49,23 +50,19 @@ size_t lifo_size(lifo_t* ptr) {
 }
 
 // Add data at the end of the lifo buffer
-void lifo_enqueue(lifo_t* ptr, void* data) {
-  memcpy(ptr->data + (ptr->index * ptr->data_size), data, ptr->data_size);
+void lifo_enqueue(lifo_t* ptr, void *data) {
   ptr->index++;
+  memcpy(ptr->data + (ptr->index * ptr->data_size), data, ptr->data_size);
 }
 
 // Cpoy the lifo data into data, exept the last element
 void lifo_dequeue(lifo_t* ptr, void* data) {
-  if (data) {
-    memcpy(data, ptr->data + ((ptr->index - 1) * ptr->data_size), ptr->data_size);
-  }
+  memcpy(data, ptr->data + (ptr->index * ptr->data_size), ptr->data_size); // (ptr->index - 1) ??
   ptr->index--;
 }
 
 void lifo_init(lifo_t* ptr) {
-  if (ptr->data) {
-    ptr->index = 0;
-  }
+  ptr->index = -1;
 }
 
 ////////////////////////////// linked list  //////////////////////////////
@@ -95,15 +92,14 @@ blob_t* list_pop_front(list_t* src) {
 
   if (src->index > -1) {
     blob_t* blob = src->head_ptr;
-    // blob->next_ptr = NULL; // Not nead! see list_push_back();
 
     if (src->index > 0) {
       src->head_ptr = src->head_ptr->next_ptr;
-      src->index--;
     } else {
       src->tail_ptr = src->head_ptr = NULL;
-      src->index--;
     }
+    src->index--;
+    blob->next_ptr = NULL;
     return blob;
   } else { // SRC list is umpty!
     if (DEBUG_LIST) Serial.printf(F("\n>>>>>>>>> list_pop_front / ERROR : SRC list is umpty!"));
@@ -119,7 +115,7 @@ void list_push_back(list_t* dst, blob_t* blob) {
   } else {
     dst->head_ptr = dst->tail_ptr = blob;
   }
-  dst->tail_ptr->next_ptr = NULL;
+  // dst->tail_ptr->next_ptr = NULL; // Not nead! see list_pop_front();
   dst->index++;
 }
 
@@ -224,7 +220,6 @@ void list_copy_blob(blob_t* blobA, blob_t* blobB, size_t blobSize) {
   memcpy(blobA, blobB, blobSize);
 }
 
-
 ////////////// Linked list iterators //////////////
 
 blob_t* iterator_start_from_head(list_t* src) {
@@ -233,8 +228,3 @@ blob_t* iterator_start_from_head(list_t* src) {
 blob_t* iterator_next(blob_t* src) {
   return src->next_ptr;
 }
-/*
-  int8_t list_size(list_t* src) {
-  return src->index;
-  }
-*/
