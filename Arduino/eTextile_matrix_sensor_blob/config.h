@@ -23,14 +23,15 @@
 // #define A0_PIN               A0    // The output of multiplexerA (SIG pin) is connected to Analog pin A0
 // #define A1_PIN               A1    // The output of multiplexerB (SIG pin) is connected to Analog pin A1
 
-#define PERCISTANT           true
+#define PERCISTANT           false
 
-#define DEBUG_INPUT          false
-#define DEBUG_INTERP         false
+#define DEBUG_ADC_INPUT      false
+#define DEBUG_INTERP         true
+#define DEBUG_CCL_INPUT      false
 #define DEBUG_BITMAP         false
-#define DEBUG_LIST           true
-#define DEBUG_CCL            true // Connected-component labeling
-#define DEBUG_BLOB           true
-#define DEBUG_OSC            true
+#define DEBUG_LIST           false
+#define DEBUG_CCL            false // Connected-component labeling
+#define DEBUG_BLOB           false
+#define DEBUG_OSC            false
 
 #endif /*__CONFIG_H__*/

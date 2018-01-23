@@ -80,12 +80,12 @@ void list_alloc_all(list_t* dst, blob_t* blobs) {
 
   for (int i = 1; i < MAX_NODES; i++) {
     blobs[i - 1].next_ptr = &blobs[i];
-    dst->tail_ptr = &blobs[i];
     blobs[i].UID = -1;
+    blobs[i].next_ptr = NULL;
+    dst->tail_ptr = &blobs[i];
     if (DEBUG_LIST) Serial.printf(("\n>>>> list_alloc_all\t%d: %p"), i, &blobs[i]);
     dst->index++;
   }
-  dst->tail_ptr->next_ptr = NULL;
 }
 
 blob_t* list_pop_front(list_t* src) {
@@ -98,8 +98,8 @@ blob_t* list_pop_front(list_t* src) {
     } else {
       src->tail_ptr = src->head_ptr = NULL;
     }
-    src->index--;
     blob->next_ptr = NULL;
+    src->index--;
     return blob;
   } else { // SRC list is umpty!
     if (DEBUG_LIST) Serial.printf(F("\n>>>>>>>>> list_pop_front / ERROR : SRC list is umpty!"));
@@ -140,34 +140,34 @@ void list_remove_blob(list_t* src, blob_t* blob) {
 
   blob_t* prevBlob = NULL;
 
-  for (blob_t* tmpBlob = iterator_start_from_head(src); tmpBlob != NULL; tmpBlob = iterator_next(tmpBlob)) {
-    if (DEBUG_LIST) Serial.printf(F("\n>>>> list_remove_blob / blob to remove: %p"), tmpBlob);
+  for (blob_t* srcTmpBlob = iterator_start_from_head(src); srcTmpBlob != NULL; srcTmpBlob = iterator_next(srcTmpBlob)) {
+    if (DEBUG_LIST) Serial.printf(F("\n>>>> list_remove_blob / blob to remove: %p"), srcTmpBlob);
 
-    if (tmpBlob == blob) {
-      if (DEBUG_LIST) Serial.printf(F("\n>>>> list_remove_blob / found the blob to remove: %p"), tmpBlob);
+    if (srcTmpBlob == blob) {
+      if (DEBUG_LIST) Serial.printf(F("\n>>>> list_remove_blob / found the blob to remove: %p"), srcTmpBlob);
 
-      if (tmpBlob == src->head_ptr && tmpBlob == src->tail_ptr) {
-        src->index--;
+      if (srcTmpBlob == src->head_ptr && srcTmpBlob == src->tail_ptr) {
         src->head_ptr = src->tail_ptr = NULL;
+        src->index--;
         if (DEBUG_LIST) Serial.printf(F("\n>>>> list_remove_blob / this blob is the first & last in the linked list: %p"), blob);
         return;
       }
-      else if (tmpBlob->next_ptr == NULL) {
-        prevBlob = src->tail_ptr;
+      else if (srcTmpBlob->next_ptr == NULL) {
         prevBlob->next_ptr == NULL;
+        src->tail_ptr = prevBlob; /////////// BUBFIX!
         src->index--;
         if (DEBUG_LIST) Serial.printf(F("\n>>>> list_remove_blob / this blob is the tail of the linked list: %p"), blob);
         return;
       }
       else {
-        if (DEBUG_LIST) Serial.printf(F("\n>>>> list_remove_blob / Remove: %p"), tmpBlob);
-        prevBlob->next_ptr = tmpBlob->next_ptr;
+        if (DEBUG_LIST) Serial.printf(F("\n>>>> list_remove_blob / Remove: %p"), srcTmpBlob);
+        prevBlob->next_ptr = srcTmpBlob->next_ptr;
         src->index--;
         if (DEBUG_LIST) Serial.printf(F("\n>>>> list_remove_blob / this blob is in the middle of the linked list: %p"), blob);
         return;
       }
     }
-    prevBlob = tmpBlob;
+    prevBlob = srcTmpBlob;
   }
   if (DEBUG_LIST) Serial.printf(F("\n>>>> list_remove_blob / ERROR / Not found"));
   // return NULL;

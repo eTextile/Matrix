@@ -45,7 +45,6 @@ inline float fast_atanf(float xx) {
   if ( sign < 0 ) {
     y = -y;
   }
-
   return ( y );
 }
 
@@ -61,6 +60,5 @@ float fast_atan2f(float y, float x) {
 
   if (x > 0 && y < 0)
     return 2 * M_PI - fast_atanf(-y / x);
-
   return 0;
 }

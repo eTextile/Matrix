@@ -93,7 +93,7 @@ void lifo_dequeue(lifo_t *ptr, void* data);
 typedef struct image {
   int w;
   int h;
-  uint8_t* dataPtr;
+  uint16_t* dataPtr;
 } image_t;
 
 ////////////// Bitmap //////////////

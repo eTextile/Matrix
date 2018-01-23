@@ -1,9 +1,8 @@
-// eTextile matrix sensor
-// shield V2.0 (E-256) solution that enable
+// eTextile matrix sensor - http://eTextile.org
+// shield V2.0 (E-256)
 // Embedded blob detection
-// See http://eTextile.org
 
-#include <PacketSerial.h> // https://github.com/bakercp/PacketSerial
+// #include <PacketSerial.h> // https://github.com/bakercp/PacketSerial
 #include "collections.h"
 #include "eTextile_matrix_sensor_blob.h"
 
@@ -14,7 +13,7 @@ void setup() {
   // serial.setPacketHandler(&onPacket); // We must specify a packet handler method so that
   // serial.begin(BAUD_RATE);            // Start the serial module
   Serial.begin(BAUD_RATE);               // Arduino serial standard library
-  while (!Serial.dtr()) ;                // wait for user to start the serial monitor
+  while (!Serial.dtr()) ;                // Wait for user to start the serial monitor
 
   analogReadRes(10);                     // Set the ADC converteur resolution to 10 bit
   pinMode(BUILTIN_LED, OUTPUT);          // Set BUILTIN_LED pin as output
@@ -23,7 +22,7 @@ void setup() {
 
   interpolate.numCols = COLS;
   interpolate.numRows = ROWS;
-  interpolate.pData = &frameValues[0];
+  interpolate.pData = &frameValues[0]; // TODO uint16_t frameValues[]
 
   inputFrame.w = NEW_COLS;
   inputFrame.h = NEW_ROWS;
@@ -49,8 +48,10 @@ void setup() {
 
 void loop() {
 
+  // 22 FPS - with CPU speed to 120 MHz (overclock) - 45ms by frame
+  // 15 FPS - with CPU speed to 96 MHz
   if ((millis() - lastFarme) >= 1000) {
-    Serial.printf(F("\nFPS: %d"), fps);  // 22 FPS - with CPU speed to 120 MHz (overclock) - 45ms by frame
+    Serial.printf(F("\nFPS: %d"), fps);
     lastFarme = millis();
     fps = 0;
   }
@@ -60,16 +61,13 @@ void loop() {
     digitalWrite(rowPins[row], HIGH);
     for (uint8_t col = 0; col < COLS; col++) {
       uint16_t rowValue = analogRead(columnPins[col]); // Read the sensor value
-      int16_t value = rowValue - minVals[sensorID]; // Aplay the calibration ofset
-      if (value > 0) {
-        frameValues[sensorID] = value;
-      } else {
-        frameValues[sensorID] = 0;
-      }
+      int16_t value = constrain(rowValue - minVals[sensorID], 0, 1024); // Aplay the calibration ofset
+      if (DEBUG_ADC_INPUT) Serial.printf("%d ", value);
       sensorID++;
     }
-    // pinMode(rowPins[row], INPUT); // Set row pin in high-impedance state
-    digitalWrite(rowPins[row], LOW); // Set row pin to GND (TO TEST!)
+    if (DEBUG_ADC_INPUT) Serial.println();
+    pinMode(rowPins[row], INPUT); // Set row pin in high-impedance state
+    // digitalWrite(rowPins[row], LOW); // Set row pin to GND (TO TEST!)
   }
   sensorID = 0;
 
@@ -77,12 +75,13 @@ void loop() {
     for (float col = 0; col < NEW_COLS; col++) {
       float rowPos = row / SCALE;
       float colPos = col / SCALE;
-      bilinIntOutput[sensorID] = (uint8_t) arm_bilinear_interp_f32(&interpolate, rowPos, colPos);
+      bilinIntOutput[sensorID] = (uint16_t) arm_bilinear_interp_f32(&interpolate, rowPos, colPos);
       if (DEBUG_INTERP) Serial.printf(" %d", bilinIntOutput[sensorID]);
       sensorID++;
     }
-    if (DEBUG_INTERP) Serial.printf("\n\n");
+    if (DEBUG_INTERP) Serial.println();
   }
+  if (DEBUG_INTERP) Serial.println();
   sensorID = 0;
 
   find_blobs(

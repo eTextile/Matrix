@@ -5,7 +5,7 @@
 #include <arm_math.h>
 #include "config.h"
 
-long lastFarme = 0;
+unsigned long lastFarme = 0;
 uint8_t fps = 0;
 uint16_t sensorID = 0;
 
@@ -21,13 +21,8 @@ const int columnPins[COLS] = {
 };
 
 uint16_t minVals[ROW_FRAME] = {0};      // Array to store smallest values
-
 float32_t frameValues[ROW_FRAME] = {0};      // Array to store ofset input values
-float32_t* frameValuesPtr;
-
-uint8_t bilinIntOutput[NEW_FRAME] = {0};     // Bilinear interpolation Output buffer
-
-// uint8_t myPacket[ROW_FRAME] = {0};           // Array to store values to transmit
+uint16_t bilinIntOutput[NEW_FRAME] = {0};     // Bilinear interpolation Output buffer
 
 #ifdef CORE_TEENSY
 arm_bilinear_interp_instance_f32 interpolate;
@@ -45,6 +40,8 @@ list_t    blobs;
 list_t    blobsToUpdate;
 list_t    blobsToAdd;
 list_t    outputBlobs;
+
+// uint8_t myPacket[ROW_FRAME] = {0};           // Array to store values to transmit
 
 // void onPacket(const uint8_t* buffer, size_t size);
 void calibrate(uint16_t* sumArray, const uint8_t cycles);
