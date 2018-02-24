@@ -4,6 +4,9 @@
    This work is licensed under the MIT license, see the file LICENSE for details.
 
    Fast approximate math functions.
+
+   This file has been modified to fit the eTextile matrix sensor needs
+   eTextile matrix sensor - http://matrix.eTextile.org
 */
 
 #ifndef __FMATH_H__

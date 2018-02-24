@@ -1,8 +1,7 @@
-// eTextile matrix sensor - http://eTextile.org
-// shield V2.0 (E-256)
+// eTextile matrix sensor - http://matrix.eTextile.org
 // Embedded blob detection
 
-// #include <PacketSerial.h> // https://github.com/bakercp/PacketSerial
+//#include <PacketSerial.h> // https://github.com/bakercp/PacketSerial
 #include "collections.h"
 #include "eTextile_matrix_sensor_blob.h"
 

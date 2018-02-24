@@ -2,6 +2,9 @@
    This file is part of the OpenMV project.
    Copyright (c) 2013-2017 Ibrahim Abdelkader <iabdalkader@openmv.io> & Kwabena W. Agyeman <kwagyeman@openmv.io>
    This work is licensed under the MIT license, see the file LICENSE for details.
+   
+   This file has been modified to fit the eTextile matrix sensor needs
+   eTextile matrix sensor - http://matrix.eTextile.org
 */
 
 #ifndef __COLLECTIONS_H__
