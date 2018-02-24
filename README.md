@@ -29,7 +29,7 @@ From the beginning this project stimulates the development of technologies in ar
 - [MOCO17](http://moco17.movementcomputing.org/) - Music Skin: Fabric Interface for Expressive Music Control / [Paper](https://etextile.github.io/resistiveMatrix/publications/MOCO17-MusicSkin.pdf)
 
 ## Kit Ordering
-If you want a sensor just drop me an eMail at contact@eTextile.org
+If you want a sensor just drop me an eMail at matrix@eTextile.org
 I make all sensors bay hand. It take one or two days to make it and send it by post.
 All sensors are tested before shipping.
 If you have any mistake I will help you to fix it or replace the eTextile sensor.
