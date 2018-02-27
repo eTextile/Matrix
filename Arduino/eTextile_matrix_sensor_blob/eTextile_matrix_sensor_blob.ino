@@ -14,14 +14,14 @@ void setup() {
   Serial.begin(BAUD_RATE);               // Arduino serial standard library
   while (!Serial.dtr()) ;                // Wait for user to start the serial monitor
 
-  analogReadRes(10);                     // Set the ADC converteur resolution to 10 bit
+  analogReadRes(8);                     // Set the ADC converteur resolution to 8 bit
   pinMode(BUILTIN_LED, OUTPUT);          // Set BUILTIN_LED pin as output
   pinMode(BUTTON_PIN, INPUT_PULLUP);     // Set button pin as input and activate the input pullup resistor
   attachInterrupt(BUTTON_PIN, pushButton, RISING); // Attach interrrupt on button PIN
 
   interpolate.numCols = COLS;
   interpolate.numRows = ROWS;
-  interpolate.pData = &frameValues[0]; // TODO uint16_t frameValues[]
+  interpolate.pData = &frameValues[0]; // TODO uint8_t frameValues[]
 
   inputFrame.w = NEW_COLS;
   inputFrame.h = NEW_ROWS;
@@ -59,22 +59,31 @@ void loop() {
     pinMode(rowPins[row], OUTPUT);  // Set row pin as output
     digitalWrite(rowPins[row], HIGH);
     for (uint8_t col = 0; col < COLS; col++) {
-      uint16_t rowValue = analogRead(columnPins[col]); // Read the sensor value
-      int16_t value = constrain(rowValue - minVals[sensorID], 0, 1024); // Aplay the calibration ofset
-      if (DEBUG_ADC_INPUT) Serial.printf("%d ", value);
+      uint8_t rowValue = analogRead(columnPins[col]); // Read the sensor value
+      uint8_t value = constrain(rowValue - minVals[sensorID], 0, 255); // Aplay the calibration ofset
+      if (value > 0) {
+        frameValues[sensorID] = value;
+      } else {
+        frameValues[sensorID] = 0;
+      }
+      if (DEBUG_ADC_INPUT) Serial.printf("%d ", rowValue);
       sensorID++;
     }
     if (DEBUG_ADC_INPUT) Serial.println();
     pinMode(rowPins[row], INPUT); // Set row pin in high-impedance state
-    // digitalWrite(rowPins[row], LOW); // Set row pin to GND (TO TEST!)
+    // digitalWrite(rowPins[row], LOW); // Set row pin to GND (TOTEST)
   }
   sensorID = 0;
 
-  for (float row = 0; row < NEW_ROWS; row++) {
-    for (float col = 0; col < NEW_COLS; col++) {
-      float rowPos = row / SCALE;
-      float colPos = col / SCALE;
-      bilinIntOutput[sensorID] = (uint16_t) arm_bilinear_interp_f32(&interpolate, rowPos, colPos);
+  float rowPos = 0;
+  float colPos = 0;
+
+  for (uint8_t row = 0; row < NEW_ROWS; row++) {
+    rowPos = (float) row / SCALE;
+    for (uint8_t col = 0; col < NEW_COLS; col++) {
+      colPos = (float) col / SCALE;
+
+      bilinIntOutput[sensorID] = (uint8_t) arm_bilinear_interp_f32(&interpolate, rowPos, colPos);
       if (DEBUG_INTERP) Serial.printf(" %d", bilinIntOutput[sensorID]);
       sensorID++;
     }
@@ -110,7 +119,7 @@ void loop() {
 }
 
 /////////// Calibrate the 16x16 sensor matrix by doing average
-void calibrate(uint16_t *arrayMax, const uint8_t cycles) {
+void calibrate(uint8_t *arrayMax, const uint8_t cycles) {
 
   uint8_t pos;
   memset(arrayMax, 0, ROW_FRAME * sizeof(uint16_t)); // Set minVals array datas to 0
@@ -121,7 +130,7 @@ void calibrate(uint16_t *arrayMax, const uint8_t cycles) {
       pinMode(rowPins[row], OUTPUT);  // Set row pin as output
       digitalWrite(rowPins[row], HIGH);
       for (uint8_t col = 0; col < COLS; col++) {
-        uint16_t val = analogRead(columnPins[col]); // Read the sensor value
+        uint8_t val = analogRead(columnPins[col]); // Read the sensor value
         if (val > arrayMax[pos]) {
           arrayMax[pos] = val;
         } else {

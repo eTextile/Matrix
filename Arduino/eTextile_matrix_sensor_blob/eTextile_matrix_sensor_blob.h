@@ -20,12 +20,14 @@ const int columnPins[COLS] = {
   A17, A18, A19, A0, A20, A1, A2, A3, A4, A5, A6, A7, A11, A8, A10, A9
 };
 
-uint16_t minVals[ROW_FRAME] = {0};      // Array to store smallest values
+uint8_t minVals[ROW_FRAME] = {0};            // Array to store smallest values
 float32_t frameValues[ROW_FRAME] = {0};      // Array to store ofset input values
-uint16_t bilinIntOutput[NEW_FRAME] = {0};     // Bilinear interpolation Output buffer
+uint8_t bilinIntOutput[NEW_FRAME] = {0};     // Bilinear interpolation Output buffer
 
 #ifdef CORE_TEENSY
+// See : https://os.mbed.com/teams/Renesas/code/mbed-dsp-neon/docs/a912b042151f/group__BilinearInterpolate.html
 arm_bilinear_interp_instance_f32 interpolate;
+// arm_bilinear_interp_q7 TODO?
 #endif // __CORE_TEENSY__
 
 image_t   inputFrame;
