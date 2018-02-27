@@ -82,7 +82,6 @@ void loop() {
     rowPos = (float) row / SCALE;
     for (uint8_t col = 0; col < NEW_COLS; col++) {
       colPos = (float) col / SCALE;
-
       bilinIntOutput[sensorID] = (uint8_t) arm_bilinear_interp_f32(&interpolate, rowPos, colPos);
       if (DEBUG_INTERP) Serial.printf(" %d", bilinIntOutput[sensorID]);
       sensorID++;

@@ -2,7 +2,7 @@
    This file is part of the OpenMV project
    Copyright (c) 2013-2017 Ibrahim Abdelkader <iabdalkader@openmv.io> & Kwabena W. Agyeman <kwagyeman@openmv.io>
    This work is licensed under the MIT license, see the file LICENSE for details.
-   
+
    This file has been modified to fit the eTextile matrix sensor needs
    eTextile matrix sensor - http://matrix.eTextile.org
 */
@@ -206,8 +206,8 @@ void find_blobs(
     }
   }
 
-  if (DEBUG_BLOB) Serial.printf(F("\n>>>>>>>> freeBlobs linked list index : %d"), freeBlobList_ptr->index);
-  if (DEBUG_BLOB) Serial.printf(F("\n>>>>>>>> Input blobs linked list index: %d"), blobs_ptr->index);
+  if (DEBUG_BLOB) Serial.printf(F("\n>>>>>>>>>>>>>>>>>>>>>>>> freeBlobs linked list index : %d"), freeBlobList_ptr->index);
+  if (DEBUG_BLOB) Serial.printf(F("\n>>>>>>>>>>>>>>>>>>>>>>>> Input blobs linked list index: %d"), blobs_ptr->index);
 
   ///////////////////////////////////////////////////////////////////////////////////////// Percistant blobs
 
@@ -236,20 +236,17 @@ void find_blobs(
       // We take the ID of the nearestBlob in outputBlobs linked list and give it to the curent input blob.
       // We move the curent blob to the blobsToUpdate linked list.
       if (minDist < 10) {
-
-        if (DEBUG_BLOB) Serial.printf(F("\n>>>>>>>> BLOB / we found the corresponding blob in the outputBlobs linked list: %p"), nearestBlob);
+        if (DEBUG_BLOB) Serial.printf(F("\n>>>>>>>> BLOB / Corresponding input blob found in the **outputBlobs** linked list: %p"), nearestBlob);
         blobA->UID = nearestBlob->UID;
-        if (DEBUG_BLOB) Serial.printf(F("\n>>>>>>>> BLOB / we copy the outputBlobs ID to the new input blob: %d"), nearestBlob->UID);
-        list_push_back(blobsToUpdate_ptr, blobA); // Save the blob to the blobsToUpdate linked list
-        if (DEBUG_BLOB) Serial.printf(F("\n>>>>>>>> BLOB / push back the blob to blobsToUpdate: %p"), blobA);
-        // list_remove_blob(blobs_ptr, blobA);  // Remove the blob from the blobs linked list // Oups it is not a good solution hear!
-        // if (DEBUG_BLOB) Serial.printf(F("\n>>>>>>>> BLOB / remove blob from input blobs linked list: %p"), blobA);
+        if (DEBUG_BLOB) Serial.printf(F("\n>>>>>>>> BLOB / Copy the **outputBlobs** ID to the corresponding input blob: %d"), nearestBlob->UID);
+        list_push_back(blobsToUpdate_ptr, blobA);
+        if (DEBUG_BLOB) Serial.printf(F("\n>>>>>>>> BLOB / blob pushed back to the **blobsToUpdate** linked list: %p"), blobA);
       } else {
 
         // Found a new blob! we nead to give it an ID.
         // We look for the minimum unused ID through the outputBlobs linked list &
         // We add the new blob to the nodesToAdd linked list.
-        if (DEBUG_BLOB) Serial.printf(F("\n>>>>>>>> BLOB / we found new blob without ID!"));
+        if (DEBUG_BLOB) Serial.printf(F("\n>>>>>>>> BLOB / Found new blob without ID!"));
         boolean isFree = false;
         uint8_t minID = 0;
         while (!isFree) {
@@ -263,11 +260,9 @@ void find_blobs(
           }
         }
         blobA->UID = minID;
-        if (DEBUG_BLOB) Serial.printf(F("\n>>>>>>>> BLOB / the new blob ID is set to : %d"), minID);
-        list_push_back(blobsToAdd_ptr, blobA);  // Save the blob to the blobsToAdd linked list
-        if (DEBUG_BLOB) Serial.printf(F("\n>>>>>>>> BLOB / push back the blob to blobsToAdd: %p"), blobA); // STOP if two BLOBs are in the list!
-        // list_remove_blob(blobs_ptr, blobA);  // Remove the blob from the blobs linked list // Oups it is not a good solution!
-        // if (DEBUG_BLOB) Serial.printf(F("\n>>>>>>>> BLOB / remove blob from input blobs linked list: %p"), blobA);
+        if (DEBUG_BLOB) Serial.printf(F("\n>>>>>>>> BLOB / ID seted to the new blob: %d"), minID);
+        list_push_back(blobsToAdd_ptr, blobA);
+        if (DEBUG_BLOB) Serial.printf(F("\n>>>>>>>> BLOB / New blob pushed back to the **blobsToAdd** linked list: %p"), blobA); // STOP if two BLOBs are in the list!
       }
     }
 
@@ -275,12 +270,16 @@ void find_blobs(
     // If the blob in the outputBlobs is not in the blobsToUpdate, set it to dead
     for (blob_t* blobA = iterator_start_from_head(outputBlobs_ptr); blobA != NULL; blobA = iterator_next(blobA)) {
       boolean found = false;
+
       for (blob_t* blobB = iterator_start_from_head(blobsToUpdate_ptr); blobB != NULL; blobB = iterator_next(blobB)) {
+        if (DEBUG_BLOB) Serial.printf(F("\n>>>>>>>> BLOB / blobsToUpdate UID: %d"), blobB->UID);
+
         if (blobA->UID == blobB->UID) {
-          if (DEBUG_BLOB) Serial.printf(F("\n>>>>>>>> BLOB / Update outputBlobs linked list with blobsToUpdate linked list: %p"), blobA);
-          list_copy_blob(blobA, blobB, sizeof(blob_t)); // sizeof(blob_t) can be CONST!
-          // blobB.UID = -1; // We do it in the CCL
-          list_push_back(freeBlobList_ptr, blobB);  // Save the blob to the freeNodeList linked list
+          if (DEBUG_BLOB) Serial.printf(F("\n>>>>>>>> BLOB / Update **outputBlobs** linked list with **blobsToUpdate** linked list: %p"), blobB);
+          list_copy_blob(blobA, blobB, sizeof(blob_t)); //  sizeof(blob_t) can be CONST
+          // blobB->UID = -1; // We do it in the CCL!
+          list_push_back(freeBlobList_ptr, blobB);
+        if (DEBUG_BLOB) Serial.printf(F("\n<<<<<<<< BLOB / Blob saved to **freeBlobList** linked list - index is: %d"), freeBlobList_ptr->index);
           found = true;
           break;
         }
@@ -318,8 +317,9 @@ void find_blobs(
       if (deadBlob != NULL) {
         // deadBlob.UID = -1; // We do it in the CCL
         list_push_back(freeBlobList_ptr, deadBlob);  // Save the blob to the freeNodeList linked list
-        list_remove_blob(outputBlobs_ptr, deadBlob);  // Remove the blob from the outputBlobs linked list
-        if (DEBUG_BLOB) Serial.printf(F("\n>>>>>>>> BLOB / remove blob from outputBlobs linked list: %p"), deadBlob);
+        if (DEBUG_BLOB) Serial.printf(F("\n<<<<<<<< BLOB / Blob saved to **freeBlobList** linked list - index is: %d"), freeBlobList_ptr->index);
+        list_remove_blob(outputBlobs_ptr, deadBlob);
+        if (DEBUG_BLOB) Serial.printf(F("\n>>>>>>>> BLOB / Blob removed from **outputBlobs** linked list: %p"), deadBlob);
       } else {
         deadExists = false;
       }
@@ -328,7 +328,7 @@ void find_blobs(
     // Add the new blobs to the outputBlobs linked list
     for (blob_t* blob = iterator_start_from_head(blobsToAdd_ptr); blob != NULL; blob = iterator_next(blob)) {
       list_push_back(outputBlobs_ptr, blob);
-      if (DEBUG_BLOB) Serial.printf(F("\n>>>>>>>> BLOB / add blob to outputBlobs linked list: %p"), blob);
+      if (DEBUG_BLOB) Serial.printf(F("\n>>>>>>>> BLOB / Blob added to **outputBlobs** linked list: %p"), blob);
     }
 
     // Send the blobs values with an OSC bundle
@@ -354,8 +354,6 @@ void find_blobs(
     // sender.sendBundle(bundle);
 
   }
-
-  // list_save_blobs(freeBlobList_ptr, blobs_ptr);  // TODO test if it work for more than one blob!
 
   lifo_init(lifo_ptr);
 

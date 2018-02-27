@@ -6,7 +6,7 @@
 #include "config.h"
 
 unsigned long lastFarme = 0;
-uint8_t fps = 0;
+uint16_t fps = 0;
 uint16_t sensorID = 0;
 
 // Digital pins array

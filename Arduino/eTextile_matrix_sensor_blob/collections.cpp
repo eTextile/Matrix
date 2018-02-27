@@ -101,7 +101,7 @@ blob_t* list_pop_front(list_t* src) {
     } else {
       src->tail_ptr = src->head_ptr = NULL;
     }
-    blob->next_ptr = NULL;
+    // blob->next_ptr = NULL;
     src->index--;
     return blob;
   } else { // SRC list is umpty!
@@ -118,7 +118,7 @@ void list_push_back(list_t* dst, blob_t* blob) {
   } else {
     dst->head_ptr = dst->tail_ptr = blob;
   }
-  // dst->tail_ptr->next_ptr = NULL; // Not nead! see list_pop_front();
+  dst->tail_ptr->next_ptr = NULL; // Do not work if we do it in the list_pop_front();
   dst->index++;
 }
 
