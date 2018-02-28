@@ -21,18 +21,18 @@ void setup() {
 
   interpolate.numCols = COLS;
   interpolate.numRows = ROWS;
-  interpolate.pData = &frameValues[0]; // TODO uint8_t frameValues[]
+  interpolate.pData = frameValues; // TODO uint8_t frameValues[]
 
   inputFrame.w = NEW_COLS;
   inputFrame.h = NEW_ROWS;
-  inputFrame.dataPtr = &bilinIntOutput[0];
+  inputFrame.dataPtr = bilinIntOutput;
 
   memset(&bitmap[0], 0, NEW_FRAME * sizeof(char)); // Set all values to 0
 
-  lifo_alloc_all(&lifo, &cclArray[0], sizeof(xylf_t));
+  lifo_alloc_all(&lifo, cclArray, sizeof(xylf_t));
 
   list_init(&freeBlobs);
-  list_alloc_all(&freeBlobs, &blobsArray[0]);
+  list_alloc_all(&freeBlobs, blobsArray);
 
   list_init(&blobs);
   list_init(&blobsToUpdate);
@@ -40,7 +40,7 @@ void setup() {
   list_init(&outputBlobs);
   if (DEBUG_BLOB) Serial.printf(F("\n>>>>>>>> outputBlobs head_ptr: %p"), outputBlobs.head_ptr);
 
-  calibrate(&minVals[0], CYCLES);
+  calibrate(minVals, CYCLES);
   bootBlink(9);
 
 }
@@ -121,7 +121,7 @@ void loop() {
 void calibrate(uint8_t *arrayMax, const uint8_t cycles) {
 
   uint8_t pos;
-  memset(arrayMax, 0, ROW_FRAME * sizeof(uint16_t)); // Set minVals array datas to 0
+  memset(arrayMax, 0, ROW_FRAME * sizeof(uint8_t)); // Set minVals array datas to 0
 
   for (uint8_t i = 0; i < cycles; i++) {
     pos = 0;

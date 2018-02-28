@@ -32,6 +32,7 @@ arm_bilinear_interp_instance_f32 interpolate;
 
 image_t   inputFrame;
 char      bitmap[NEW_FRAME] = {0};
+
 xylf_t    cclArray[NEW_FRAME] = {0};
 lifo_t    lifo;
 
@@ -46,7 +47,7 @@ list_t    outputBlobs;
 // uint8_t myPacket[ROW_FRAME] = {0};           // Array to store values to transmit
 
 // void onPacket(const uint8_t* buffer, size_t size);
-void calibrate(uint16_t* sumArray, const uint8_t cycles);
+void calibrate(uint8_t* sumArray, const uint8_t cycles);
 void bootBlink(uint8_t flash);
 void pushButton();
 

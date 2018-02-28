@@ -40,12 +40,9 @@ void bitmap_print(char* array_ptr) {
 ////////////////////////////// Lifo //////////////////////////////
 
 void lifo_alloc_all(lifo_t* ptr, xylf_t* array_ptr, size_t struct_size) {
-
-  memset(array_ptr, 0, struct_size * NEW_FRAME); // Init lifo
-
+  ptr->data_ptr = (char*) &array_ptr[0];
   ptr->data_size = struct_size;
-  ptr->data = (char*) array_ptr;
-  ptr->index = -1;
+  ptr->index = 0;
 }
 
 size_t lifo_size(lifo_t* ptr) {
@@ -54,18 +51,18 @@ size_t lifo_size(lifo_t* ptr) {
 
 // Add data at the end of the lifo buffer
 void lifo_enqueue(lifo_t* ptr, void *data) {
+  memcpy(ptr->data_ptr + (ptr->index * ptr->data_size), data, ptr->data_size);
   ptr->index++;
-  memcpy(ptr->data + (ptr->index * ptr->data_size), data, ptr->data_size);
 }
 
 // Cpoy the lifo data into data, exept the last element
 void lifo_dequeue(lifo_t* ptr, void* data) {
-  memcpy(data, ptr->data + (ptr->index * ptr->data_size), ptr->data_size); // (ptr->index - 1) ??
+  memcpy(data, ptr->data_ptr + (ptr->index * ptr->data_size), ptr->data_size); // (ptr->index - 1) ??
   ptr->index--;
 }
 
 void lifo_init(lifo_t* ptr) {
-  ptr->index = -1;
+  ptr->index = 0;
 }
 
 ////////////////////////////// linked list  //////////////////////////////
@@ -78,7 +75,7 @@ void list_init(list_t *ptr) {
 void list_alloc_all(list_t* dst, blob_t* blobs) {
 
   dst->head_ptr = dst->tail_ptr = &blobs[0];
-  if (DEBUG_LIST) Serial.printf(("\n>>>> list_alloc_all\t%d: %p"), 0, &blobs[0]);
+  if (DEBUG_LIST || DEBUG_CCL) Serial.printf(("\n>>>> list_alloc_all\t%d: %p"), 0, &blobs[0]);
   dst->index++;
 
   for (int i = 1; i < MAX_NODES; i++) {
@@ -86,7 +83,7 @@ void list_alloc_all(list_t* dst, blob_t* blobs) {
     blobs[i].UID = -1;
     blobs[i].next_ptr = NULL;
     dst->tail_ptr = &blobs[i];
-    if (DEBUG_LIST) Serial.printf(("\n>>>> list_alloc_all\t%d: %p"), i, &blobs[i]);
+    if (DEBUG_LIST || DEBUG_CCL) Serial.printf(("\n>>>> list_alloc_all\t%d: %p"), i, &blobs[i]);
     dst->index++;
   }
 }

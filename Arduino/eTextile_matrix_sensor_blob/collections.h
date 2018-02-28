@@ -79,7 +79,7 @@ typedef struct {
 
 typedef struct lifo {
   size_t data_size; // Size of an element
-  char* data;       // Data pointer
+  char* data_ptr;   // Data pointer
   size_t index;     // Number of elements
 } lifo_t;
 
