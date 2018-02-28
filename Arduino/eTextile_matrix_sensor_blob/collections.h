@@ -78,12 +78,12 @@ typedef struct {
 } xylf_t;
 
 typedef struct lifo {
-  size_t data_size; // Size of an element
   char* data_ptr;   // Data pointer
+  size_t bloc_size; // Size of an element
   size_t index;     // Number of elements
 } lifo_t;
 
-void lifo_alloc_all(lifo_t* ptr, xylf_t* array_ptr, size_t struct_size);
+void lifo_alloc(lifo_t* ptr, xylf_t* array_ptr, size_t struct_size);
 void lifo_init(lifo_t* ptr);
 
 size_t lifo_size(lifo_t *ptr);
@@ -114,15 +114,15 @@ void bitmap_print(char* array_ptr);
 ////////////// Blob //////////////
 
 typedef struct point {
-  uint16_t x;
-  uint16_t y;
-  uint16_t z;
+  uint8_t x;
+  uint8_t y;
+  uint8_t z;
 } point_t;
 
 typedef struct blob {
   int8_t UID; // if no ID set UID = -1
   point_t centroid;
-  uint32_t pixels;
+  uint16_t pixels;
   boolean isDead;
   struct blob* next_ptr;
 } blob_t;

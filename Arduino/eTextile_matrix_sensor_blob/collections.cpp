@@ -39,9 +39,9 @@ void bitmap_print(char* array_ptr) {
 
 ////////////////////////////// Lifo //////////////////////////////
 
-void lifo_alloc_all(lifo_t* ptr, xylf_t* array_ptr, size_t struct_size) {
+void lifo_alloc(lifo_t* ptr, xylf_t* array_ptr, size_t struct_size) {
   ptr->data_ptr = (char*) &array_ptr[0];
-  ptr->data_size = struct_size;
+  ptr->bloc_size = struct_size;
   ptr->index = 0;
 }
 
@@ -49,15 +49,17 @@ size_t lifo_size(lifo_t* ptr) {
   return ptr->index;
 }
 
-// Add data at the end of the lifo buffer
+// Add a data element at the end of the list
 void lifo_enqueue(lifo_t* ptr, void *data) {
-  memcpy(ptr->data_ptr + (ptr->index * ptr->data_size), data, ptr->data_size);
+  memcpy(ptr->data_ptr + (ptr->index * ptr->bloc_size), data, ptr->bloc_size);
   ptr->index++;
 }
 
-// Cpoy the lifo data into data, exept the last element
+// Pull out last data element in the list
 void lifo_dequeue(lifo_t* ptr, void* data) {
-  memcpy(data, ptr->data_ptr + (ptr->index * ptr->data_size), ptr->data_size); // (ptr->index - 1) ??
+  if (data) {
+    memcpy(data, ptr->data_ptr + ((ptr->index - 1) * ptr->bloc_size), ptr->bloc_size);
+  }
   ptr->index--;
 }
 

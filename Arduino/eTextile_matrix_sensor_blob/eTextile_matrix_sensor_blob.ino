@@ -27,9 +27,9 @@ void setup() {
   inputFrame.h = NEW_ROWS;
   inputFrame.dataPtr = bilinIntOutput;
 
-  memset(&bitmap[0], 0, NEW_FRAME * sizeof(char)); // Set all values to 0
+  memset(bitmap, 0, NEW_FRAME * sizeof(char)); // Set all values to 0
 
-  lifo_alloc_all(&lifo, cclArray, sizeof(xylf_t));
+  lifo_alloc(&lifo, cclArray, sizeof(xylf_t));
 
   list_init(&freeBlobs);
   list_alloc_all(&freeBlobs, blobsArray);
