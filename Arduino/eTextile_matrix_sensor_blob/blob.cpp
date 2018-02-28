@@ -1,5 +1,5 @@
 /*
-   This file is part of the OpenMV project
+   This file is part of the OpenMV project - https://github.com/openmv/openmv
    Copyright (c) 2013-2017 Ibrahim Abdelkader <iabdalkader@openmv.io> & Kwabena W. Agyeman <kwagyeman@openmv.io>
    This work is licensed under the MIT license, see the file LICENSE for details.
 
@@ -20,7 +20,7 @@ void find_blobs(
   const unsigned int  minBlobPix,
   const unsigned int  maxBlobPix,
   lifo_t*             lifo_ptr,
-  list_t*             freeBlobList_ptr,
+  list_t*             freeBlobs_ptr,
   list_t*             blobs_ptr,
   list_t*             blobsToUpdate_ptr,
   list_t*             blobsToAdd_ptr,
@@ -186,8 +186,8 @@ void find_blobs(
           row_ptr = ROW_PTR(input_ptr, cy);
           uint16_t cz = GET_PIXEL(row_ptr, cx);
 
-          blob_t* blob = list_pop_front(freeBlobList_ptr);
-          if (DEBUG_CCL) Serial.printf(F("\n>>>>>>>> Scan / Get a free blobs from freeBlobList_ptr: %p"), blob);
+          blob_t* blob = list_pop_front(freeBlobs_ptr);
+          if (DEBUG_CCL) Serial.printf(F("\n>>>>>>>> Scan / Get a blob from freeBlobs linked list: %p"), blob);
 
           blob->UID = -1; // RAZ UID, we will give it an ID later
           blob->centroid.x = cx;
@@ -206,7 +206,7 @@ void find_blobs(
     }
   }
 
-  if (DEBUG_BLOB) Serial.printf(F("\n>>>>>>>>>>>>>>>>>>>>>>>> freeBlobs linked list index : %d"), freeBlobList_ptr->index);
+  if (DEBUG_BLOB) Serial.printf(F("\n>>>>>>>>>>>>>>>>>>>>>>>> freeBlobs linked list index : %d"), freeBlobs_ptr->index);
   if (DEBUG_BLOB) Serial.printf(F("\n>>>>>>>>>>>>>>>>>>>>>>>> Input blobs linked list index: %d"), blobs_ptr->index);
 
   ///////////////////////////////////////////////////////////////////////////////////////// Percistant blobs
@@ -236,11 +236,11 @@ void find_blobs(
       // We take the ID of the nearestBlob in outputBlobs linked list and give it to the curent input blob.
       // We move the curent blob to the blobsToUpdate linked list.
       if (minDist < 10) {
-        if (DEBUG_BLOB) Serial.printf(F("\n>>>>>>>> BLOB / Corresponding input blob found in the **outputBlobs** linked list: %p"), nearestBlob);
+        if (DEBUG_BLOB) Serial.printf(F("\n>>>>>>>> BLOB / Corresponding incoming blob found in the **outputBlobs** linked list: %p"), nearestBlob);
         blobA->UID = nearestBlob->UID;
-        if (DEBUG_BLOB) Serial.printf(F("\n>>>>>>>> BLOB / Copy the **outputBlobs** ID to the corresponding input blob: %d"), nearestBlob->UID);
+        if (DEBUG_BLOB) Serial.printf(F("\n>>>>>>>> BLOB / Copy the **outputBlobs** ID to the corresponding incoming blob: %d"), nearestBlob->UID);
         list_push_back(blobsToUpdate_ptr, blobA);
-        if (DEBUG_BLOB) Serial.printf(F("\n>>>>>>>> BLOB / blob pushed back to the **blobsToUpdate** linked list: %p"), blobA);
+        if (DEBUG_BLOB) Serial.printf(F("\n>>>>>>>> BLOB / Blob pushed back to the **blobsToUpdate** linked list: %p"), blobA);
       } else {
 
         // Found a new blob! we nead to give it an ID.
@@ -260,9 +260,9 @@ void find_blobs(
           }
         }
         blobA->UID = minID;
-        if (DEBUG_BLOB) Serial.printf(F("\n>>>>>>>> BLOB / ID seted to the new blob: %d"), minID);
+        if (DEBUG_BLOB) Serial.printf(F("\n>>>>>>>> BLOB / ID seted to the new incoming blob: %d"), minID);
         list_push_back(blobsToAdd_ptr, blobA);
-        if (DEBUG_BLOB) Serial.printf(F("\n>>>>>>>> BLOB / New blob pushed back to the **blobsToAdd** linked list: %p"), blobA); // STOP if two BLOBs are in the list!
+        if (DEBUG_BLOB) Serial.printf(F("\n>>>>>>>> BLOB / New incoming blob pushed back to the **blobsToAdd** linked list: %p"), blobA); // STOP if two BLOBs are in the list!
       }
     }
 
@@ -278,8 +278,8 @@ void find_blobs(
           if (DEBUG_BLOB) Serial.printf(F("\n>>>>>>>> BLOB / Update **outputBlobs** linked list with **blobsToUpdate** linked list: %p"), blobB);
           list_copy_blob(blobA, blobB, sizeof(blob_t)); //  sizeof(blob_t) can be CONST
           // blobB->UID = -1; // We do it in the CCL!
-          list_push_back(freeBlobList_ptr, blobB);
-        if (DEBUG_BLOB) Serial.printf(F("\n<<<<<<<< BLOB / Blob saved to **freeBlobList** linked list - index is: %d"), freeBlobList_ptr->index);
+          list_push_back(freeBlobs_ptr, blobB);
+          if (DEBUG_BLOB) Serial.printf(F("\n<<<<<<<< BLOB / Blob saved to **freeBlobList** linked list - index is: %d"), freeBlobs_ptr->index);
           found = true;
           break;
         }
@@ -316,8 +316,8 @@ void find_blobs(
       }
       if (deadBlob != NULL) {
         // deadBlob.UID = -1; // We do it in the CCL
-        list_push_back(freeBlobList_ptr, deadBlob);  // Save the blob to the freeNodeList linked list
-        if (DEBUG_BLOB) Serial.printf(F("\n<<<<<<<< BLOB / Blob saved to **freeBlobList** linked list - index is: %d"), freeBlobList_ptr->index);
+        list_push_back(freeBlobs_ptr, deadBlob);  // Save the blob to the freeNodeList linked list
+        if (DEBUG_BLOB) Serial.printf(F("\n<<<<<<<< BLOB / Blob saved to **freeBlobList** linked list - index is: %d"), freeBlobs_ptr->index);
         list_remove_blob(outputBlobs_ptr, deadBlob);
         if (DEBUG_BLOB) Serial.printf(F("\n>>>>>>>> BLOB / Blob removed from **outputBlobs** linked list: %p"), deadBlob);
       } else {

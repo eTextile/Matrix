@@ -1,5 +1,5 @@
 /*
-   This file is part of the OpenMV project.
+   This file is part of the OpenMV project - https://github.com/openmv/openmv
    Copyright (c) 2013-2017 Ibrahim Abdelkader <iabdalkader@openmv.io> & Kwabena W. Agyeman <kwagyeman@openmv.io>
    This work is licensed under the MIT license, see the file LICENSE for details.
 
