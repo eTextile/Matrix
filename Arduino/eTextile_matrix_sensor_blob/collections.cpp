@@ -117,44 +117,44 @@ void list_push_back(list_t* dst, blob_t* blob) {
   } else {
     dst->head_ptr = dst->tail_ptr = blob;
   }
-  dst->tail_ptr->next_ptr = NULL; //////////////// <<<<<<<<<<<<<< If not, I get a bug!?
+  // dst->tail_ptr->next_ptr = NULL; //////////////// <<<<<<<<<<<<<< If not, I get a bug!?
   dst->index++;
 }
 
 // Remove a blob in a linked list
-void list_remove_blob(list_t* src_ptr, blob_t* blobSup) {
+void list_remove_blob(list_t* src, blob_t* blobSuppr) {
 
   blob_t* prevBlob = NULL;
+  if (DEBUG_LIST) Serial.printf(F("\n DEBUG_LIST / list_remove_blob / Blob to remove: %p"), blobSuppr);
 
-  for (blob_t* blob = iterator_start_from_head(src_ptr); blob != NULL; blob = iterator_next(blob)) {
-    if (DEBUG_LIST) Serial.printf(F("\n DEBUG_LIST / list_remove_blob / Blob to remove: %p"), blob);
-
-    if (blob == blobSup) { 
+  for (blob_t* blob = iterator_start_from_head(src); blob != NULL; blob = iterator_next(blob)) {
+    
+    if (blob == blobSuppr) {
       if (DEBUG_LIST) Serial.printf(F("\n DEBUG_LIST / list_remove_blob / Blob: %p is found"), blob);
 
-      if (src_ptr->index == 0) {
-        if (DEBUG_LIST) Serial.printf(F("\n DEBUG_LIST / list_remove_blob / The blob: %p is the first & last in the linked list"), blobSup);
-        src_ptr->head_ptr = src_ptr->tail_ptr = NULL;
-        src_ptr->index--;
+      if (src->index == 0) {
+        if (DEBUG_LIST) Serial.printf(F("\n DEBUG_LIST / list_remove_blob / The blob: %p is the first & last in the linked list"), blobSuppr);
+        src->head_ptr = src->tail_ptr = NULL;
+        src->index--;
         return;
       }
       else if (blob->next_ptr == NULL) {
-        if (DEBUG_LIST) Serial.printf(F("\n DEBUG_LIST / list_remove_blob / The blob: %p is the tail of the linked list"), blobSup);
+        if (DEBUG_LIST) Serial.printf(F("\n DEBUG_LIST / list_remove_blob / The blob: %p is the tail of the linked list"), blobSuppr);
         prevBlob->next_ptr = NULL;
-        src_ptr->tail_ptr = prevBlob;
-        src_ptr->index--;
+        src->tail_ptr = prevBlob;
+        src->index--;
         return;
       }
-      else if (blob == src_ptr->head_ptr) {
-        if (DEBUG_LIST) Serial.printf(F("\n DEBUG_LIST / list_remove_blob / The blob: %p is the hard of the linked list"), blobSup);
-        src_ptr->head_ptr = src_ptr->head_ptr->next_ptr;
-        src_ptr->index--;
+      else if (blob == src->head_ptr) {
+        if (DEBUG_LIST) Serial.printf(F("\n DEBUG_LIST / list_remove_blob / The blob: %p is the hard of the linked list"), blobSuppr);
+        src->head_ptr = src->head_ptr->next_ptr;
+        src->index--;
         return;
       }
       else {
-        if (DEBUG_LIST) Serial.printf(F("\n DEBUG_LIST / list_remove_blob / The blob: %p is in the middle of the linked list"), blobSup);
+        if (DEBUG_LIST) Serial.printf(F("\n DEBUG_LIST / list_remove_blob / The blob: %p is somewear else in the linked list"), blobSuppr);
         prevBlob->next_ptr = blob->next_ptr;
-        src_ptr->index--;
+        src->index--;
         return;
       }
     }
