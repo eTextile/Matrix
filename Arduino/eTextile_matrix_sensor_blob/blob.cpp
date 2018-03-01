@@ -84,8 +84,8 @@ void find_blobs(
             bitmap_bit_set(bitmap_ptr, BITMAP_INDEX(row_index_B, i));
             if (DEBUG_CCL) Serial.printf("%d ", BITMAP_INDEX(row_index_B, i));
             blob_pixels++;
-            blob_cx += i;
-            blob_cy += posY;
+            // blob_cx += i;
+            // blob_cy += posY;
           }
           if (DEBUG_CCL) Serial.printf(F("\n>>>>>>>> DEBUG_CCL / Blob pixels: %d"), blob_pixels);
 
@@ -179,15 +179,17 @@ void find_blobs(
 
         if ((blob_pixels >= minBlobPix) && (blob_pixels <= maxBlobPix)) {
 
-          uint8_t cx = (uint8_t) blob_cx / blob_pixels; // x centroid position
-          uint8_t cy = (uint8_t) blob_cy / blob_pixels; // y centroid position
+          uint8_t cx = blob_x2 - (blob_x1 / 2); // x centroid position
+          uint8_t cy = blob_y2 - (blob_y1 / 2); // y centroid position
+          if (DEBUG_CENTER) Serial.printf(F("\n DEBUG_CENTER / cx: %d \t cy: %d:"), cx, cy);
+          
           uint8_t* row_ptr = ROW_PTR(input_ptr, cy);
           uint8_t cz = GET_PIXEL(row_ptr, cx);
 
           blob_t* blob = list_pop_front(freeBlobs_ptr);
           if (DEBUG_CCL || DEBUG_BLOB) Serial.printf(F("\n DEBUG_BLOB / Get a blob from **freeBlobs** linked list: %p"), blob);
 
-          // blob->UID = -1; // RAZ UID, we will give it an ID later
+          blob->UID = -1; // RAZ UID, we will give it an ID later
           blob->centroid.x = cx;
           blob->centroid.y = cy;
           blob->centroid.z = cz; // - THRESHOLD
@@ -239,7 +241,7 @@ void find_blobs(
       // We take the ID of the nearestBlob in outputBlobs linked list and give it to the curent input blob.
       // We move the curent blob to the blobsToUpdate linked list.
       if (minDist < 5) {
-        if (DEBUG_BLOB) Serial.printf(F("\n DEBUG_BLOB / Found corresponding blob in the **outputBlobs** linked list: %p"), nearestBlob);
+        if (DEBUG_BLOB) Serial.printf(F("\n DEBUG_BLOB / Found corresponding blob: %p in the **outputBlobs** linked list"), nearestBlob);
         blobA->UID = nearestBlob->UID;
         if (DEBUG_BLOB) Serial.printf(F("\n DEBUG_BLOB / Copy the corresponding **outputBlobs** ID: %d to the incoming blob ID"), nearestBlob->UID);
         list_push_back(blobsToUpdate_ptr, blobA);
@@ -264,9 +266,36 @@ void find_blobs(
         blobA->UID = minID;
         if (DEBUG_BLOB) Serial.printf(F("\n DEBUG_BLOB / ID: %d seted to the new incoming blob: %p"), minID, blobA);
         list_push_back(blobsToAdd_ptr, blobA);
-        if (DEBUG_BLOB) Serial.printf(F("\n DEBUG_BLOB / New incoming blob: %p pushed back to the **blobsToAdd** linked list"), blobA); // STOP if two BLOBs are in the list!
+        if (DEBUG_BLOB) Serial.printf(F("\n DEBUG_BLOB / New incoming blob: %p pushed back to the **blobsToAdd** linked list"), blobA);
       }
     }
+
+    /*
+      >>>>>>>>>>>>>>>>>>>> DEBUG_CCL / START
+
+      DEBUG_BLOB / Get a blob from **freeBlobs** linked list: 0x1fffa3a0
+      DEBUG_BLOB / Blob added to the **blobs** linked list: 0x1fffa3a0
+      DEBUG_BLOB / Get a blob from **freeBlobs** linked list: 0x1fffa418
+      DEBUG_BLOB / Blob added to the **blobs** linked list: 0x1fffa418
+
+      DEBUG_BLOB / Input **blobs** linked list index: 1
+      DEBUG_BLOB / **freeBlobs** linked list index : -1
+
+      DEBUG_BLOB / Found nearest blob 0x1fffa394 at: 1.000000
+      DEBUG_BLOB / Found corresponding blob: 0x1fffa394 in the **outputBlobs** linked list
+      DEBUG_BLOB / Copy the corresponding **outputBlobs** ID: 0 to the incoming blob ID
+      DEBUG_BLOB / BlobA: 0x1fffa3a0 pushed back to the **blobsToUpdate** linked list
+
+      DEBUG_BLOB / Found nearest blob 0x1fffa394 at: 1.414214
+      DEBUG_BLOB / Found corresponding blob: 0x1fffa394 in the **outputBlobs** linked list
+      DEBUG_BLOB / Copy the corresponding **outputBlobs** ID: 0 to the incoming blob ID
+      DEBUG_BLOB / BlobA: 0x1fffa418 pushed back to the **blobsToUpdate** linked list
+
+      DEBUG_BLOB / BlobA: 0x1fffa394 updated with blobB: 0x1fffa3a0
+      DEBUG_BLOB / BlobB: 0x1fffa3a0 saved to **freeBlobList** linked list
+      DEBUG_BLOB / Cleared bitmap
+      DEBUG_BLOB / END OFF BLOB FONCTION
+    */
 
     // Update outputBlobs linked list with blobsToUpdate linked list.
     // If a blob in the outputBlobs linked list is not in the blobsToUpdate linked list, set it to dead.
@@ -279,7 +308,7 @@ void find_blobs(
           if (DEBUG_BLOB) Serial.printf(F("\n DEBUG_BLOB / BlobA: %p updated with blobB: %p"), blobA, blobB);
           blobB->UID = -1; // RAZ blobB UID
           list_push_back(freeBlobs_ptr, blobB);
-          if (DEBUG_BLOB) Serial.printf(F("\n DEBUG_BLOB / BlobB: %p saved to **freeBlobList** linked list - FLAG_A"), blobB);
+          if (DEBUG_BLOB) Serial.printf(F("\n DEBUG_BLOB / BlobB: %p saved to **freeBlobList** linked list"), blobB);
           // Add the blobs values to an OSC bundle
           //message.addIntArg(blobA->UID);
           //message.addIntArg(blobA->centroid.x);
@@ -297,25 +326,26 @@ void find_blobs(
                          );
           }
           found = true;
-          break;
         }
+        break;
       }
       if (!found) {
         blobA->isDead = true;
+        if (DEBUG_BLOB) Serial.printf(F("\n DEBUG_BLOB / Found dead blob: %p in the **outputBlobs** linked list"), blobA);
       }
     }
-    
+
     // Suppress dead blobs from the outputBlobs linked list
-    // boolean deadExists = true;
     while (1) {
       blob_t* deadBlob = NULL;
       for (blob_t* blob = iterator_start_from_head(outputBlobs_ptr); blob != NULL; blob = iterator_next(blob)) {
         if (blob->isDead) {
           deadBlob = blob;
+          if (DEBUG_BLOB) Serial.printf(F("\n DEBUG_BLOB / Blob: %p from **outputBlobs** linked list - FLAG_FLAG"), deadBlob);
           break;
         }
       }
-      if (NULL != deadBlob) {
+      if (deadBlob != NULL) {
         list_remove_blob(outputBlobs_ptr, deadBlob);
         if (DEBUG_BLOB) Serial.printf(F("\n DEBUG_BLOB / Blob: %p removed from **outputBlobs** linked list - FLAG_B"), deadBlob);
         // deadBlob->UID = -1; // RAZ deadBlob UID
@@ -332,7 +362,6 @@ void find_blobs(
           Serial.printf(F("\n DEBUG_OSC / UID: %d\tX: %d\tY: %d\tZ: %d\tPIX: %d"), deadBlob->UID, -1, -1, -1, -1);
         }
       } else {
-        // deadExists = false;
         break;
       }
     }
