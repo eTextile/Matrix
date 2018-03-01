@@ -29,7 +29,7 @@
 #define DEBUG_INTERP         false
 #define DEBUG_CCL_INPUT      false
 #define DEBUG_BITMAP         false
-#define DEBUG_LIST           false
+#define DEBUG_LIST           true
 #define DEBUG_CCL            false // Connected-component labeling
 #define DEBUG_BLOB           true
 #define DEBUG_OSC            false

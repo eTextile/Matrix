@@ -14,14 +14,14 @@ void setup() {
   Serial.begin(BAUD_RATE);               // Arduino serial standard library
   while (!Serial.dtr()) ;                // Wait for user to start the serial monitor
 
-  analogReadRes(8);                     // Set the ADC converteur resolution to 8 bit
+  analogReadRes(8);                      // Set the ADC converteur resolution to 8 bit
   pinMode(BUILTIN_LED, OUTPUT);          // Set BUILTIN_LED pin as output
   pinMode(BUTTON_PIN, INPUT_PULLUP);     // Set button pin as input and activate the input pullup resistor
   attachInterrupt(BUTTON_PIN, pushButton, RISING); // Attach interrrupt on button PIN
 
   interpolate.numCols = COLS;
   interpolate.numRows = ROWS;
-  interpolate.pData = frameValues; // TODO uint8_t frameValues[]
+  interpolate.pData = frameValues;
 
   inputFrame.w = NEW_COLS;
   inputFrame.h = NEW_ROWS;
@@ -38,7 +38,6 @@ void setup() {
   list_init(&blobsToUpdate);
   list_init(&blobsToAdd);
   list_init(&outputBlobs);
-  if (DEBUG_BLOB) Serial.printf(F("\n>>>>>>>> outputBlobs head_ptr: %p"), outputBlobs.head_ptr);
 
   calibrate(minVals, CYCLES);
   bootBlink(9);

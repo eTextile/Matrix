@@ -133,17 +133,19 @@ typedef struct list {
   int8_t index;
 } list_t;
 
-////////////// Linked list //////////////
+////////////// Linked list - Fonction prototypes //////////////
+
+////////////// Iterators //////////////
+int8_t list_size(list_t* ptr);
+blob_t* iterator_start_from_head(list_t* src);
+blob_t* iterator_next(blob_t* src);
 
 void list_init(list_t* ptr);
 void list_alloc_all(list_t* dst, blob_t* blobs);
+blob_t* list_pop_front(list_t* src);
 void list_push_back(list_t* dst, blob_t* blob);
 void list_save_blobs(list_t* dst, list_t* src);
-void list_copy_blob(blob_t* blobA, blob_t* blobB, size_t blobSize);
-void list_clear_blobs(list_t* src);
-
-blob_t* list_pop_front(list_t* src);
-blob_t* list_read_blob(list_t* src, uint8_t index);
+void list_copy_blob(blob_t* dst, blob_t* src);
 void list_remove_blob(list_t* src, blob_t* blob);
 
 void find_blobs(
@@ -155,17 +157,11 @@ void find_blobs(
   const unsigned int minBlobPix,
   const unsigned int maxBlobPix,
   lifo_t* lifo_ptr,
-  list_t* freeBlobList_ptr,
+  list_t* freeBlob_ptr,
   list_t* blobs_ptr,
   list_t* blobsToUpdate_ptr,
   list_t* blobsToAdd_ptr,
   list_t* outputBlobs_ptr
 );
-
-////////////// Iterators //////////////
-
-int8_t list_size(list_t* ptr);
-blob_t* iterator_start_from_head(list_t* src);
-blob_t* iterator_next(blob_t* src);
 
 #endif /*__COLLECTIONS_H__*/
