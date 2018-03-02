@@ -27,11 +27,10 @@
 
 #define DEBUG_ADC_INPUT      false
 #define DEBUG_INTERP         false
-#define DEBUG_CCL_INPUT      false
-#define DEBUG_BITMAP         false
-#define DEBUG_CCL            false // Connected-component labeling
+#define DEBUG_BITMAP         true
+#define DEBUG_CCL            true // Connected-component labeling
 #define DEBUG_CENTER         true
-#define DEBUG_LIST           false
+#define DEBUG_LIST           true
 #define DEBUG_BLOB           false
 #define DEBUG_OSC            false
 

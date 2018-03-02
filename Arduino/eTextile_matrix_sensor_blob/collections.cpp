@@ -25,18 +25,6 @@ void bitmap_clear(char* array_ptr) {
   memset(array_ptr, 0, NEW_FRAME * sizeof(char));
 }
 
-void bitmap_print(char* array_ptr) {
-
-  Serial.printf(F("\n>>>> Bitmap <<<<\n"));
-  for (int i = 0; i < NEW_ROWS; i++) {
-    for (int j = 0; j < NEW_COLS; j++) {
-      Serial.printf("%d ", bitmap_bit_get(array_ptr, i * NEW_ROWS + j));
-    }
-    Serial.printf("\n");
-  }
-  Serial.printf("\n");
-}
-
 ////////////////////////////// Lifo //////////////////////////////
 
 void lifo_alloc(lifo_t* ptr, xylf_t* array_ptr, size_t struct_size) {

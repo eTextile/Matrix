@@ -1,8 +1,8 @@
-/* 
+/*
    This file is part of the OpenMV project - https://github.com/openmv/openmv
    Copyright (c) 2013-2017 Ibrahim Abdelkader <iabdalkader@openmv.io> & Kwabena W. Agyeman <kwagyeman@openmv.io>
    This work is licensed under the MIT license, see the file LICENSE for details.
-   
+
    This file has been modified to fit the eTextile matrix sensor needs
    eTextile matrix sensor - http://matrix.eTextile.org
 */
@@ -57,14 +57,15 @@
     _pThreshold <= _pixel; \
   })
 
-#define IM_MAX(a,b) \
+
+#define IM_MAX(a, b) \
   ({ \
     __typeof__ (a) _a = (a); \
     __typeof__ (b) _b = (b); \
     _a > _b ? _a : _b; \
   })
 
-#define IM_MIN(a,b) \
+#define IM_MIN(a, b) \
   ({ \
     __typeof__ (a) _a = (a); \
     __typeof__ (b) _b = (b); \
@@ -94,22 +95,14 @@ void lifo_dequeue(lifo_t *ptr, void* data);
 ////////////// Image stuff //////////////
 
 typedef struct image {
-  int w;
-  int h;
+  uint8_t w;
+  uint8_t h;
   uint8_t* dataPtr;
 } image_t;
-
-////////////// Bitmap //////////////
-
-typedef struct {
-  size_t siZe;
-  char* data;
-} bitmap_t;
 
 void bitmap_bit_set(char* array_ptr, int index);
 char bitmap_bit_get(char* array_ptr, int index);
 void bitmap_clear(char* array_ptr);
-void bitmap_print(char* array_ptr);
 
 ////////////// Blob //////////////
 
@@ -120,7 +113,7 @@ typedef struct point {
 } point_t;
 
 typedef struct blob {
-  int8_t UID; // if no ID set UID = -1
+  int8_t UID; // If no ID set UID to -1
   point_t centroid;
   uint16_t pixels;
   boolean isDead;
@@ -130,7 +123,7 @@ typedef struct blob {
 typedef struct list {
   blob_t* head_ptr;
   blob_t* tail_ptr;
-  int8_t index;
+  int8_t index; // If no element set index to -1
 } list_t;
 
 ////////////// Linked list - Fonction prototypes //////////////

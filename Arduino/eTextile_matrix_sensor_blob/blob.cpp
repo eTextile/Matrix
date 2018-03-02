@@ -26,52 +26,51 @@ void find_blobs(
   list_t*             blobsToAdd_ptr,
   list_t*             outputBlobs_ptr
 ) {
-  if (DEBUG_BLOB) Serial.printf(F("\n>>>>>>>>>>>>>>>>>>>> DEBUG_CCL / START"));
+  if (DEBUG_BLOB || DEBUG_CCL) Serial.printf(F("\n>>>>>>>>>>>>>>>>>>>> DEBUG / START"));
 
   for (uint8_t posY = 0; posY < rows; posY++) {
     uint8_t* row_ptr_A = ROW_PTR(input_ptr, posY);  // Return pointer to image curent row
-    size_t row_index_A = ROW_INDEX(input_ptr, posY); // Return bitmap curent row
-
-    if (DEBUG_CCL_INPUT) Serial.println();
+    uint16_t row_index_A = ROW_INDEX(input_ptr, posY); // Return bitmap curent row index (1D array) 0, 64, 128,... 4032
+    if (DEBUG_CCL) Serial.printf("\n row_ptr_A:%p \t row_index_A:%d ", row_ptr_A, row_index_A); // Print out INPUT_VALUES
     for (uint8_t posX = 0; posX < cols; posX++) {
-      if (DEBUG_CCL_INPUT) Serial.printf("%d ", GET_PIXEL(row_ptr_A, posX)); // Print out INPUT_VALUES
+      if (DEBUG_BITMAP) Serial.printf("%d ", GET_PIXEL(row_ptr_A, posX)); // Print out INPUT_VALUES
 
       if (!bitmap_bit_get(bitmap_ptr, BITMAP_INDEX(row_index_A, posX)) && PIXEL_THRESHOLD(GET_PIXEL(row_ptr_A, posX), pixelThreshold)) {
 
         uint8_t old_x = posX;
         uint8_t old_y = posY;
 
-        uint8_t blob_x1 = posX;
-        uint8_t blob_y1 = posY;
-        uint8_t blob_x2 = posX;
-        uint8_t blob_y2 = posY;
+        uint16_t blob_x1 = posX;
+        uint16_t blob_y1 = posY;
+        uint16_t blob_x2 = posX;
+        uint16_t blob_y2 = posY;
 
         uint16_t blob_pixels = 0;
-        uint8_t blob_cx = 0;
-        uint8_t blob_cy = 0;
+        uint16_t blob_cx = 0;
+        uint16_t blob_cy = 0;
         uint8_t blob_cz = 0;
 
         ////////// Connected-component labeling / Scanline flood fill algorithm //////////
 
         for (;;) {
 
-          uint8_t left = posX;
-          uint8_t right = posX;
+          uint16_t left = posX;
+          uint16_t right = posX;
 
           uint8_t* row_ptr_B = ROW_PTR(input_ptr, posY);  // Return pointer to image curent row
-          size_t row_index_B = ROW_INDEX(input_ptr, posY);  // Return bitmap curent row
+          uint16_t row_index_B = ROW_INDEX(input_ptr, posY);  // Return bitmap curent row
 
           while ((left > 0) &&
                  (!bitmap_bit_get(bitmap_ptr, BITMAP_INDEX(row_index_B, left - 1))) &&
                  PIXEL_THRESHOLD(GET_PIXEL(row_ptr_B, left - 1), pixelThreshold)) {
             left--;
-            // if (DEBUG_CCL) Serial.printf(" Left:%d", left);
+            if (DEBUG_CCL) Serial.printf(" Left:%d", left);
           }
           while (right < (cols - 1) &&
                  (!bitmap_bit_get(bitmap_ptr, BITMAP_INDEX(row_index_B, right + 1))) &&
                  PIXEL_THRESHOLD(GET_PIXEL(row_ptr_B, right + 1), pixelThreshold)) {
             right++;
-            // if (DEBUG_CCL) Serial.printf(" Right:%d", right);
+            if (DEBUG_CCL) Serial.printf(" Right:%d", right);
           }
 
           blob_x1 = IM_MIN(blob_x1, left);
@@ -79,15 +78,24 @@ void find_blobs(
           blob_x2 = IM_MAX(blob_x2, right);
           blob_y2 = IM_MAX(blob_y2, posY);
 
-          if (DEBUG_CCL) Serial.printf(F("\n>>>>>>>> DEBUG_CCL / Bitmap bit set: "));
+          /*
+            blob_x1 = min(blob_x1, left);
+            blob_y1 = min(blob_y1, posY);
+            blob_x2 = max(blob_x2, right);
+            blob_y2 = max(blob_y2, posY);
+          */
+
+          if (DEBUG_CENTER) Serial.printf(F("\n DEBUG_CENTER / blob_x1:%d\tblob_y1:%d\tblob_x2:%d\tblob_y2:%d"));
+
+          if (DEBUG_CCL) Serial.printf(F("\n DEBUG_CCL / Bitmap bit set: "));
           for (int i = left; i <= right; i++) {
             bitmap_bit_set(bitmap_ptr, BITMAP_INDEX(row_index_B, i));
             if (DEBUG_CCL) Serial.printf("%d ", BITMAP_INDEX(row_index_B, i));
             blob_pixels++;
-            // blob_cx += i;
-            // blob_cy += posY;
+            blob_cx += i;
+            blob_cy += posY;
           }
-          if (DEBUG_CCL) Serial.printf(F("\n>>>>>>>> DEBUG_CCL / Blob pixels: %d"), blob_pixels);
+          if (DEBUG_CCL) Serial.printf(F("\n DEBUG_CCL / Blob pixels: %d"), blob_pixels);
 
           boolean break_out = false;
 
@@ -105,7 +113,7 @@ void find_blobs(
                 for (int i = left; i <= right; i++) {
                   if ((!bitmap_bit_get(bitmap_ptr, BITMAP_INDEX(row_index_B, i))) &&
                       PIXEL_THRESHOLD(GET_PIXEL(row_ptr_B, i), pixelThreshold)) {
-                    if (DEBUG_CCL) Serial.printf(F("\n>>>>>>>> DEBUG_CCL / A-Lifo add pixel"));
+                    if (DEBUG_CCL) Serial.printf(F("\n DEBUG_CCL / A-Lifo add pixel"));
 
                     xylf_t pixel;
 
@@ -124,7 +132,7 @@ void find_blobs(
                   break;
                 }
               }
-              if (DEBUG_CCL) Serial.printf(F("\n>>>>>>>> DEBUG_CCL / Break 1"));
+              if (DEBUG_CCL) Serial.printf(F("\n DEBUG_CCL / Break 1"));
 
               if (posY < (rows - 1)) {
 
@@ -142,7 +150,7 @@ void find_blobs(
                     pixel.y = posY;
                     pixel.l = left;
                     pixel.r = right;
-                    if (DEBUG_CCL) Serial.printf(F("\n>>>>>>>> DEBUG_CCL / B-Lifo add pixel"));
+                    if (DEBUG_CCL) Serial.printf(F("\n DEBUG_CCL / B-Lifo add pixel"));
                     lifo_enqueue(lifo_ptr, &pixel);
                     posX = i;
                     posY++;
@@ -154,17 +162,17 @@ void find_blobs(
                   break;
                 }
               }
-              if (DEBUG_CCL) Serial.printf(F("\n>>>>>>>> DEBUG_CCL / Break 2"));
+              if (DEBUG_CCL) Serial.printf(F("\n DEBUG_CCL / Break 2"));
             }
 
             if (lifo_size(lifo_ptr) == 0) {
-              if (DEBUG_CCL) Serial.printf(F("\n>>>>>>>> DEBUG_CCL / Lifo umpty: %d"), lifo_size(lifo_ptr));
+              if (DEBUG_CCL) Serial.printf(F("\n DEBUG_CCL / Lifo umpty: %d"), lifo_size(lifo_ptr));
               break_out = true;
               break;
             }
 
             xylf_t pixel;
-            if (DEBUG_CCL) Serial.printf(F("\n>>>>>>>> DEBUG_CCL / Lifo take a pixel from the queue"));
+            if (DEBUG_CCL) Serial.printf(F("\n DEBUG_CCL / Lifo take a pixel from the queue"));
             lifo_dequeue(lifo_ptr, &pixel);
             posX = pixel.x;
             posY = pixel.y;
@@ -179,20 +187,21 @@ void find_blobs(
 
         if ((blob_pixels >= minBlobPix) && (blob_pixels <= maxBlobPix)) {
 
-          uint8_t cx = blob_x2 - (blob_x1 / 2); // x centroid position
-          uint8_t cy = blob_y2 - (blob_y1 / 2); // y centroid position
-          if (DEBUG_CENTER) Serial.printf(F("\n DEBUG_CENTER / cx: %d \t cy: %d:"), cx, cy);
-          
-          uint8_t* row_ptr = ROW_PTR(input_ptr, cy);
-          uint8_t cz = GET_PIXEL(row_ptr, cx);
+          uint8_t* row_ptr = ROW_PTR(input_ptr, blob_cy);
+          uint8_t blob_cz = GET_PIXEL(row_ptr, blob_cx);
+
+          // blob_cx = blob_x2 - ((blob_x2 - blob_x1) / 2); // x centroid position
+          // blob_cy = blob_y2 - ((blob_y1 - blob_y2) / 2); // y centroid position
+
+          if (DEBUG_CENTER) Serial.printf(F("\n DEBUG_CENTER / blob_cx: %d\tblob_cy: %d\tblob_cz: %d"), blob_cx, blob_cy, blob_cz);
 
           blob_t* blob = list_pop_front(freeBlobs_ptr);
           if (DEBUG_CCL || DEBUG_BLOB) Serial.printf(F("\n DEBUG_BLOB / Get a blob from **freeBlobs** linked list: %p"), blob);
 
           blob->UID = -1; // RAZ UID, we will give it an ID later
-          blob->centroid.x = cx;
-          blob->centroid.y = cy;
-          blob->centroid.z = cz; // - THRESHOLD
+          blob->centroid.x = blob_cx;
+          blob->centroid.y = blob_cy;
+          blob->centroid.z = blob_cz; // - THRESHOLD
           blob->pixels = blob_pixels;
           blob->isDead = false;
 
@@ -204,13 +213,13 @@ void find_blobs(
         posY = old_y;
       }
     }
+    if (DEBUG_BITMAP) Serial.println();
   }
+  if (DEBUG_BITMAP) Serial.println();
 
   lifo_init(lifo_ptr);
-  if (DEBUG_BITMAP) bitmap_print(bitmap_ptr);
   bitmap_clear(bitmap_ptr); // TODO: optimizing!
 
-  if (DEBUG_CCL_INPUT) Serial.println();
   if (DEBUG_CCL) Serial.print(F("\n DEBUG_CCL / END of scanline flood fill algorithm"));
   if (DEBUG_BLOB || DEBUG_CCL) Serial.printf(F("\n DEBUG_BLOB / Input **blobs** linked list index: %d"), blobs_ptr->index);
   if (DEBUG_BLOB || DEBUG_CCL) Serial.printf(F("\n DEBUG_BLOB / **freeBlobs** linked list index : %d"), freeBlobs_ptr->index);

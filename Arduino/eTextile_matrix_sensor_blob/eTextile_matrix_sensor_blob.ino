@@ -29,7 +29,7 @@ void setup() {
 
   memset(bitmap, 0, NEW_FRAME * sizeof(char)); // Set all values to 0
 
-  lifo_alloc(&lifo, cclArray, sizeof(xylf_t));
+  lifo_alloc(&lifo, &cclArray[0], sizeof(xylf_t));
 
   list_init(&freeBlobs);
   list_alloc_all(&freeBlobs, blobsArray);
@@ -59,12 +59,14 @@ void loop() {
     digitalWrite(rowPins[row], HIGH);
     for (uint8_t col = 0; col < COLS; col++) {
       uint8_t rowValue = analogRead(columnPins[col]); // Read the sensor value
-      uint8_t value = constrain(rowValue - minVals[sensorID], 0, 255); // Aplay the calibration ofset
-      if (value > 0) {
+      frameValues[sensorID] = constrain(rowValue - minVals[sensorID], 0, 255); // Aplay the calibration ofset
+      /*
+        if (value > 0) {
         frameValues[sensorID] = value;
-      } else {
+        } else {
         frameValues[sensorID] = 0;
-      }
+        }
+      */
       if (DEBUG_ADC_INPUT) Serial.printf("%d ", rowValue);
       sensorID++;
     }
@@ -91,7 +93,7 @@ void loop() {
   sensorID = 0;
 
   find_blobs(
-    &inputFrame,        // image_t
+    &inputFrame,        // image_t 64 x 64 (1D array) uint8_t 
     &bitmap[0],         // char Array
     NEW_ROWS,           // const int
     NEW_COLS,           // const int
@@ -157,7 +159,7 @@ void bootBlink(uint8_t flash) {
 /////////// Called with interrupt triggered with push button attached to I/O pin 32
 void pushButton() {
   cli();
-  calibrate(&minVals[0], CYCLES);
+  calibrate(minVals, CYCLES);
   sei();
 }
 
