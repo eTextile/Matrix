@@ -57,7 +57,6 @@
     _pThreshold <= _pixel; \
   })
 
-
 #define IM_MAX(a, b) \
   ({ \
     __typeof__ (a) _a = (a); \
@@ -74,23 +73,22 @@
 
 ////////////// Lifo //////////////
 
-typedef struct {
-  int16_t x, y, l, r;
+typedef struct xylf {
+  uint16_t x, y, l, r;
+  struct xylf* prev_ptr;
 } xylf_t;
 
 typedef struct lifo {
-  char* data_ptr;   // Data pointer
-  size_t bloc_size; // Size of an element
-  size_t index;     // Number of elements
+  xylf_t* head_ptr;
+  uint16_t buffer_size;
+  int16_t index; // If no element index is -1
 } lifo_t;
 
-void lifo_alloc(lifo_t* ptr, xylf_t* array_ptr, size_t struct_size);
-void lifo_init(lifo_t* ptr);
-
-size_t lifo_size(lifo_t *ptr);
-
-void lifo_enqueue(lifo_t *ptr, void* data);
-void lifo_dequeue(lifo_t *ptr, void* data);
+void lifo_raz(lifo_t* ptr);
+void lifo_init(lifo_t* dst, xylf_t* node, uint16_t max_nodes); // uint8_t node_size
+void lifo_enqueue(lifo_t* dst, xylf_t* node);
+xylf_t* lifo_dequeue(lifo_t* src);
+int16_t lifo_size(lifo_t *ptr);
 
 ////////////// Image stuff //////////////
 
@@ -113,33 +111,35 @@ typedef struct point {
 } point_t;
 
 typedef struct blob {
-  int8_t UID; // If no ID set UID to -1
+  int8_t UID; // If no ID, UID is -1
   point_t centroid;
   uint16_t pixels;
   boolean isDead;
   struct blob* next_ptr;
 } blob_t;
 
-typedef struct list {
+typedef struct {
   blob_t* head_ptr;
   blob_t* tail_ptr;
-  int8_t index; // If no element set index to -1
-} list_t;
+  uint8_t buffer_size;
+  int8_t index; // If no element index is -1
+} llist_t;
 
 ////////////// Linked list - Fonction prototypes //////////////
 
 ////////////// Iterators //////////////
-int8_t list_size(list_t* ptr);
-blob_t* iterator_start_from_head(list_t* src);
+int8_t list_size(llist_t* ptr);
+blob_t* iterator_start_from_head(llist_t* src);
 blob_t* iterator_next(blob_t* src);
 
-void list_init(list_t* ptr);
-void list_alloc_all(list_t* dst, blob_t* blobs);
-blob_t* list_pop_front(list_t* src);
-void list_push_back(list_t* dst, blob_t* blob);
-void list_save_blobs(list_t* dst, list_t* src);
-void list_copy_blob(blob_t* dst, blob_t* src);
-void list_remove_blob(list_t* src, blob_t* blob);
+void llist_raz(llist_t* ptr);
+void llist_init(llist_t* dst, blob_t* node, uint8_t buffer_size); // uint8_t buffer_size
+blob_t* llist_pop_front(llist_t* src);
+void llist_push_back(llist_t* dst, blob_t* blob);
+void llist_save_blobs(llist_t* dst, llist_t* src);
+void llist_copy_blob(blob_t* dst, blob_t* src);
+void llist_remove_blob(llist_t* src, blob_t* blob);
+int16_t llist_size(llist_t *ptr);
 
 void find_blobs(
   image_t* input_ptr,
@@ -149,12 +149,13 @@ void find_blobs(
   const int pixelThreshold,
   const unsigned int minBlobPix,
   const unsigned int maxBlobPix,
-  lifo_t* lifo_ptr,
-  list_t* freeBlob_ptr,
-  list_t* blobs_ptr,
-  list_t* blobsToUpdate_ptr,
-  list_t* blobsToAdd_ptr,
-  list_t* outputBlobs_ptr
+  lifo_t*  freeNodes_ptr,
+  lifo_t*  lifo_ptr,
+  llist_t* freeBlob_ptr,
+  llist_t* blobs_ptr,
+  llist_t* blobsToUpdate_ptr,
+  llist_t* blobsToAdd_ptr,
+  llist_t* outputBlobs_ptr
 );
 
 #endif /*__COLLECTIONS_H__*/

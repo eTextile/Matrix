@@ -30,19 +30,19 @@ arm_bilinear_interp_instance_f32 interpolate;
 // arm_bilinear_interp_q7 TODO?
 #endif // __CORE_TEENSY__
 
-image_t   inputFrame;
+image_t   frame;
 char      bitmap[NEW_FRAME] = {0};
 
-xylf_t    cclArray[NEW_FRAME] = {0};
+xylf_t    cclArray[MAX_NODES] = {0}; // NEW_FRAME
+lifo_t    freeNodes;
 lifo_t    lifo;
 
-blob_t    blobsArray[MAX_NODES];
-list_t    freeBlobs;
-
-list_t    blobs;
-list_t    blobsToUpdate;
-list_t    blobsToAdd;
-list_t    outputBlobs;
+blob_t    blobArray[MAX_NODES];
+llist_t   freeBlobs;
+llist_t   blobs;
+llist_t   blobsToUpdate;
+llist_t   blobsToAdd;
+llist_t   outputBlobs;
 
 // uint8_t myPacket[ROW_FRAME] = {0};           // Array to store values to transmit
 

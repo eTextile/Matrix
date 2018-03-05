@@ -23,21 +23,22 @@ void setup() {
   interpolate.numRows = ROWS;
   interpolate.pData = frameValues;
 
-  inputFrame.w = NEW_COLS;
-  inputFrame.h = NEW_ROWS;
-  inputFrame.dataPtr = bilinIntOutput;
+  frame.w = NEW_COLS;
+  frame.h = NEW_ROWS;
+  frame.dataPtr = bilinIntOutput;
 
   memset(bitmap, 0, NEW_FRAME * sizeof(char)); // Set all values to 0
 
-  lifo_alloc(&lifo, &cclArray[0], sizeof(xylf_t));
+  lifo_raz(&freeNodes);
+  lifo_init(&freeNodes, cclArray, MAX_NODES); // sizeof(xylf_t), NEW_FRAME
+  lifo_raz(&lifo);
 
-  list_init(&freeBlobs);
-  list_alloc_all(&freeBlobs, blobsArray);
-
-  list_init(&blobs);
-  list_init(&blobsToUpdate);
-  list_init(&blobsToAdd);
-  list_init(&outputBlobs);
+  llist_raz(&freeBlobs);
+  llist_init(&freeBlobs, blobArray, MAX_NODES); // sizeof(blob_t), MAX_NODES
+  llist_raz(&blobs);
+  llist_raz(&blobsToUpdate);
+  llist_raz(&blobsToAdd);
+  llist_raz(&outputBlobs);
 
   calibrate(minVals, CYCLES);
   bootBlink(9);
@@ -45,9 +46,11 @@ void setup() {
 }
 
 void loop() {
+  // FPS with CPU speed to 120 MHz (overclock)
+  // 523 FPS with no interpolation & no blob tracking
+  // 23 FPS - with interpolation
+  // FPS with interpolation & blob tracking.
 
-  // 22 FPS - with CPU speed to 120 MHz (overclock) - 45ms by frame
-  // 15 FPS - with CPU speed to 96 MHz
   if ((millis() - lastFarme) >= 1000) {
     Serial.printf(F("\nFPS: %d"), fps);
     lastFarme = millis();
@@ -93,13 +96,14 @@ void loop() {
   sensorID = 0;
 
   find_blobs(
-    &inputFrame,        // image_t 64 x 64 (1D array) uint8_t 
-    &bitmap[0],         // char Array
+    &frame,        // image_t 64 x 64 (1D array) uint8_t
+    bitmap,             // char Array
     NEW_ROWS,           // const int
     NEW_COLS,           // const int
     THRESHOLD,          // const int
     MIN_BLOB_PIX,       // const int
     MAX_BLOB_PIX,       // const int
+    &freeNodes,         // lifo_t
     &lifo,              // lifo_t
     &freeBlobs,         // list_t
     &blobs,             // list_t
