@@ -7,6 +7,7 @@
 - Arduino IDE
 - Arduino library
   - PacketSerial: https://github.com/bakercp/PacketSerial
+  - 
 
 ### Settings for Arduino-mk
 - sudo apt-get install arduino-mk
@@ -15,13 +16,12 @@
 
 ## Program Synopsis
 - The sketch implemant rows and columns scaning algorithm.
-- The 16*16 matrix is interpolated to 64*64 with bicubic algorithm.
+- The 16x16 matrix is interpolated to 64x64 with bicubic algorithm.
 - The blob tracking is applyed on to the interpolated matrix.
 - The blobs coordinates are transmit via OSC
 
 ## Teensy 3.1/3.2 SPI Pin mapping
-// Control pins to send values to the 8-BITs shift registers used on the E-256 PCB
-// shiftOut using SPI library : https://forum.arduino.cc/index.php?topic=52383.0
+Control pins to send values to the 8-BITs shift registers used on the E-256 PCB
     LATCH_PIN -> SPI:SS -> D10  // Pin connected to latch pin (ST_CP) of the first 74HC595 8-BIT shift register
     CLOCK_PIN -> SPI:SCK -> D13 // Pin connected to clock pin (SH_CP) of the first 74HC595 8-BIT shift register
     DATA_PIN -> SPI:MOSI -> D11 // Pin connected to Data in (DS) of the firdt 74HC595 8-BIT shift register
