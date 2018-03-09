@@ -10,9 +10,8 @@
   - 
 
 ### Settings for Arduino-mk
-- sudo apt-get install arduino-mk
-- git clone https://github.com/sudar/Arduino-Makefile.git
-- ...
+    sudo apt-get install arduino-mk
+    git clone https://github.com/sudar/Arduino-Makefile.git
 
 ## Program Synopsis
 - The sketch implemant rows and columns scaning algorithm.
