@@ -38,5 +38,9 @@ WARRANTIES, see LICENSE.txt included in the resistiveMatrix project folder.
 Thanks to Vincent Roudaut, Hannah Perner Willson, Cedric Honnet, Antoine Meisso, Paul Strohmeier
 
 ## TODO
-- Add OSC/TUIO serveur
+- Add OSC/TUIO communication layer
+- Optimise interpolation method
+  - Retrieval method from Microchip TB3064 white paper (p12)
+  - microchip.com/stellent/groups/techpub_sg/documents/devicedoc/en550192.pdf
+
 
