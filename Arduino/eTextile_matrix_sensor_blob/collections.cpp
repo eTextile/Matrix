@@ -8,6 +8,7 @@
 */
 
 #include <Arduino.h>
+
 #include "config.h"
 #include "collections.h"
 
@@ -30,11 +31,14 @@ void bitmap_clear(char* array_ptr) {
 ////////////////////////////// Lifo //////////////////////////////
 
 void lifo_raz(lifo_t *ptr) {
+
   ptr->head_ptr = NULL;
   ptr->index = -1;
 }
 
-void lifo_init(lifo_t* dst, xylf_t* nodesArray, uint16_t max_nodes) {
+void lifo_init(lifo_t* dst, xylf_t* nodesArray, const uint16_t max_nodes) {
+
+  dst->max_nodes = max_nodes;
 
   dst->head_ptr = &nodesArray[0];
   nodesArray[0].prev_ptr = NULL;
@@ -99,13 +103,15 @@ void llist_raz(llist_t *ptr) {
   ptr->index = -1;
 }
 
-void llist_init(llist_t* dst, blob_t* nodesArray, uint8_t max_nodes) { // uint8_t buffer_size
-
+void llist_init(llist_t* dst, blob_t* nodesArray, const uint8_t max_nodes) {
+  
+  dst->max_nodes = max_nodes;
+  
   dst->head_ptr = dst->tail_ptr = &nodesArray[0];
   if (DEBUG_LIST || DEBUG_CCL) Serial.printf(F("\n DEBUG_LIST / llist_init: %d: %p"), 0, &nodesArray[0]);
   dst->index++;
 
-  for (int i = 1; i < max_nodes; i++) {
+  for (int i = 1; i < dst->max_nodes; i++) {
     nodesArray[i - 1].next_ptr = &nodesArray[i];
     nodesArray[i].next_ptr = NULL;
     dst->tail_ptr = &nodesArray[i];
@@ -140,6 +146,7 @@ void llist_push_back(llist_t* dst, blob_t* node) {
   } else {
     dst->head_ptr = dst->tail_ptr = node;
   }
+  node->next_ptr = NULL;
   dst->index++;
 }
 
@@ -220,7 +227,7 @@ void llist_save_blobs(llist_t* dst, llist_t* src) {
   if (DEBUG_LIST) Serial.printf(F("\n DEBUG_LIST / list_save_blobs / SRC linked list is umpty!"));
 }
 
-void llist_copy_blob(blob_t* dst, blob_t* src) {
+void llist_update_blob(blob_t* dst, blob_t* src) {
 
   //memcpy(dst, src, blobSize); // Can't do that because a blob have an next_ptr element that must not be changed!
 
@@ -235,11 +242,12 @@ void llist_copy_blob(blob_t* dst, blob_t* src) {
 ////////////// Linked list iterators //////////////
 
 blob_t* iterator_start_from_head(llist_t* src) {
-
   return src->head_ptr;
 }
 
 blob_t* iterator_next(blob_t* src) {
-
   return src->next_ptr;
+}
+int8_t llist_size(llist_t* ptr) {
+  return ptr->index;
 }

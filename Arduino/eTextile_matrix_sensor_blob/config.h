@@ -14,20 +14,20 @@
 #define NEW_ROWS             (ROWS * SCALE)
 #define NEW_FRAME            (NEW_COLS * NEW_ROWS)
 #define INC                  (1.0 / SCALE)
-#define CYCLES               4     // Set the calibration cycles
-#define THRESHOLD            10    // Set the threshold that determine toutch sensitivity (10 is low 30 is high)
-#define MAX_NODES            40    // Set the maximum nodes number
+#define CYCLES               10    // Set the calibration cycles
+#define THRESHOLD            15    // Set the threshold that determine toutch sensitivity (10 is low 30 is high)
+#define MAX_NODES            10    // Set the maximum nodes number
 #define MIN_BLOB_PIX         4     // Set the minimum blob pixels
-#define MAX_BLOB_PIX         1500  // Set the maximum blob pixels
+#define MAX_BLOB_PIX         64    // Set the maximum blob pixels
 
 // #define A0_PIN               A0    // The output of multiplexerA (SIG pin) is connected to Analog pin A0
 // #define A1_PIN               A1    // The output of multiplexerB (SIG pin) is connected to Analog pin A1
 
-#define PERCISTANT           true
+// #define PERSISTANT
 
 #define DEBUG_ADC_INPUT      false
 #define DEBUG_INTERP         false
-#define DEBUG_BITMAP         false
+#define DEBUG_BITMAP         true
 #define DEBUG_CCL            false // Connected-component labeling
 #define DEBUG_LIFO           false
 #define DEBUG_CENTER         false

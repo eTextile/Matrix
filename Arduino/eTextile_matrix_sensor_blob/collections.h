@@ -21,7 +21,6 @@
 #define CHAR_MASK (CHAR_BITS - 1)
 #define CHAR_SHIFT IM_LOG2(CHAR_MASK)
 
-
 #define ROW_PTR(imagePtr, y) \
   ({ \
     __typeof__ (imagePtr) _imagePtr = (imagePtr); \
@@ -74,18 +73,18 @@
 ////////////// Lifo //////////////
 
 typedef struct xylf {
-  uint16_t x, y, l, r;
+  uint8_t x, y, l, r;
   struct xylf* prev_ptr;
 } xylf_t;
 
 typedef struct lifo {
   xylf_t* head_ptr;
-  uint16_t buffer_size;
+  uint16_t max_nodes;
   int16_t index; // If no element index is -1
 } lifo_t;
 
 void lifo_raz(lifo_t* ptr);
-void lifo_init(lifo_t* dst, xylf_t* node, uint16_t max_nodes); // uint8_t node_size
+void lifo_init(lifo_t* dst, xylf_t* nodesArray, const uint16_t max_nodes);
 void lifo_enqueue(lifo_t* dst, xylf_t* node);
 xylf_t* lifo_dequeue(lifo_t* src);
 int16_t lifo_size(lifo_t *ptr);
@@ -121,7 +120,7 @@ typedef struct blob {
 typedef struct {
   blob_t* head_ptr;
   blob_t* tail_ptr;
-  uint8_t buffer_size;
+  uint8_t max_nodes;
   int8_t index; // If no element index is -1
 } llist_t;
 
@@ -133,17 +132,17 @@ blob_t* iterator_start_from_head(llist_t* src);
 blob_t* iterator_next(blob_t* src);
 
 void llist_raz(llist_t* ptr);
-void llist_init(llist_t* dst, blob_t* node, uint8_t buffer_size); // uint8_t buffer_size
+void llist_init(llist_t* dst, blob_t* nodesArray, const uint8_t max_nodes);
 blob_t* llist_pop_front(llist_t* src);
 void llist_push_back(llist_t* dst, blob_t* blob);
 void llist_save_blobs(llist_t* dst, llist_t* src);
-void llist_copy_blob(blob_t* dst, blob_t* src);
+void llist_update_blob(blob_t* dst, blob_t* src);
 void llist_remove_blob(llist_t* src, blob_t* blob);
-int16_t llist_size(llist_t *ptr);
+int8_t llist_size(llist_t* ptr);
 
 void find_blobs(
-  image_t* input_ptr,
-  char* bitmap_ptr,
+  image_t* inFrame_ptr,
+  char* lastFrame_ptr,
   const int rows,
   const int cols,
   const int pixelThreshold,
