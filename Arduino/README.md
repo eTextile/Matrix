@@ -15,7 +15,7 @@
 
 ## Program Synopsis
 - The sketch implemant rows and columns scaning algorithm.
-- The 16x16 matrix is interpolated to 64x64 with bicubic algorithm.
+- The 16x16 matrix is interpolated to 64x64 with bilinear algorithm (will be optimised).
 - The blob tracking is applyed on to the interpolated matrix.
 - The blobs coordinates are transmit via OSC
 
