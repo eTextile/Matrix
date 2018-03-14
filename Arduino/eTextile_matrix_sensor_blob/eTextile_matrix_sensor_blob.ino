@@ -32,11 +32,11 @@ void setup() {
 
   interpolate.numCols = COLS;
   interpolate.numRows = ROWS;
-  interpolate.pData = frameValues; // 16 * 16
+  interpolate.pData = frameValues; // 16 x 16
 
   inputFrame.numCols = NEW_COLS;
   inputFrame.numRows = NEW_ROWS;
-  inputFrame.pData = bilinIntOutput; // 64 * 64
+  inputFrame.pData = bilinIntOutput; // 64 x 64
 
   memset(bitmap, 0, NEW_FRAME * sizeof(char)); // Set all values to 0
 

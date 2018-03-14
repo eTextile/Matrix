@@ -42,9 +42,9 @@ arm_bilinear_interp_instance_f32 interpolate;
 image_t   inputFrame;
 char      bitmap[NEW_FRAME] = {0};
 
-xylf_t    cclArray[NEW_FRAME] = {0}; // 4095 nodes
-lifo_t    freeNodes;
-lifo_t    lifo;
+// xylf_t    cclArray[NEW_FRAME] = {0}; // 4095 nodes
+// lifo_t    freeNodes;
+// lifo_t    lifo;
 
 blob_t    blobArray[MAX_NODES]; // 10 nodes
 llist_t   freeBlobs;
