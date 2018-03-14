@@ -21,25 +21,25 @@
 #define CHAR_MASK (CHAR_BITS - 1)
 #define CHAR_SHIFT IM_LOG2(CHAR_MASK)
 
-#define ROW_PTR(imagePtr, y) \
+#define ROW_PTR(pImage, y) \
   ({ \
-    __typeof__ (imagePtr) _imagePtr = (imagePtr); \
+    __typeof__ (pImage) _pImage = (pImage); \
     __typeof__ (y) _y = (y); \
-    ((uint8_t*)_imagePtr->dataPtr) + (_imagePtr->w * _y); \
+    ((uint8_t*)_pImage->pData) + (_pImage->numCols * _y); \
   })
 
-#define GET_PIXEL(rowPtr, x) \
+#define GET_PIXEL(pRow, x) \
   ({ \
-    __typeof__ (rowPtr) _rowPtr = (rowPtr); \
+    __typeof__ (pRow) _pRow = (pRow); \
     __typeof__ (x) _x = (x); \
-    _rowPtr[_x]; \
+    _pRow[_x]; \
   })
 
-#define ROW_INDEX(imagePtr, y) \
+#define ROW_INDEX(pImage, y) \
   ({ \
-    __typeof__ (imagePtr) _imagePtr = (imagePtr); \
+    __typeof__ (pImage) _pImage = (pImage); \
     __typeof__ (y) _y = (y); \
-    _imagePtr->w * _y; \
+    _pImage->numCols * _y; \
   })
 
 #define BITMAP_INDEX(rowIndex, x) \
@@ -53,17 +53,17 @@
   ({ \
     __typeof__ (pixel) _pixel = (pixel); \
     __typeof__ (pThreshold) _pThreshold = (pThreshold); \
-    _pThreshold <= _pixel; \
+    _pixel >= _pThreshold; \
   })
 
-#define IM_MAX(a, b) \
+#define MAX(a, b) \
   ({ \
     __typeof__ (a) _a = (a); \
     __typeof__ (b) _b = (b); \
     _a > _b ? _a : _b; \
   })
 
-#define IM_MIN(a, b) \
+#define MIN(a, b) \
   ({ \
     __typeof__ (a) _a = (a); \
     __typeof__ (b) _b = (b); \
@@ -77,7 +77,7 @@ typedef struct xylf {
   struct xylf* prev_ptr;
 } xylf_t;
 
-typedef struct lifo {
+typedef struct {
   xylf_t* head_ptr;
   uint16_t max_nodes;
   int16_t index; // If no element index is -1
@@ -92,21 +92,23 @@ int16_t lifo_size(lifo_t *ptr);
 ////////////// Image stuff //////////////
 
 typedef struct image {
-  uint8_t w;
-  uint8_t h;
-  uint8_t* dataPtr;
+  uint8_t numCols;
+  uint8_t numRows;
+  uint8_t* pData;
 } image_t;
 
 void bitmap_bit_set(char* array_ptr, int index);
 char bitmap_bit_get(char* array_ptr, int index);
 void bitmap_clear(char* array_ptr);
 
+uint8_t bilinear_retrieval_interp(const image_t *S, float X, float Y); // FIXME
+
 ////////////// Blob //////////////
 
 typedef struct point {
-  uint8_t x;
-  uint8_t y;
-  uint8_t z;
+  uint8_t X;
+  uint8_t Y;
+  uint8_t Z;
 } point_t;
 
 typedef struct blob {
@@ -142,14 +144,12 @@ int8_t llist_size(llist_t* ptr);
 
 void find_blobs(
   image_t* inFrame_ptr,
-  char* lastFrame_ptr,
+  char* bitmap_ptr,
   const int rows,
   const int cols,
   const int pixelThreshold,
   const unsigned int minBlobPix,
   const unsigned int maxBlobPix,
-  lifo_t*  freeNodes_ptr,
-  lifo_t*  lifo_ptr,
   llist_t* freeBlob_ptr,
   llist_t* blobs_ptr,
   llist_t* blobsToUpdate_ptr,

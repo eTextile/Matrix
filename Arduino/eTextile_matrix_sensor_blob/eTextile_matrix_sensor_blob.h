@@ -30,10 +30,12 @@ const uint8_t columnPins[COLS] = {
 uint8_t minVals[ROW_FRAME] = {0};            // Array to store smallest values
 float32_t frameValues[ROW_FRAME] = {0};      // Array to store ofseted input values
 uint8_t bilinIntOutput[NEW_FRAME] = {0};     // Bilinear interpolation Output buffer
+uint8_t maxVals[NEW_FRAME] = {0};
 
 #ifdef CORE_TEENSY
 // See : https://os.mbed.com/teams/Renesas/code/mbed-dsp-neon/docs/a912b042151f/group__BilinearInterpolate.html
 arm_bilinear_interp_instance_f32 interpolate;
+// image_t interpolate;
 // arm_bilinear_interp_q7 TODO?
 #endif // __CORE_TEENSY__
 
