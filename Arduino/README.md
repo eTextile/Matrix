@@ -6,8 +6,8 @@
 - eTextile-matrix-sensor (Teensy version)
 - Arduino IDE
 - Arduino library
-  - PacketSerial: https://github.com/bakercp/PacketSerial
-  - 
+  - ADC: https://github.com/pedvide/ADC
+  - OSC: https://github.com/CNMAT/OSC
 
 ### Settings for Arduino-mk
     sudo apt-get install arduino-mk
@@ -17,7 +17,7 @@
 - The sketch implemant rows and columns scaning algorithm.
 - The 16x16 matrix is interpolated to 64x64 with bilinear algorithm (will be optimised).
 - The blob tracking is applyed on to the interpolated matrix.
-- The blobs coordinates are transmit via OSC
+- The blobs coordinates are transmit via OSC.
 
 ## Teensy 3.1/3.2 SPI Pin mapping
 Control pins to send values to the 8-BITs shift registers used on the E-256 PCB
@@ -38,7 +38,6 @@ WARRANTIES, see LICENSE.txt included in the resistiveMatrix project folder.
 Thanks to Vincent Roudaut, Hannah Perner Willson, Cedric Honnet, Antoine Meisso, Paul Strohmeier
 
 ## TODO
-- Add OSC/TUIO communication layer
 - Optimise interpolation method
   - Retrieval method from Microchip TB3064 white paper (p12)
   - microchip.com/stellent/groups/techpub_sg/documents/devicedoc/en550192.pdf
