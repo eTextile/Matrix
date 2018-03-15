@@ -1,6 +1,16 @@
 #ifndef __CONFIG_H__
 #define __CONFIG_H__
 
+#include <Arduino.h>
+#include <arm_math.h>
+#include <ADC.h>                  // https://github.com/pedvide/ADC
+#include <OSCMessage.h>           // https://github.com/CNMAT/OSC
+#include <OSCBundle.h>            // https://github.com/CNMAT/OSC
+#include <OSCBoards.h>            // https://github.com/CNMAT/OSC
+#include <SLIPEncodedUSBSerial.h> // https://github.com/CNMAT/OSC
+
+#include "blob.h"
+
 #define BUILTIN_LED       13
 #define BUTTON_PIN        32    // Button on the eTextile Teensy shield V1.0
 #define BAUD_RATE         230400
@@ -15,7 +25,7 @@
 #define INC               (1.0 / SCALE)
 #define CYCLES            10    // Set the calibration cycles
 #define THRESHOLD         15    // Set the threshold that determine toutch sensitivity (10 is low 30 is high)
-#define MAX_NODES         10    // Set the maximum nodes number
+#define MAX_NODES         20    // Set the maximum nodes number
 #define MIN_BLOB_PIX      4     // Set the minimum blob pixels
 #define MAX_BLOB_PIX      1024  // Set the maximum blob pixels
 

@@ -1,15 +1,10 @@
 #ifndef __ETEXTILE_MATRIX_SENSOR_BLOB_H__
 #define __ETEXTILE_MATRIX_SENSOR_BLOB_H__
 
-#include <Arduino.h>
-#include <arm_math.h>
-#include <ADC.h>            // https://github.com/pedvide/ADC
-//#include <PacketSerial.h> // https://github.com/bakercp/PacketSerial
-
-#include "collections.h"
 #include "config.h"
 
-ADC *adc = new ADC(); // adc object
+ADC *adc = new ADC(); // ADC object
+SLIPEncodedUSBSerial SLIPSerial(thisBoardsSerialUSB); // Extended serial library object
 
 unsigned long lastFarme = 0;
 uint16_t fps = 0;
@@ -42,10 +37,6 @@ arm_bilinear_interp_instance_f32 interpolate;
 image_t   inputFrame;
 char      bitmap[NEW_FRAME] = {0};
 
-// xylf_t    cclArray[NEW_FRAME] = {0}; // 4095 nodes
-// lifo_t    freeNodes;
-// lifo_t    lifo;
-
 blob_t    blobArray[MAX_NODES]; // 10 nodes
 llist_t   freeBlobs;
 llist_t   blobs;
@@ -53,10 +44,6 @@ llist_t   blobsToUpdate;
 llist_t   blobsToAdd;
 llist_t   outputBlobs;
 
-// PacketSerial serial;
-// uint8_t myPacket[ROW_FRAME] = {0};           // Array to store frameValuess to transmit
-
-void onPacket(const uint8_t* buffer, size_t size);
 void calibrate(uint8_t *frameArray, const uint8_t cycles);
 void bootBlink(const uint8_t pin, const uint8_t flash);
 void pushButton();

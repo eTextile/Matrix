@@ -5,10 +5,9 @@
 
 void setup() {
 
-  // serial.setPacketHandler(&onPacket); // We must specify a packet handler method so that
-  // serial.begin(BAUD_RATE);            // Start the serial module
-  Serial.begin(BAUD_RATE);               // Arduino serial standard library
-  while (!Serial.dtr());  // Wait for user to start the serial monitor
+  // Serial.begin(BAUD_RATE); // Arduino serial standard library
+  // while (!Serial.dtr());  // Wait for user to start the serial monitor
+  SLIPSerial.begin(BAUD_RATE); // Extended Arduino serial library
 
   for (uint8_t i = 0; i < COLS; i++) {
     pinMode(columnPins[i], INPUT);
@@ -38,8 +37,6 @@ void setup() {
   inputFrame.numRows = NEW_ROWS;
   inputFrame.pData = bilinIntOutput; // 64 x 64
 
-  memset(bitmap, 0, NEW_FRAME * sizeof(char)); // Set all values to 0
-
   llist_raz(&freeBlobs);
   llist_init(&freeBlobs, blobArray, MAX_NODES); // 1O nodes
   llist_raz(&blobs);
@@ -49,9 +46,11 @@ void setup() {
 
   calibrate(minVals, CYCLES);
   bootBlink(BUILTIN_LED, 9);
+
 }
 
 void loop() {
+
   // FPS with CPU speed to 120 MHz (overclock)
   // 523 FPS with no interpolation & no blob tracking
   // 23 FPS - with interpolation
@@ -158,12 +157,3 @@ void pushButton() {
   calibrate(minVals, CYCLES);
   sei();
 }
-
-// This is our packet callback.
-// The buffer is delivered already decoded.
-void onPacket(const uint8_t *buffer, size_t size) {
-  // The send() method will encode the buffer
-  // as a packet, set packet markers, etc.
-  //serial.send(myPacket, ROW_FRAME);
-}
-
