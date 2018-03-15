@@ -2,7 +2,7 @@
 #ARDUINO_DIR  = $(shell dirname $(shell readlink -f `which arduino`))
 
 BOARD_TAG    = teensy31
-ARDUINO_LIBS = PacketSerial
+ARDUINO_LIBS = ADC
 
 include makefiles/Teensy.mk
 
