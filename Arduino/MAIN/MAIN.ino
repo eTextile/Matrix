@@ -4,6 +4,11 @@
   This work is licensed under Creative Commons Attribution-ShareAlike 4.0 International license, see the LICENSE file for details.
 */
 
+// FPS with CPU speed to 120 MHz (overclock)
+// 523 FPS with no interpolation & no blob tracking
+// 23 FPS - with interpolation
+// 24 FPS with interpolation & blob tracking.
+
 #include "main.h"
 
 void setup() {
@@ -15,7 +20,6 @@ void setup() {
   for (uint8_t i = 0; i < COLS; i++) {
     pinMode(colPins[i], INPUT);
   }
-
   adc->setAveraging(1, ADC_0);   // set number of averages
   adc->setResolution(8, ADC_0);  // set bits of resolution
   adc->setConversionSpeed(ADC_CONVERSION_SPEED::VERY_HIGH_SPEED, ADC_0); // Change the conversion speed
@@ -48,11 +52,6 @@ void setup() {
   calib();
   bootBlink(BUILTIN_LED, 9);
 }
-
-// FPS with CPU speed to 120 MHz (overclock)
-// 523 FPS with no interpolation & no blob tracking
-// 23 FPS - with interpolation
-// 24 FPS with interpolation & blob tracking.
 
 void loop() {
 

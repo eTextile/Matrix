@@ -77,7 +77,7 @@
 
 ////////////// Image stuff //////////////
 
-typedef struct image {
+typedef struct {
   uint8_t numCols;
   uint8_t numRows;
   uint8_t* pData;
@@ -87,7 +87,7 @@ void bitmap_bit_set(char* bitmap_ptr, uint16_t index);
 char bitmap_bit_get(char* bitmap_ptr, uint16_t index);
 void bitmap_clear(char* bitmap_ptr, const uint16_t Size);
 
-typedef struct point {
+typedef struct {
   uint8_t X;
   uint8_t Y;
   uint8_t Z;

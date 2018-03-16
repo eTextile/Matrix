@@ -257,22 +257,22 @@ void find_blobs(
         blob_copy(newBlob, blob, USED);
         llist_push_back(outputBlobs_ptr, newBlob);
         if (DEBUG_BLOB) Serial.printf(F("\n DEBUG_BLOB / Blob: %p added to **outputBlobs** linked list"), blob);
-      }
-      // Add the blob values to the OSC bundle
-      msg.add(blob->UID);
-      msg.add(blob->centroid.X);
-      msg.add(blob->centroid.Y);
-      msg.add(blob->centroid.Z);
-      msg.add(blob->pixels);
-      bndl.add(msg);
-      if (DEBUG_OSC) {
-        Serial.printf(F("\n DEBUG_OSC / UID:%d\tX:%d\tY:%d\tZ:%d\tPIX:%d"),
-                      blob->UID,
-                      blob->centroid.X,
-                      blob->centroid.Y,
-                      blob->centroid.Z,
-                      blob->pixels
-                     );
+        // Add the blob values to the OSC bundle
+        msg.add(blob->UID);
+        msg.add(blob->centroid.X);
+        msg.add(blob->centroid.Y);
+        msg.add(blob->centroid.Z);
+        msg.add(blob->pixels);
+        bndl.add(msg);
+        if (DEBUG_OSC) {
+          Serial.printf(F("\n DEBUG_OSC / UID:%d\tX:%d\tY:%d\tZ:%d\tPIX:%d"),
+                        blob->UID,
+                        blob->centroid.X,
+                        blob->centroid.Y,
+                        blob->centroid.Z,
+                        blob->pixels
+                       );
+        }
       }
     }
     // Send the blobs values with the OSC bundle
@@ -281,7 +281,7 @@ void find_blobs(
     // SLIPSerial.endPacket();    // Mark the end of the OSC packet
     bndl.empty();              // Empty the bundle to free room for a new one
   }
-  
+
   llist_save_blobs(freeBlobs_ptr, blob_ptr);
   if (DEBUG_BLOB) Serial.printf(F("\n DEBUG_BLOB / END OFF BLOB FONCTION"));
 }

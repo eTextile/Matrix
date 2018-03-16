@@ -48,6 +48,6 @@
 #define DEBUG_CENTER      false
 #define DEBUG_LIST        false
 #define DEBUG_BLOB        false
-#define DEBUG_OSC         false
+#define DEBUG_OSC         true
 
 #endif /*__CONFIG_H__*/
