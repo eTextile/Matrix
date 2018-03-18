@@ -13,13 +13,15 @@
 
 void setup() {
 
-  // Serial.begin(BAUD_RATE); // Arduino serial standard library
-  // while (!Serial.dtr());  // Wait for user to start the serial monitor
-  SLIPSerial.begin(BAUD_RATE); // Extended Arduino serial library
+  pinMode(SS, OUTPUT);      // Set up slave mode
+  digitalWrite(SS, LOW);    // Set latchPin LOW
+  digitalWrite(SS, HIGH);   // Set latchPin HIGH
+  SPI.begin();              // Start the SPI module
+  SPI.beginTransaction(settings);
 
-  for (uint8_t i = 0; i < COLS; i++) {
-    pinMode(colPins[i], INPUT);
-  }
+  pinMode(A0_PIN, INPUT);
+  pinMode(A1_PIN, INPUT);
+
   adc->setAveraging(1, ADC_0);   // set number of averages
   adc->setResolution(8, ADC_0);  // set bits of resolution
   adc->setConversionSpeed(ADC_CONVERSION_SPEED::VERY_HIGH_SPEED, ADC_0); // Change the conversion speed
@@ -31,6 +33,12 @@ void setup() {
   adc->setConversionSpeed(ADC_CONVERSION_SPEED::VERY_HIGH_SPEED, ADC_1); // Change the conversion speed
   adc->setSamplingSpeed(ADC_SAMPLING_SPEED::VERY_HIGH_SPEED, ADC_1);     // Change the sampling speed
   adc->enableCompare(1.0 / 3.3 * adc->getMaxValue(ADC_1), 0, ADC_1);  // Measurement will be ready if value < 1.0V
+
+  adc->startSynchronizedContinuous(A0_PIN, A1_PIN);
+
+  // Serial.begin(BAUD_RATE); // Arduino serial standard library
+  // while (!Serial.dtr());  // Wait for user to start the serial monitor
+  SLIPSerial.begin(BAUD_RATE); // Extended Arduino serial library
 
   pinMode(BUILTIN_LED, OUTPUT);          // Set BUILTIN_LED pin as output
   pinMode(BUTTON_PIN, INPUT_PULLUP);     // Set button pin as input and activate the input pullup resistor
@@ -60,23 +68,34 @@ void loop() {
     lastFarme = millis();
     fps = 0;
   }
+  
+  // Columns are digital OUTPUT PINS
+  // Rows are analog INPUT PINS
+  // uint16_t setCols = 0x8080; // Powering two cols at a time (NOTGOOD) -> 1000 0000 1000 0000
+  uint16_t setCols = 0x8000;    // We must powering one col at a time (GOOD) -> 1000 0000 0000 0000
+  uint8_t index = 0;
+  
+  for (uint8_t col = 0; col < COLS; col++) {
+    for (uint8_t row = 0; row < DUAL_ROWS; row++) {
 
-  for (uint8_t row = 0; row < ROWS; row++) {
-    pinMode(rowPins[row], OUTPUT);    // Set row pin as output
-    digitalWrite(rowPins[row], HIGH); // Set row pin HIGH (3.3V)
-    for (uint8_t col = 0; col < COLS; col++) {
-      uint8_t rowValue = adc->analogRead(colPins[col]); // Read the sensor value
-      frameValues[sensorID] = constrain(rowValue - minVals[sensorID], 0, 255);
-      if (DEBUG_ADC_INPUT) Serial.printf(F("%d "), (uint8_t)frameValues[sensorID]);
-      sensorID++;
+      digitalWrite(SS, LOW);              // Set latchPin LOW
+      SPI.transfer(lowByte(setCols));     // Shift out the LSB byte to set up the OUTPUT shift register
+      SPI.transfer(highByte(setCols));    // Shift out the MSB byte to set up the OUTPUT shift register
+      SPI.transfer(dualSetRows[row]);     // Shift out one byte that setup the two 8:1 analog multiplexers
+      digitalWrite(SS, HIGH);             // Set latchPin HIGH
+
+      // result = adc->analogSynchronizedRead(A0_PIN, A1_PIN);
+      result = adc->readSynchronizedContinuous();
+
+      frameValues[index] = constrain(result.result_adc0 - minVals[index], 0, 255);
+      frameValues[index + DUAL_ROW_FRAME] = constrain(result.result_adc1 - minVals[index + DUAL_ROW_FRAME], 0, 255);
+
+      index += 1;
     }
-    if (DEBUG_ADC_INPUT) Serial.printf(F("\n"));
-    // pinMode(rowPins[row], INPUT); // Set row pin in high-impedance state
-    digitalWrite(rowPins[row], LOW); // Set row pin to GND (Should avoid ghosts)
+    setCols = setCols >> 1;
   }
-  if (DEBUG_ADC_INPUT) Serial.printf(F("\n"));
-  sensorID = 0;
 
+  //////////////////// Bilinear intrerpolation
   float rowPos = 0;
   float colPos = 0;
 

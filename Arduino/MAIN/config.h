@@ -10,10 +10,13 @@
 #include <Arduino.h>
 #include <arm_math.h>
 #include <ADC.h>                  // https://github.com/pedvide/ADC
+#include <SPI.h>                  // Include the new SPI library
 #include <OSCMessage.h>           // https://github.com/CNMAT/OSC
 #include <OSCBundle.h>            // https://github.com/CNMAT/OSC
 #include <OSCBoards.h>            // https://github.com/CNMAT/OSC
 #include <SLIPEncodedUSBSerial.h> // https://github.com/CNMAT/OSC
+
+
 
 #include "blob.h"
 #include "llist.h"
@@ -23,9 +26,11 @@
 #define BAUD_RATE         230400
 #define COLS              16
 #define ROWS              16
+#define DUAL_ROWS         8
 #define SCALE             4
 
 #define ROW_FRAME         (COLS * ROWS)
+#define DUAL_ROW_FRAME    (COLS*ROWS)/2
 #define NEW_COLS          (COLS * SCALE)
 #define NEW_ROWS          (ROWS * SCALE)
 #define NEW_FRAME         (NEW_COLS * NEW_ROWS)
@@ -36,8 +41,8 @@
 #define MIN_BLOB_PIX      4     // Set the minimum blob pixels
 #define MAX_BLOB_PIX      1024  // Set the maximum blob pixels
 
-// #define A0_PIN         A0    // The output of multiplexerA (SIG pin) is connected to Analog pin A0
-// #define A1_PIN         A1    // The output of multiplexerB (SIG pin) is connected to Analog pin A1
+#define  A0_PIN           A9  // The output of multiplexerA (SIG pin) is connected to Arduino Analog pin 0
+#define  A1_PIN           A3  // The output of multiplexerB (SIG pin) is connected to Arduino Analog pin 1
 
 #define PERSISTANT_ID     true
 

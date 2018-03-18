@@ -9,9 +9,12 @@
 
 #include "config.h"
 
-ADC *adc = new ADC(); // ADC object
+ADC *adc = new ADC();     // ADC object
+ADC::Sync_result result;  //
 
 SLIPEncodedUSBSerial SLIPSerial(thisBoardsSerialUSB); // Extended serial library object
+
+SPISettings settings(16000000, MSBFIRST, SPI_MODE0);
 
 unsigned long lastFarme = 0;
 uint16_t fps = 0;
@@ -27,6 +30,11 @@ const uint8_t rowPins[ROWS] = {
 // Analog pins array
 const uint8_t colPins[COLS] = {
   A17, A18, A19, A0, A20, A1, A2, A3, A4, A5, A6, A7, A11, A8, A10, A9
+};
+
+// Array to store all parameters used to configure the two analog multiplexeurs
+const uint8_t dualSetRows[ROWS] = {
+  0x55, 0x77, 0x33, 0x11, 0x22, 0x44, 0x00, 0x66
 };
 
 uint8_t minVals[ROW_FRAME] = {0};            // Array to store smallest values
