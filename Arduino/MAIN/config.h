@@ -17,7 +17,6 @@
 #include <SLIPEncodedUSBSerial.h> // https://github.com/CNMAT/OSC
 
 
-
 #include "blob.h"
 #include "llist.h"
 
@@ -46,13 +45,14 @@
 
 #define PERSISTANT_ID     true
 
-#define DEBUG_ADC_INPUT   false
+#define DEBUG_ADC_INPUT   true
 #define DEBUG_INTERP      false
 #define DEBUG_BITMAP      false
 #define DEBUG_CCL         false
 #define DEBUG_CENTER      false
 #define DEBUG_LIST        false
 #define DEBUG_BLOB        false
-#define DEBUG_OSC         true
+
+#define DEBUG_OSC
 
 #endif /*__CONFIG_H__*/

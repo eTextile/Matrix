@@ -13,6 +13,8 @@
 
 void setup() {
 
+  // au demarage lire le port serie pour voir si 
+  
   pinMode(SS, OUTPUT);      // Set up slave mode
   digitalWrite(SS, LOW);    // Set latchPin LOW
   digitalWrite(SS, HIGH);   // Set latchPin HIGH
@@ -35,11 +37,13 @@ void setup() {
   adc->enableCompare(1.0 / 3.3 * adc->getMaxValue(ADC_1), 0, ADC_1);  // Measurement will be ready if value < 1.0V
 
   adc->startSynchronizedContinuous(A0_PIN, A1_PIN);
-
-  // Serial.begin(BAUD_RATE); // Arduino serial standard library
-  // while (!Serial.dtr());  // Wait for user to start the serial monitor
-  SLIPSerial.begin(BAUD_RATE); // Extended Arduino serial library
-
+  #ifdef DEBUG_OSC
+    Serial.begin(BAUD_RATE); // Arduino serial standard library
+    while (!Serial.dtr());  // Wait for user to start the serial monitor
+  #else
+    SLIPSerial.begin(BAUD_RATE); // Extended Arduino serial library
+  #endif
+  
   pinMode(BUILTIN_LED, OUTPUT);          // Set BUILTIN_LED pin as output
   pinMode(BUTTON_PIN, INPUT_PULLUP);     // Set button pin as input and activate the input pullup resistor
   attachInterrupt(BUTTON_PIN, calib, RISING); // Attach interrrupt on button PIN
@@ -68,13 +72,13 @@ void loop() {
     lastFarme = millis();
     fps = 0;
   }
-  
+
   // Columns are digital OUTPUT PINS
   // Rows are analog INPUT PINS
   // uint16_t setCols = 0x8080; // Powering two cols at a time (NOTGOOD) -> 1000 0000 1000 0000
   uint16_t setCols = 0x8000;    // We must powering one col at a time (GOOD) -> 1000 0000 0000 0000
   uint8_t index = 0;
-  
+
   for (uint8_t col = 0; col < COLS; col++) {
     for (uint8_t row = 0; row < DUAL_ROWS; row++) {
 

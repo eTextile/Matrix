@@ -205,15 +205,15 @@ void find_blobs(
           msg.add(blobA->centroid.Z);
           msg.add(blobA->pixels);
           bndl.add(msg);
-          if (DEBUG_OSC) {
-            Serial.printf(F("\n DEBUG_OSC / UID:%d\tX:%d\tY:%d\tZ:%d\tPIX:%d"),
-                          blobA->UID,
-                          blobA->centroid.X,
-                          blobA->centroid.Y,
-                          blobA->centroid.Z,
-                          blobA->pixels
-                         );
-          }
+#ifdef DEBUG_OSC
+          Serial.printf(F("\n DEBUG_OSC / UID:%d\tX:%d\tY:%d\tZ:%d\tPIX:%d"),
+                        blobA->UID,
+                        blobA->centroid.X,
+                        blobA->centroid.Y,
+                        blobA->centroid.Z,
+                        blobA->pixels
+                       );
+#endif
           break;
         }
       }
@@ -239,9 +239,9 @@ void find_blobs(
           msg.add(-1);
           msg.add(-1);
           bndl.add(msg);
-          if (DEBUG_OSC) {
-            Serial.printf(F("\n DEBUG_OSC / UID:%d\tX:%d\tY:%d\tZ:%d\tPIX:%d"), blob->UID, -1, -1, -1, -1);
-          }
+#ifdef DEBUG_OSC
+          Serial.printf(F("\n DEBUG_OSC / UID:%d\tX:%d\tY:%d\tZ:%d\tPIX:%d"), blob->UID, -1, -1, -1, -1);
+#endif
           break;
         }
       }
@@ -264,22 +264,24 @@ void find_blobs(
         msg.add(blob->centroid.Z);
         msg.add(blob->pixels);
         bndl.add(msg);
-        if (DEBUG_OSC) {
-          Serial.printf(F("\n DEBUG_OSC / UID:%d\tX:%d\tY:%d\tZ:%d\tPIX:%d"),
-                        blob->UID,
-                        blob->centroid.X,
-                        blob->centroid.Y,
-                        blob->centroid.Z,
-                        blob->pixels
-                       );
-        }
+#ifdef DEBUG_OSC
+        Serial.printf(F("\n DEBUG_OSC / UID:%d\tX:%d\tY:%d\tZ:%d\tPIX:%d"),
+                      blob->UID,
+                      blob->centroid.X,
+                      blob->centroid.Y,
+                      blob->centroid.Z,
+                      blob->pixels
+                     );
+#endif
       }
     }
     // Send the blobs values with the OSC bundle
-    // SLIPSerial.beginPacket();
-    // bndl.send(SLIPSerial);  // Send the bytes to the SLIP stream
-    // SLIPSerial.endPacket();    // Mark the end of the OSC packet
+#ifndef DEBUG_OSC
+    SLIPSerial.beginPacket();
+    bndl.send(SLIPSerial);     // Send the bytes to the SLIP stream
+    SLIPSerial.endPacket();    // Mark the end of the OSC packet
     bndl.empty();              // Empty the bundle to free room for a new one
+#endif
   }
 
   llist_save_blobs(freeBlobs_ptr, blob_ptr);
