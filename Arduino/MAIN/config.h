@@ -22,7 +22,7 @@
 #include "llist.h"
 
 #define BUILTIN_LED       13
-#define BUTTON_PIN        32    // Button on the eTextile Teensy shield V1.0
+#define BUTTON_PIN        32          // Button on the eTextile Teensy shield V1.0
 #define BAUD_RATE         230400
 #define COLS              16
 #define ROWS              16
