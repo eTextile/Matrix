@@ -121,11 +121,8 @@ void find_blobs(
   const unsigned int maxBlobPix,
   llist_t* freeBlob_ptr,
   llist_t* blobs_ptr,
-  llist_t* outputBlobs_ptr,
-  SLIPEncodedUSBSerial  SLIPSerial
+  llist_t* outputBlobs_ptr
+  // SLIPEncodedUSBSerial  SLIPSerial
 );
-
-void calib();
-void bootBlink(const uint8_t pin, uint8_t flash);
 
 #endif /*__BLOB_H__*/

@@ -9,6 +9,8 @@
 
 #include "config.h"
 
+SPISettings settings(16000000, MSBFIRST, SPI_MODE0);
+
 ADC *adc = new ADC();     // ADC object
 ADC::Sync_result result;  // ADC_0 & ADC_1
 
@@ -16,13 +18,10 @@ ADC::Sync_result result;  // ADC_0 & ADC_1
 SLIPEncodedUSBSerial SLIPSerial(thisBoardsSerialUSB); // Extended serial library object
 #endif
 
-SPISettings settings(16000000, MSBFIRST, SPI_MODE0);
-
 char debugMode = 0;
 
 unsigned long lastFarme = 0;
 uint16_t fps = 0;
-
 
 // Array to store all parameters used to configure the two analog multiplexeurs
 const uint8_t setDualRows[ROWS] = {
@@ -49,5 +48,8 @@ blob_t    blobArray[MAX_NODES] = {0}; // 20 nodes
 llist_t   freeBlobs;
 llist_t   blobs;
 llist_t   outputBlobs;
+
+void bootBlink(const uint8_t pin, uint8_t flash);
+void calib(void);
 
 #endif /*__MAIN_H__*/

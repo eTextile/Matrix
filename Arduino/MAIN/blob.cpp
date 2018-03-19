@@ -16,10 +16,14 @@ void find_blobs(
   const unsigned int    maxBlobPix,
   llist_t*              freeBlobs_ptr,
   llist_t*              blob_ptr,
-  llist_t*              outputBlobs_ptr,
-  SLIPEncodedUSBSerial  SLIPSerial
+  llist_t*              outputBlobs_ptr
+  // SLIPEncodedUSBSerial  SLIPSerial
 ) {
-  ////////// Connected-component labeling / Scanline flood fill algorithm //////////
+
+  /////////////////////////////// Scanline flood fill algorithm
+  /////////////////////////////// Connected-component labeling / CCL
+  ///////////////////////////////
+
   if (DEBUG_CCL) Serial.printf(F("\n DEBUG_CCL / START <<<<<<<<<<<<<<<<<<<<<<<<"));
 
   bitmap_clear(bitmap_ptr, NEW_FRAME);
@@ -31,7 +35,8 @@ void find_blobs(
     uint8_t* row_ptr_A = ROW_PTR(inFrame_ptr, posY);     // Return inFrame_ptr curent row pointer
     uint16_t row_index_A = ROW_INDEX(inFrame_ptr, posY); // Return inFrame_ptr curent row index (1D array) 0, 64, 128,... 4032
     for (uint8_t posX = 0; posX < cols; posX++) {
-      if (DEBUG_BITMAP) Serial.printf(F("%d "), bitmap_bit_get(bitmap_ptr, BITMAP_INDEX(row_index_A, posX)));
+      // if (DEBUG_BITMAP) Serial.printf(F("%d "), bitmap_bit_get(bitmap_ptr, BITMAP_INDEX(row_index_A, posX)));
+      if (DEBUG_BITMAP) Serial.printf(F("%d "), GET_PIXEL(row_ptr_A, posX));
 
       if (!bitmap_bit_get(bitmap_ptr, BITMAP_INDEX(row_index_A, posX)) && PIXEL_THRESHOLD(GET_PIXEL(row_ptr_A, posX), pixelThreshold)) {
         if (DEBUG_CCL) Serial.printf(F("\n DEBUG_CCL / Found active pixel in row:%d\tcolumn:%d"), posY, posX);
@@ -128,176 +133,176 @@ void find_blobs(
 
   if (DEBUG_CCL) Serial.print(F("\n DEBUG_CCL / END of scanline flood fill algorithm <<<<<<<<<<<<<<<<<<<<<<<<"));
 
-  ///////////////////////////////////////////////////////////////////////////////////////// Percistant blobs ID
-  if (PERSISTANT_ID) {
-    
-#ifndef E256_OSC
-    OSCBundle bndl;
-    OSCMessage msg("/sensors");
-#endif
+  ///////////////////////////////
+  /////////////////////////////// PERSISTANT BLOB ID
+  ///////////////////////////////
 
-    if (DEBUG_BLOB) Serial.printf(F("\n DEBUG_BLOB / **blobs** linked list index: %d"), blob_ptr->index);
-    if (DEBUG_BLOB) Serial.printf(F("\n DEBUG_BLOB / **freeBlobs** linked list index: %d"), freeBlobs_ptr->index);
-    if (DEBUG_BLOB) Serial.printf(F("\n DEBUG_BLOB / **outputBlobs** linked list index: %d"), outputBlobs_ptr->index);
+#ifdef PERSISTANT_ID
 
-    // Look for the nearest blob between curent blob position (blobs linked list) and last blob position (outputBlobs linked list)
-    for (blob_t* blobA = iterator_start_from_head(blob_ptr); blobA != NULL; blobA = iterator_next(blobA)) {
-      float minDist = 128.0f;
-      blob_t* nearestBlob = NULL;
-      if (DEBUG_BLOB) Serial.printf(F("\n DEBUG_BLOB / Is input blob: %p have a coresponding blob in **outputBlobs**"), blobA);
+#ifdef E256_OSC
+  OSCBundle bndl;
+  OSCMessage msg("/sensors");
+#endif /*__E256_OSC__*/
 
-      for (blob_t* blobB = iterator_start_from_head(outputBlobs_ptr); blobB != NULL; blobB = iterator_next(blobB)) {
-        uint8_t xa = blobA->centroid.X;
-        uint8_t ya = blobA->centroid.Y;
-        uint8_t xb = blobB->centroid.X;
-        uint8_t yb = blobB->centroid.Y;
-        float dist = sqrt(pow(xa - xb, 2) + pow(ya - yb, 2)); // fast_sqrt? & fast_pow? // arm_sqrt_f32(); ?
-        if (DEBUG_BLOB) Serial.printf(F("\n DEBUG_BLOB / Distance between input & output blobs positions: %f "), dist);
+  if (DEBUG_BLOB) Serial.printf(F("\n DEBUG_BLOB / **blobs** linked list index: %d"), blob_ptr->index);
+  if (DEBUG_BLOB) Serial.printf(F("\n DEBUG_BLOB / **freeBlobs** linked list index: %d"), freeBlobs_ptr->index);
+  if (DEBUG_BLOB) Serial.printf(F("\n DEBUG_BLOB / **outputBlobs** linked list index: %d"), outputBlobs_ptr->index);
 
-        if (dist < minDist) {
-          minDist = dist;
-          nearestBlob = blobB;
-        }
+  // Look for the nearest blob between curent blob position (blobs linked list) and last blob position (outputBlobs linked list)
+  for (blob_t* blobA = iterator_start_from_head(blob_ptr); blobA != NULL; blobA = iterator_next(blobA)) {
+    float minDist = 128.0f;
+    blob_t* nearestBlob = NULL;
+    if (DEBUG_BLOB) Serial.printf(F("\n DEBUG_BLOB / Is input blob: %p have a coresponding blob in **outputBlobs**"), blobA);
+
+    for (blob_t* blobB = iterator_start_from_head(outputBlobs_ptr); blobB != NULL; blobB = iterator_next(blobB)) {
+      uint8_t xa = blobA->centroid.X;
+      uint8_t ya = blobA->centroid.Y;
+      uint8_t xb = blobB->centroid.X;
+      uint8_t yb = blobB->centroid.Y;
+      float dist = sqrt(pow(xa - xb, 2) + pow(ya - yb, 2)); // fast_sqrt? & fast_pow? // arm_sqrt_f32(); ?
+      if (DEBUG_BLOB) Serial.printf(F("\n DEBUG_BLOB / Distance between input & output blobs positions: %f "), dist);
+
+      if (dist < minDist) {
+        minDist = dist;
+        nearestBlob = blobB;
       }
-      // If the distance between curent blob and last blob position is less than minDist:
-      // Take the ID of the nearestBlob in outputBlobs linked list and give it to the curent input blob.
-      // Move the curent blob to the blobsToUpdate linked list.
-      if (minDist <= 5.0f) {
-        if (DEBUG_BLOB) Serial.printf(F("\n DEBUG_BLOB / Found corresponding blob: %p in the **outputBlobs** linked list"), nearestBlob);
-        blobA->UID = nearestBlob->UID;
-        blobA->state = UPDATE;
-      } else {
-        // Found a new blob! we nead to give it an ID.
-        // We look for the minimum unused ID through the outputBlobs linked list &
-        // We add the new blob to the nodesToAdd linked list.
-        if (DEBUG_BLOB) Serial.printf(F("\n DEBUG_BLOB / Found new blob without ID"));
-        int8_t minID = 0;
-        while (1) {
-          boolean isFree = true;
-          for (blob_t* blob = iterator_start_from_head(outputBlobs_ptr); blob != NULL; blob = iterator_next(blob)) {
-            if (blob->UID == minID) {
-              isFree = false;
-              minID++;
-              break;
-            }
-          }
-          if (isFree) {
-            blobA->UID = minID;
-            blobA->state = TOADD;
+    }
+    // If the distance between curent blob and last blob position is less than minDist:
+    // Take the ID of the nearestBlob in outputBlobs linked list and give it to the curent input blob.
+    // Move the curent blob to the blobsToUpdate linked list.
+    if (minDist <= 5.0f) {
+      if (DEBUG_BLOB) Serial.printf(F("\n DEBUG_BLOB / Found corresponding blob: %p in the **outputBlobs** linked list"), nearestBlob);
+      blobA->UID = nearestBlob->UID;
+      blobA->state = UPDATE;
+    } else {
+      // Found a new blob! we nead to give it an ID.
+      // We look for the minimum unused ID through the outputBlobs linked list &
+      // We add the new blob to the nodesToAdd linked list.
+      if (DEBUG_BLOB) Serial.printf(F("\n DEBUG_BLOB / Found new blob without ID"));
+      int8_t minID = 0;
+      while (1) {
+        boolean isFree = true;
+        for (blob_t* blob = iterator_start_from_head(outputBlobs_ptr); blob != NULL; blob = iterator_next(blob)) {
+          if (blob->UID == minID) {
+            isFree = false;
+            minID++;
             break;
           }
         }
-      }
-    }
-    if (DEBUG_BLOB) Serial.printf(F("\n DEBUG_BLOB / EXIT <<<<<<<<<<<<<<<<<"));
-
-    // Update outputBlobs linked list with blobsToUpdate linked list.
-    // If a blob in the outputBlobs linked list is not in the blobsToUpdate linked list, set it to dead.
-    for (blob_t* blobA = iterator_start_from_head(outputBlobs_ptr); blobA != NULL; blobA = iterator_next(blobA)) {
-      boolean found = false;
-      for (blob_t* blobB = iterator_start_from_head(blob_ptr); blobB != NULL; blobB = iterator_next(blobB)) {
-        if (blobB->state == UPDATE && blobB->UID == blobA->UID) {
-          found = true;
-          blob_copy(blobA, blobB, USED);
-          blobB->state = NEW;
-#ifdef E256_OSC
-          // Add the blob values to the OSC bundle
-          msg.add(blobA->UID);
-          msg.add(blobA->centroid.X);
-          msg.add(blobA->centroid.Y);
-          msg.add(blobA->centroid.Z);
-          msg.add(blobA->pixels);
-          bndl.add(msg);
-#endif
-#ifdef DEBUG_OSC
-          Serial.printf(F("\n DEBUG_OSC / UID:%d\tX:%d\tY:%d\tZ:%d\tPIX:%d"),
-                        blobA->UID,
-                        blobA->centroid.X,
-                        blobA->centroid.Y,
-                        blobA->centroid.Z,
-                        blobA->pixels
-                       );
-#endif
+        if (isFree) {
+          blobA->UID = minID;
+          blobA->state = TOADD;
           break;
         }
       }
-      if (!found) {
-        blobA->state = DEAD;
-      }
     }
+  }
+  if (DEBUG_BLOB) Serial.printf(F("\n DEBUG_BLOB / EXIT <<<<<<<<<<<<<<<<<"));
 
-    // Suppress dead blobs from the outputBlobs linked list
-    while (1) {
-      boolean found = false;
-      for (blob_t* blob = iterator_start_from_head(outputBlobs_ptr); blob != NULL; blob = iterator_next(blob)) {
-        if (blob->state == DEAD) {
-          found = true;
-          llist_remove_blob(outputBlobs_ptr, blob);
-          if (DEBUG_BLOB) Serial.printf(F("\n DEBUG_BLOB / Blob: %p removed from **outputBlobs** linked list"), blob);
-          llist_push_back(freeBlobs_ptr, blob);
-          if (DEBUG_BLOB) Serial.printf(F("\n DEBUG_BLOB / Blob: %p saved to **freeBlobList** linked list"), blob);
-          // Add the blob values to the OSC bundle
+  // Update outputBlobs linked list with blobsToUpdate linked list.
+  // If a blob in the outputBlobs linked list is not in the blobsToUpdate linked list, set it to dead.
+  for (blob_t* blobA = iterator_start_from_head(outputBlobs_ptr); blobA != NULL; blobA = iterator_next(blobA)) {
+    boolean found = false;
+    for (blob_t* blobB = iterator_start_from_head(blob_ptr); blobB != NULL; blobB = iterator_next(blobB)) {
+      if (blobB->state == UPDATE && blobB->UID == blobA->UID) {
+        found = true;
+        blob_copy(blobA, blobB, USED);
+        blobB->state = NEW;
 #ifdef E256_OSC
-          msg.add(blob->UID);
-          msg.add(-1);
-          msg.add(-1);
-          msg.add(-1);
-          msg.add(-1);
-          bndl.add(msg);
-#endif
+        // Add the blob values to the OSC bundle
+        msg.add(blobA->UID);
+        msg.add(blobA->centroid.X);
+        msg.add(blobA->centroid.Y);
+        msg.add(blobA->centroid.Z);
+        msg.add(blobA->pixels);
+        bndl.add(msg);
+#endif /*__E256_OSC__*/
 #ifdef DEBUG_OSC
-          Serial.printf(F("\n DEBUG_OSC / UID:%d\tX:%d\tY:%d\tZ:%d\tPIX:%d"), blob->UID, -1, -1, -1, -1);
-#endif
-          break;
-        }
-      }
-      if (!found) {
+        Serial.printf(F("\n DEBUG_OSC / UID:%d\tX:%d\tY:%d\tZ:%d\tPIX:%d"),
+                      blobA->UID,
+                      blobA->centroid.X,
+                      blobA->centroid.Y,
+                      blobA->centroid.Z,
+                      blobA->pixels
+                     );
+#endif /*__DEBUG_OSC__*/
         break;
       }
     }
+    if (!found) {
+      blobA->state = DEAD;
+    }
+  }
 
-    // Add the new blobs to the outputBlobs linked list
-    for (blob_t* blob = iterator_start_from_head(blob_ptr); blob != NULL; blob = iterator_next(blob)) {
-      if (blob->state == TOADD) {
-        blob_t* newBlob = llist_pop_front(freeBlobs_ptr);
-        blob_copy(newBlob, blob, USED);
-        llist_push_back(outputBlobs_ptr, newBlob);
-        if (DEBUG_BLOB) Serial.printf(F("\n DEBUG_BLOB / Blob: %p added to **outputBlobs** linked list"), blob);
+  // Suppress dead blobs from the outputBlobs linked list
+  while (1) {
+    boolean found = false;
+    for (blob_t* blob = iterator_start_from_head(outputBlobs_ptr); blob != NULL; blob = iterator_next(blob)) {
+      if (blob->state == DEAD) {
+        found = true;
+        llist_remove_blob(outputBlobs_ptr, blob);
+        if (DEBUG_BLOB) Serial.printf(F("\n DEBUG_BLOB / Blob: %p removed from **outputBlobs** linked list"), blob);
+        llist_push_back(freeBlobs_ptr, blob);
+        if (DEBUG_BLOB) Serial.printf(F("\n DEBUG_BLOB / Blob: %p saved to **freeBlobList** linked list"), blob);
         // Add the blob values to the OSC bundle
 #ifdef E256_OSC
         msg.add(blob->UID);
-        msg.add(blob->centroid.X);
-        msg.add(blob->centroid.Y);
-        msg.add(blob->centroid.Z);
-        msg.add(blob->pixels);
+        msg.add(-1);
+        msg.add(-1);
+        msg.add(-1);
+        msg.add(-1);
         bndl.add(msg);
-#endif
+#endif /*__E256_OSC__*/
 #ifdef DEBUG_OSC
-        Serial.printf(F("\n DEBUG_OSC / UID:%d\tX:%d\tY:%d\tZ:%d\tPIX:%d"),
-                      blob->UID,
-                      blob->centroid.X,
-                      blob->centroid.Y,
-                      blob->centroid.Z,
-                      blob->pixels
-                     );
+        Serial.printf(F("\n DEBUG_OSC / UID:%d\tX:%d\tY:%d\tZ:%d\tPIX:%d"), blob->UID, -1, -1, -1, -1);
 #endif
+        break;
       }
     }
-    // Send the blobs values with the OSC bundle
-#ifndef E256_OSC
-    SLIPSerial.beginPacket();
-    bndl.send(SLIPSerial);     // Send the bytes to the SLIP stream
-    SLIPSerial.endPacket();    // Mark the end of the OSC packet
-    bndl.empty();              // Empty the bundle to free room for a new one
-#endif
+    if (!found) {
+      break;
+    }
   }
+
+  // Add the new blobs to the outputBlobs linked list
+  for (blob_t* blob = iterator_start_from_head(blob_ptr); blob != NULL; blob = iterator_next(blob)) {
+    if (blob->state == TOADD) {
+      blob_t* newBlob = llist_pop_front(freeBlobs_ptr);
+      blob_copy(newBlob, blob, USED);
+      llist_push_back(outputBlobs_ptr, newBlob);
+      if (DEBUG_BLOB) Serial.printf(F("\n DEBUG_BLOB / Blob: %p added to **outputBlobs** linked list"), blob);
+      // Add the blob values to the OSC bundle
+#ifdef E256_OSC
+      msg.add(blob->UID);
+      msg.add(blob->centroid.X);
+      msg.add(blob->centroid.Y);
+      msg.add(blob->centroid.Z);
+      msg.add(blob->pixels);
+      bndl.add(msg);
+#endif #endif /*__E256_OSC__*/
+#ifdef DEBUG_OSC
+      Serial.printf(F("\n DEBUG_OSC / UID:%d\tX:%d\tY:%d\tZ:%d\tPIX:%d"),
+                    blob->UID,
+                    blob->centroid.X,
+                    blob->centroid.Y,
+                    blob->centroid.Z,
+                    blob->pixels
+                   );
+#endif /*__DEBUG_OSC__*/
+    }
+  }
+  // Send the blobs values with the OSC bundle
+#ifdef E256_OSC
+  SLIPSerial.beginPacket();
+  bndl.send(SLIPSerial);     // Send the bytes to the SLIP stream
+  SLIPSerial.endPacket();    // Mark the end of the OSC packet
+  bndl.empty();              // Empty the bundle to free room for a new one
+#endif /*__E256_OSC__*/
+#endif /*__PERSISTANT_ID__*/
 
   llist_save_blobs(freeBlobs_ptr, blob_ptr);
   if (DEBUG_BLOB) Serial.printf(F("\n DEBUG_BLOB / END OFF BLOB FONCTION"));
 }
-
-
-
 
 
 ////////////////////////////// Bitmap //////////////////////////////

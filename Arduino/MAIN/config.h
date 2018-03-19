@@ -20,8 +20,8 @@
 #include "blob.h"
 #include "llist.h"
 
-#define BUILTIN_LED       13
-#define BUTTON_PIN        32          // Button on the eTextile Teensy shield V1.0
+// #define BUILTIN_LED       13    // Hardware SPI conflict
+// #define BUTTON_PIN        32    // Button on the eTextile Teensy shield V1.0
 #define BAUD_RATE         230400
 #define COLS              16
 #define ROWS              16
@@ -39,17 +39,17 @@
 #define MIN_BLOB_PIX      4     // Set the minimum blob pixels
 #define MAX_BLOB_PIX      1024  // Set the maximum blob pixels
 
-#define  E256_MOSI_PIN    11  // SPI
-#define  E256_MISO_PIN    10  // SPI
-#define  E256_SCK_PIN     12  // SPI
-#define  A0_PIN           A9  // The output of multiplexerA (SIG pin) is connected to Arduino Analog pin 0
-#define  A1_PIN           A3  // The output of multiplexerB (SIG pin) is connected to Arduino Analog pin 1
+#define  E256_SS_PIN      10  // SPI:SS    E2B56:RCK
+#define  E256_SCK_PIN     13  // SPI:SCK   E2B56:SCK
+#define  E256_MOSI_PIN    11  // SPI:MOSI  E2B56:DS
 
+#define  ADC0_PIN         A9  // The output of multiplexerA (SIG pin) is connected to Arduino Analog pin 0
+#define  ADC1_PIN         A3  // The output of multiplexerB (SIG pin) is connected to Arduino Analog pin 1
 
 #define E256_SERIAL
-// #define DEBUG_ADC_INPUT
-// #define E256_OSC
+#define DEBUG_ADC_INPUT
 // #define DEBUG_OSC
+// #define E256_OSC
 
 #define PERSISTANT_ID     true
 #define DEBUG_INTERP      false
