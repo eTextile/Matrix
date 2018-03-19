@@ -32,11 +32,11 @@ From the beginning this project stimulates the development of technologies in ar
 - openFrameworks : real time 3D demo with OSC communication // (FIXME) **Blob** branche
 
 ### Development tools & DOCs
- * **Web page**: [http://matrix.eTextile.org/](http://lulu.eTextile.org "Web page")
+ * **Web page**: [http://matrix.eTextile.org/](http://matrix.eTextile.org "Web page")
  * **Repository**: [https://github.com/eTextile/Matrix/tree/master](https://github.com/eTextile/Matrix/tree/master "Project repository")
- * **License**: [CC-BY-SA](https://github.com/eTextile/Lulu/blob/master/LICENSE "The E256 Matrix license")
- * **Mail**: [matrix@etextile.org](mailto:lulu@etextile.org "eMail us")
- * **Pictures**: [Pictures](https://www.flickr.com/photos/maurin/albums/72157673740361510/ "Share your Lulu pictures project")
+ * **License**: [CC-BY-SA](https://github.com/eTextile/Matrix/tree/Blob/LICENSE "E256 Matrix license")
+ * **Mail**: [matrix@etextile.org](mailto:lulu@etextile.org "eMail")
+ * **Pictures**: [Pictures](https://www.flickr.com/photos/maurin/albums/72157673740361510/ "Share your pictures with us")
  * **Tutorial**: [Tutorial](http://wiki.datapaulette.org/doku.php/atelier/projets/matrice_textile "#DataPaulette #Jardindalice")
 
 ## Publications
