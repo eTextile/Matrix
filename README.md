@@ -21,9 +21,8 @@ From the beginning this project stimulates the development of technologies in ar
 
 ### eTextile matrix sensor branches
 * **Master (E256)** Teensy & E256 extension board V2.0
-* **Blob** (Teensy & E256 with embedded Blob detection)
-* **teensy_matrix** extension board V1.0
-...
+* **Blob** Teensy & E256 with embedded Blob detection
+* **teensy_matrix** Teensy extension board V1.0 (using all 16 Analogs of the board)
 
 ## Project content
 - Hardware_textile : HOWTO eTextile sensor tutorial
