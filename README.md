@@ -18,11 +18,26 @@ The demo software perform a real time 3D visualization of all pressure applied o
 This software analyses the touch to trigger OSC messages that can be used in audio application such as PureData, SuperCollider, etc.
 From the beginning this project stimulates the development of technologies in artistic use cases: playing music, combine graphics and sound, imagine objects that can have tactile properties, etc.
 
+
+### eTextile matrix sensor branches
+* **Master (E256)** Teensy & E256 extension board V2.0
+* **Blob** (Teensy & E256 with embedded Blob detection)
+* **teensy_matrix** extension board V1.0
+...
+
 ## Project content
-- DIY eTextile sensor: see the Etching file tutorial
-- PCB/shield that can connect with all Arduino compatible boards: see the Upverter file
-- Arduino firmware: work with all Arduino compatible boards and Teensy!
-- OpenFrameworks software: real time 3D visualization and OSC communication
+- Hardware_textile : HOWTO eTextile sensor tutorial
+- Arduino firmware: working with Teensy 3.*
+- Upverter : extension board PCB source
+- openFrameworks : real time 3D demo with OSC communication // (FIXME) **Blob** branche
+
+### Development tools & DOCs
+ * **Web page**: [http://matrix.eTextile.org/](http://lulu.eTextile.org "Web page")
+ * **Repository**: [https://github.com/eTextile/Matrix/tree/master](https://github.com/eTextile/Matrix/tree/master "Project repository")
+ * **License**: [CC-BY-SA](https://github.com/eTextile/Lulu/blob/master/LICENSE "The E256 Matrix license")
+ * **Mail**: [matrix@etextile.org](mailto:lulu@etextile.org "eMail us")
+ * **Pictures**: [Pictures](https://www.flickr.com/photos/maurin/albums/72157673740361510/ "Share your Lulu pictures project")
+ * **Tutorial**: [Tutorial](http://wiki.datapaulette.org/doku.php/atelier/projets/matrice_textile "#DataPaulette #Jardindalice")
 
 ## Publications
 - [NIME17](http://www.nime2017.org/) - Designing a Multi-Touch eTextile for Music Performances / [Paper](https://etextile.github.io/resistiveMatrix/publications/NIME17-eTextile.pdf) - [Video](https://vimeo.com/217690743)
@@ -47,5 +62,3 @@ Thanks to Vincent Roudaut, Hannah Perner Willson, Cedric Honnet, Antoine Meisso,
 
 ## Docs
 - [A video made at Schmiede 2014](http://www.kobakant.at/DIY/?p=4305/)
-- [Pictures of the project and context](https://www.flickr.com/photos/maurin/albums/72157673740361510)
-- [The tutorial on the DataPaulette eTextile hakerspace wiki](http://wiki.datapaulette.org/doku.php/atelier/projets/matrice_textile)
