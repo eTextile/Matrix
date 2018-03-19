@@ -126,6 +126,6 @@ void find_blobs(
 );
 
 void calib();
-void bootBlink(const uint8_t pin, const uint8_t flash);
+void bootBlink(const uint8_t pin, uint8_t flash);
 
 #endif /*__BLOB_H__*/

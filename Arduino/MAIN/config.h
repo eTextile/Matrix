@@ -25,11 +25,10 @@
 #define BAUD_RATE         230400
 #define COLS              16
 #define ROWS              16
-#define DUAL_ROWS         8
+#define DUAL_ROWS         ROWS / 2
 #define SCALE             4
 
 #define ROW_FRAME         (COLS * ROWS)
-#define DUAL_ROW_FRAME    (COLS * ROWS) / 2
 #define NEW_COLS          (COLS * SCALE)
 #define NEW_ROWS          (ROWS * SCALE)
 #define NEW_FRAME         (NEW_COLS * NEW_ROWS)
@@ -40,14 +39,19 @@
 #define MIN_BLOB_PIX      4     // Set the minimum blob pixels
 #define MAX_BLOB_PIX      1024  // Set the maximum blob pixels
 
+#define  E256_MOSI_PIN    11  // SPI
+#define  E256_MISO_PIN    10  // SPI
+#define  E256_SCK_PIN     12  // SPI
 #define  A0_PIN           A9  // The output of multiplexerA (SIG pin) is connected to Arduino Analog pin 0
 #define  A1_PIN           A3  // The output of multiplexerB (SIG pin) is connected to Arduino Analog pin 1
 
-#define PERSISTANT_ID     true
 
+#define E256_SERIAL
 // #define DEBUG_ADC_INPUT
-#define DEBUG_OSC
+// #define E256_OSC
+// #define DEBUG_OSC
 
+#define PERSISTANT_ID     true
 #define DEBUG_INTERP      false
 #define DEBUG_BITMAP      false
 #define DEBUG_CCL         false

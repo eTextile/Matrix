@@ -130,9 +130,11 @@ void find_blobs(
 
   ///////////////////////////////////////////////////////////////////////////////////////// Percistant blobs ID
   if (PERSISTANT_ID) {
-
+    
+#ifndef E256_OSC
     OSCBundle bndl;
     OSCMessage msg("/sensors");
+#endif
 
     if (DEBUG_BLOB) Serial.printf(F("\n DEBUG_BLOB / **blobs** linked list index: %d"), blob_ptr->index);
     if (DEBUG_BLOB) Serial.printf(F("\n DEBUG_BLOB / **freeBlobs** linked list index: %d"), freeBlobs_ptr->index);
@@ -140,7 +142,7 @@ void find_blobs(
 
     // Look for the nearest blob between curent blob position (blobs linked list) and last blob position (outputBlobs linked list)
     for (blob_t* blobA = iterator_start_from_head(blob_ptr); blobA != NULL; blobA = iterator_next(blobA)) {
-      float minDist = 127.0f;
+      float minDist = 128.0f;
       blob_t* nearestBlob = NULL;
       if (DEBUG_BLOB) Serial.printf(F("\n DEBUG_BLOB / Is input blob: %p have a coresponding blob in **outputBlobs**"), blobA);
 
@@ -198,7 +200,7 @@ void find_blobs(
           found = true;
           blob_copy(blobA, blobB, USED);
           blobB->state = NEW;
-#ifndef DEBUG_OSC
+#ifdef E256_OSC
           // Add the blob values to the OSC bundle
           msg.add(blobA->UID);
           msg.add(blobA->centroid.X);
@@ -206,7 +208,8 @@ void find_blobs(
           msg.add(blobA->centroid.Z);
           msg.add(blobA->pixels);
           bndl.add(msg);
-#else
+#endif
+#ifdef DEBUG_OSC
           Serial.printf(F("\n DEBUG_OSC / UID:%d\tX:%d\tY:%d\tZ:%d\tPIX:%d"),
                         blobA->UID,
                         blobA->centroid.X,
@@ -234,14 +237,15 @@ void find_blobs(
           llist_push_back(freeBlobs_ptr, blob);
           if (DEBUG_BLOB) Serial.printf(F("\n DEBUG_BLOB / Blob: %p saved to **freeBlobList** linked list"), blob);
           // Add the blob values to the OSC bundle
-#ifndef DEBUG_OSC
+#ifdef E256_OSC
           msg.add(blob->UID);
           msg.add(-1);
           msg.add(-1);
           msg.add(-1);
           msg.add(-1);
           bndl.add(msg);
-#else
+#endif
+#ifdef DEBUG_OSC
           Serial.printf(F("\n DEBUG_OSC / UID:%d\tX:%d\tY:%d\tZ:%d\tPIX:%d"), blob->UID, -1, -1, -1, -1);
 #endif
           break;
@@ -260,14 +264,15 @@ void find_blobs(
         llist_push_back(outputBlobs_ptr, newBlob);
         if (DEBUG_BLOB) Serial.printf(F("\n DEBUG_BLOB / Blob: %p added to **outputBlobs** linked list"), blob);
         // Add the blob values to the OSC bundle
-#ifndef DEBUG_OSC
+#ifdef E256_OSC
         msg.add(blob->UID);
         msg.add(blob->centroid.X);
         msg.add(blob->centroid.Y);
         msg.add(blob->centroid.Z);
         msg.add(blob->pixels);
         bndl.add(msg);
-#else
+#endif
+#ifdef DEBUG_OSC
         Serial.printf(F("\n DEBUG_OSC / UID:%d\tX:%d\tY:%d\tZ:%d\tPIX:%d"),
                       blob->UID,
                       blob->centroid.X,
@@ -279,7 +284,7 @@ void find_blobs(
       }
     }
     // Send the blobs values with the OSC bundle
-#ifndef DEBUG_OSC
+#ifndef E256_OSC
     SLIPSerial.beginPacket();
     bndl.send(SLIPSerial);     // Send the bytes to the SLIP stream
     SLIPSerial.endPacket();    // Mark the end of the OSC packet
@@ -290,6 +295,10 @@ void find_blobs(
   llist_save_blobs(freeBlobs_ptr, blob_ptr);
   if (DEBUG_BLOB) Serial.printf(F("\n DEBUG_BLOB / END OFF BLOB FONCTION"));
 }
+
+
+
+
 
 ////////////////////////////// Bitmap //////////////////////////////
 

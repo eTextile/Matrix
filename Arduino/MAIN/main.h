@@ -12,35 +12,20 @@
 ADC *adc = new ADC();     // ADC object
 ADC::Sync_result result;  // ADC_0 & ADC_1
 
-#ifndef DEBUG_OSC
+#ifdef E256_OSC
 SLIPEncodedUSBSerial SLIPSerial(thisBoardsSerialUSB); // Extended serial library object
 #endif
 
 SPISettings settings(16000000, MSBFIRST, SPI_MODE0);
 
+char debugMode = 0;
+
 unsigned long lastFarme = 0;
 uint16_t fps = 0;
 
-uint16_t sensorID = 0;
-
-uint8_t E256_SERIAL_INIT = 10;
-char DEBUG_MODE = 0;
-
-/* NOT USE WITH THE E256 EXTENSION BOARD
-  // Digital pins array
-  // See the attached home made PCB (Eagle file) to understand the Digital and Analog pin mapping
-  const uint8_t rowPins[ROWS] = {
-  27, 26, 25, 24, 12, 11, 10, 9, 8, 7, 6, 5, 33, 2, 1, 0
-  };
-
-  // Analog pins array
-  const uint8_t colPins[COLS] = {
-  A17, A18, A19, A0, A20, A1, A2, A3, A4, A5, A6, A7, A11, A8, A10, A9
-  };
-*/
 
 // Array to store all parameters used to configure the two analog multiplexeurs
-const uint8_t dualSetRows[ROWS] = {
+const uint8_t setDualRows[ROWS] = {
   0x55, 0x77, 0x33, 0x11, 0x22, 0x44, 0x00, 0x66
 };
 
