@@ -29,7 +29,7 @@
 #define SCALE             4
 
 #define ROW_FRAME         (COLS * ROWS)
-#define DUAL_ROW_FRAME    (COLS*ROWS)/2
+#define DUAL_ROW_FRAME    (COLS * ROWS) / 2
 #define NEW_COLS          (COLS * SCALE)
 #define NEW_ROWS          (ROWS * SCALE)
 #define NEW_FRAME         (NEW_COLS * NEW_ROWS)
@@ -45,7 +45,9 @@
 
 #define PERSISTANT_ID     true
 
-#define DEBUG_ADC_INPUT   true
+// #define DEBUG_ADC_INPUT
+#define DEBUG_OSC
+
 #define DEBUG_INTERP      false
 #define DEBUG_BITMAP      false
 #define DEBUG_CCL         false
@@ -53,6 +55,5 @@
 #define DEBUG_LIST        false
 #define DEBUG_BLOB        false
 
-#define DEBUG_OSC
 
 #endif /*__CONFIG_H__*/

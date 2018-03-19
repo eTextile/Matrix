@@ -198,6 +198,7 @@ void find_blobs(
           found = true;
           blob_copy(blobA, blobB, USED);
           blobB->state = NEW;
+#ifndef DEBUG_OSC
           // Add the blob values to the OSC bundle
           msg.add(blobA->UID);
           msg.add(blobA->centroid.X);
@@ -205,7 +206,7 @@ void find_blobs(
           msg.add(blobA->centroid.Z);
           msg.add(blobA->pixels);
           bndl.add(msg);
-#ifdef DEBUG_OSC
+#else
           Serial.printf(F("\n DEBUG_OSC / UID:%d\tX:%d\tY:%d\tZ:%d\tPIX:%d"),
                         blobA->UID,
                         blobA->centroid.X,
@@ -233,13 +234,14 @@ void find_blobs(
           llist_push_back(freeBlobs_ptr, blob);
           if (DEBUG_BLOB) Serial.printf(F("\n DEBUG_BLOB / Blob: %p saved to **freeBlobList** linked list"), blob);
           // Add the blob values to the OSC bundle
+#ifndef DEBUG_OSC
           msg.add(blob->UID);
           msg.add(-1);
           msg.add(-1);
           msg.add(-1);
           msg.add(-1);
           bndl.add(msg);
-#ifdef DEBUG_OSC
+#else
           Serial.printf(F("\n DEBUG_OSC / UID:%d\tX:%d\tY:%d\tZ:%d\tPIX:%d"), blob->UID, -1, -1, -1, -1);
 #endif
           break;
@@ -258,13 +260,14 @@ void find_blobs(
         llist_push_back(outputBlobs_ptr, newBlob);
         if (DEBUG_BLOB) Serial.printf(F("\n DEBUG_BLOB / Blob: %p added to **outputBlobs** linked list"), blob);
         // Add the blob values to the OSC bundle
+#ifndef DEBUG_OSC
         msg.add(blob->UID);
         msg.add(blob->centroid.X);
         msg.add(blob->centroid.Y);
         msg.add(blob->centroid.Z);
         msg.add(blob->pixels);
         bndl.add(msg);
-#ifdef DEBUG_OSC
+#else
         Serial.printf(F("\n DEBUG_OSC / UID:%d\tX:%d\tY:%d\tZ:%d\tPIX:%d"),
                       blob->UID,
                       blob->centroid.X,
