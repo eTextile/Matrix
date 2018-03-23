@@ -26,14 +26,14 @@ From the beginning this project stimulates the development of technologies in ar
 * **Tutorial:** [Datapaulette.org](http://wiki.datapaulette.org/doku.php/atelier/projets/matrice_textile "#DataPaulette #Jardindalice")
 
 ### eTextile matrix sensor branches
-* **E256:** Teensy & E256 extension board V2.0 (Use the two Teensy ADC to performe synchronized reading).
-* **teensy_matrix:** Teensy extension board V1.0 (Use all Teensy analogs inputs).
+* **teensy_matrix:** V1.0 Teensy extension board - use all Teensy analogs inputs.
+* **E256:** V2.0 Teensy extension board - Use only two ADC to performe synchronized readings.
 
 ## Project content
 * **Hardware_textile:** eTextile matrix sensor tutorial
 * **Hardware_electronic:** extension board PCB sources
 * **Firmware:** embedded blob detection with OSC communication
-* **Softwear:** demos made with cool applications // (FIXME) **Blob** branche
+* **Softwear:** demos made with cool applications
 
 ## Publications
 - [NIME17](http://www.nime2017.org/) - Designing a Multi-Touch eTextile for Music Performances / [Paper](https://etextile.github.io/resistiveMatrix/publications/NIME17-eTextile.pdf) - [Video](https://vimeo.com/217690743)
