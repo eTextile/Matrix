@@ -33,31 +33,33 @@
 #define NEW_FRAME         (NEW_COLS * NEW_ROWS)
 #define INC               (1.0 / SCALE)
 #define CYCLES            10    // Set the calibration cycles
-#define THRESHOLD         15    // Set the threshold that determine toutch sensitivity (10 is low 30 is high)
-#define MAX_NODES         20    // Set the maximum nodes number
+#define THRESHOLD         25    // Set the threshold that determine toutch sensitivity (10 is low 30 is high)
+#define MAX_NODES         40    // Set the maximum nodes number
 #define MIN_BLOB_PIX      4     // Set the minimum blob pixels
 #define MAX_BLOB_PIX      1024  // Set the maximum blob pixels
-#define E256_EOF         'A'    // End Of Frame is ascii value letter 'A'
+#define E256_EOF         'A'    // End-Of-Frame is ascii value letter 'A'
 
 #define E256_SS_PIN      10     // SPI:SS    E2B56:RCK
 #define E256_SCK_PIN     13     // SPI:SCK   E2B56:SCK
 #define E256_MOSI_PIN    11     // SPI:MOSI  E2B56:DS
 
-#define ADC0_PIN         A9     // The output of multiplexerA (SIG pin) is connected to Arduino Analog pin 0
-#define ADC1_PIN         A3     // The output of multiplexerB (SIG pin) is connected to Arduino Analog pin 1
+#define ADC0_PIN         A9     // The output of multiplexerA (SIG pin) is connected to Analog pin 9
+#define ADC1_PIN         A3     // The output of multiplexerB (SIG pin) is connected to Analog pin 3
 
-// Here is the control board
-//#define E256_FPS
+// Here is the board control
+#define E256_FPS
 #define E256_ADC
+#define E256_ADC_SYNCHRO
 #define E256_SERIAL
-//#define E256_INTERP
-//#define E256_BLOB
-//#define E256_BLOB_ID
-//#define E256_OSC
+#define E256_INTERP
+#define E256_BLOB
+#define E256_BLOB_ID
+// #define E256_OSC
 
-#define DEBUG_ADC
-//#define DEBUG_OSC
-#define DEBUG_INTERP      false
+//#define DEBUG_ADC
+#define DEBUG_OSC
+//#define DEBUG_INTERP
+
 #define DEBUG_BITMAP      false
 #define DEBUG_CCL         false
 #define DEBUG_CENTER      false

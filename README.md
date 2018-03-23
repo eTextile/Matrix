@@ -11,7 +11,7 @@ This project is part of an electronic textiles research on HCI gesture interacti
 The E256 eTextile matrix sensor is a development kit for designers, makers and companies who want to combine textile and programing into new eTextile projects.
 This kit features 30cm by 30cm sensitive textile that allow multi touch sensing and pressures topographic analysis.
 Made out of conductive textile shaped in rows and columns and a layer of piezoresistive fabric, this textile sensor is designed to be easy to make.
-The firmware implement all the functionalities to analysis the touch and trigger OSC messages that can be used in application such as PureData, SuperCollider, etc.The firmware implement all the fonctionalities to analyses the touch and trigger OSC messages that can be used in application such as PureData, SuperCollider, etc.
+The firmware implement all the functionalities to analysis the touch and trigger OSC messages that can be used in application such as PureData, SuperCollider, etc.
 The E256 firmware is running on Teensy 3.1 & 3.2 MCUs.
 The electronic hardware and the firmware are free and open source and can be easely ported to others Arduino like microcontrollers with ADC capabilities.
 In order to use the sensor in combination with any mobile devices, the E256 firmware will be ported on MCU with BLE capabilities.
@@ -31,7 +31,7 @@ From the beginning this project stimulates the development of technologies in ar
 
 ## Project content
 * **Hardware_textile:** eTextile matrix sensor tutorial
-* **Hardware_electronic:** extension board PCB source Upverter
+* **Hardware_electronic:** extension board PCB sources
 * **Firmware:** embedded blob detection with OSC communication
 * **Softwear:** demos made with cool applications // (FIXME) **Blob** branche
 

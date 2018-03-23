@@ -14,17 +14,18 @@ SPISettings settings(16000000, MSBFIRST, SPI_MODE0); // LSBFIRST
 ADC *adc = new ADC();     // ADC object
 ADC::Sync_result result;  // ADC_0 & ADC_1
 
-#ifdef E256_OSC
 SLIPEncodedUSBSerial SLIPSerial(thisBoardsSerialUSB); // Extended serial library object
-#endif
 
 unsigned long lastFarme = 0;
 uint16_t fps = 0;
 
 // Array to store all parameters used to configure the two 8:1 analog multiplexeurs
+// Eatch byte |ENA|A|B|C|ENA|A|B|C|
 byte setDualRows[ROWS] = {
   0x55, 0x77, 0x66, 0x44, 0x22, 0x11, 0x00, 0x33
 };
+
+uint16_t sensor = 0;
 
 char serialConf[4] = {0};                 // Array to store boot serial config
 uint8_t minVals[ROW_FRAME] = {0};         // Array to store smallest values

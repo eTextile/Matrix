@@ -16,13 +16,13 @@ void find_blobs(
   const unsigned int    maxBlobPix,
   llist_t*              freeBlobs_ptr,
   llist_t*              blob_ptr,
-  llist_t*              outputBlobs_ptr
-  // SLIPEncodedUSBSerial  SLIPSerial
+  llist_t*              outputBlobs_ptr,
+  SLIPEncodedUSBSerial  SLIPSerial
 ) {
 
   /////////////////////////////// Scanline flood fill algorithm
   /////////////////////////////// Connected-component labeling / CCL
-  /////////////////////////////// 
+  ///////////////////////////////
 
   if (DEBUG_CCL) Serial.printf(F("\n DEBUG_CCL / START <<<<<<<<<<<<<<<<<<<<<<<<"));
 
