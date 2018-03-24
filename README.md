@@ -2,8 +2,7 @@
 
 ### Transforming textiles into an intuitive way to interact with computers.
 
-![eTextile matrix sensor - teensy_matrix](https://farm6.staticflickr.com/5572/30306414062_22bba76566_z_d.jpg)
-![eTextile matrix sensor - E256](https://farm1.staticflickr.com/798/40904680852_d5c9b1b35d_z_d.jpg)
+![eTextile matrix sensor - teensy_matrix](https://farm6.staticflickr.com/5572/30306414062_22bba76566_m_d.jpg) ![eTextile matrix sensor - E256](https://farm1.staticflickr.com/798/40904680852_d5c9b1b35d_m_d.jpg)
 
 ## About The project
 Using a fabric to sense the touch is now possible with the E256 eTextile matrix sensor.
