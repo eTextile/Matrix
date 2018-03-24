@@ -56,4 +56,7 @@ WARRANTIES, see LICENSE.txt included in the resistiveMatrix project folder.
 Thanks to Vincent Roudaut, Hannah Perner Willson, Cedric Honnet, Antoine Meisso, Paul Strohmeier
 
 ## Docs
-- [A video made at Schmiede 2014](http://www.kobakant.at/DIY/?p=4305/)
+- [Video made by ARTE 2018](https://www.youtube.com/watch?v=jWTeH4bodww)
+- [Video made at Schmiede 2014](http://www.kobakant.at/DIY/?p=4305/)
+
+
