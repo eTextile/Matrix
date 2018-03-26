@@ -3,115 +3,194 @@
 
 <head>
 
-<title>E256</title>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+  <meta name="description" content="">
+  <meta name="author" content="">
 
-<meta charset="UTF-8" />
-<meta name="viewport" content="width=device-width, initial-scale=1" />
-<meta name="Abstract" content="Electronic textile interfaces" />
-<meta property="og:title" content="E256 - eTextile matrix sensor" />
-<meta property="og:locale" content="en_US" />
-<meta name="description" content="Piezoresistive Textile Matrix Sensor: hardware, firmware and software" />
-<meta property="og:description" content="Piezoresistive Textile Matrix Sensor: hardware, firmware and software" />
-<link rel="canonical" href="http://matrix.etextile.org/" />
-<meta property="og:url" content="http://matrix.etextile.org/" />
-<meta property="og:site_name" content="E256" />
-<link rel="stylesheet" type="text/css" href="./style.css">
+  <title>Electronic textile interfaces</title>
+
+  <!-- Bootstrap core CSS -->
+  <link href="vendor/bootstrap/css/bootstrap.min.css" rel="stylesheet">
+
+  <!-- Custom styles for this template -->
+  <link href="css/full-slider.css" rel="stylesheet">
 
 </head>
 
 <body>
 
-<div class="container-lg px-3 my-5 markdown-body">
+  <!-- Navigation -->
+  <nav class="navbar navbar-expand-lg navbar-dark bg-clear fixed-top">
+    <div class="container">
+      <a class="navbar-brand" href="http://eTextile.org">www.eTextile.org</a>
+      <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarResponsive" aria-controls="navbarResponsive" aria-expanded="false" aria-label="Toggle navigation">
+          <span class="navbar-toggler-icon"></span>
+        </button>
+      <div class="collapse navbar-collapse" id="navbarResponsive">
+        <ul class="navbar-nav ml-auto">
+          <li class="nav-item active">
+            <a class="nav-link" href="#">Home<span class="sr-only">(current)</span></a>
+          </li>
+          <li class="nav-item">
+            <a class="nav-link" href="#about">About</a>
+          </li>
+          <li class="nav-item">
+            <a class="nav-link" href="#services">Services</a>
+          </li>
+          <li class="nav-item">
+            <a class="nav-link" href="#contact">Contact</a>
+          </li>
+        </ul>
+      </div>
+    </div>
+  </nav>
 
-<h1><a href="http://matrix.etextile.org/">E256 - eTextile matrix sensor</a></h1>
-<h3 id="transforming-textiles-into-an-intuitive-way-to-interact-with-computers">Transforming textiles into an intuitive way to interact with computers.</h3>
+  <header>
 
+    <div id="carouselExampleIndicators" class="carousel slide" data-ride="carousel">
+      <ol class="carousel-indicators">
+        <li data-target="#carouselExampleIndicators" data-slide-to="0" class="active"></li>
+        <li data-target="#carouselExampleIndicators" data-slide-to="1"></li>
+        <li data-target="#carouselExampleIndicators" data-slide-to="2"></li>
+      </ol>
+      <div class="carousel-inner" role="listbox">
 
-<p><img src="https://farm6.staticflickr.com/5572/30306414062_22bba76566_z_d.jpg" alt="eTextile matrix sensor - teensy_matrix" /> <img src="https://farm1.staticflickr.com/798/40904680852_d5c9b1b35d_z_d.jpg" alt="eTextile matrix sensor - E256" /></p>
+        <div class="carousel-item active" style="background-image: url('https://farm6.staticflickr.com/5572/30306414062_b5d6b33dba_k_d.jpg')">
+          <div class="carousel-caption d-none d-md-block">
+            <h4>Electronic textile interfaces</h4>
+            <p>Creative use of technology</p>
+          </div>
+        </div>
 
+        <div class="carousel-item" style="background-image: url('https://farm1.staticflickr.com/798/40904680852_d1f441defb_k_d.jpg')">
+          <div class="carousel-caption d-none d-md-block">
+            <h4>Transforming textiles into an intuitive way to interact with computers</h4>
+            <p>#eTextile-matrix-sensor</p>
+          </div>
+        </div>
 
-<h2 id="about-the-project">About The project</h2>
-<p>Using a fabric to sense the touch is now possible with the E256 eTextile matrix sensor.
-This project is part of an electronic textiles research on HCI gesture interaction that was started in 2005.
-The E256 eTextile matrix sensor is a development kit for designers, makers and companies who want to combine textile and programing into new eTextile projects.
-This kit features 30cm by 30cm sensitive textile that allow multi touch sensing and pressures topographic analysis.
-Made out of conductive textile shaped in rows and columns and a layer of piezoresistive fabric, this textile sensor is designed to be easy to make.
-The firmware implement all the functionalities to analysis the touch and trigger OSC messages that can be used in application such as PureData, SuperCollider, etc.
-The E256 firmware is running on Teensy 3.1 &amp; 3.2 MCUs.
-The electronic hardware and the firmware are free and open source and can be easely ported to others Arduino like microcontrollers with ADC capabilities.
-In order to use the sensor in combination with any mobile devices, the E256 firmware will be ported on MCU with BLE capabilities.
-From the beginning this project stimulates the development of technologies in artistic use cases: playing music, combine graphics and sound, imagine objects that can have tactile properties, etc.</p>
+        <div class="carousel-item" style="background-image: url('https://farm9.staticflickr.com/8791/16466663513_468ec59565_k_d.jpg')">
+          <div class="carousel-caption d-none d-md-block">
+            <h4>This project is part of an electronic textiles research on HCI gesture interaction that was started in 2005</h4>
+            <p>#E256</p>
+            <p></p>
+          </div>
+        </div>
 
+      </div>
 
-<h3 id="development-tools--docs">Development tools &amp; DOCs</h3>
-<ul>
-  <li><strong>Web page:</strong> <a href="http://matrix.eTextile.org" title="Web page">http://matrix.eTextile.org/</a></li>
-  <li><strong>Repository:</strong> <a href="https://github.com/eTextile/Matrix/tree/master" title="Project repository">https://github.com/eTextile/Matrix/tree/master</a></li>
-  <li><strong>License:</strong> <a href="https://github.com/eTextile/Matrix/tree/Blob/LICENSE" title="E256 Matrix license">CC-BY-SA</a></li>
-  <li><strong>Mail:</strong> <a href="mailto:lulu@etextile.org" title="eMail">matrix@etextile.org</a></li>
-  <li><strong>Pictures:</strong> <a href="https://www.flickr.com/photos/maurin/albums/72157673740361510/" title="Share your pictures with us">flickr.com</a></li>
-  <li><strong>Tutorial:</strong> <a href="http://wiki.datapaulette.org/doku.php/atelier/projets/matrice_textile" title="#DataPaulette #Jardindalice">Datapaulette.org</a></li>
-</ul>
-
-
-<h3 id="etextile-matrix-sensor-branches">eTextile matrix sensor branches</h3>
-<ul>
-  <li><strong>teensy_matrix:</strong> V1.0 Teensy extension board - use all Teensy analogs inputs.</li>
-  <li><strong>E256:</strong> V2.0 Teensy extension board - Use only two ADC to performe synchronized readings.</li>
-</ul>
-
-
-<h2 id="project-content">Project content</h2>
-<ul>
-  <li><strong>Hardware_textile:</strong> eTextile matrix sensor tutorial</li>
-  <li><strong>Hardware_electronic:</strong> extension board PCB sources</li>
-  <li><strong>Firmware:</strong> embedded blob detection with OSC communication</li>
-  <li><strong>Softwear:</strong> demos made with cool applications</li>
-</ul>
-
-
-<h2 id="publications">Publications</h2>
-<ul>
-  <li><a href="http://www.nime2017.org/">NIME17</a> - Designing a Multi-Touch eTextile for Music Performances / <a href="https://etextile.github.io/resistiveMatrix/publications/NIME17-eTextile.pdf">Paper</a> - <a href="https://vimeo.com/217690743">Video</a></li>
-  <li><a href="http://moco17.movementcomputing.org/">MOCO17</a> - Music Skin: Fabric Interface for Expressive Music Control / <a href="https://etextile.github.io/resistiveMatrix/publications/MOCO17-MusicSkin.pdf">Paper</a></li>
-</ul>
-
-
-<h2 id="kit-ordering">Kit Ordering</h2>
-<p>If you want a sensor just drop me an eMail at matrix@eTextile.org
-I make all sensors by hand. It can take few weeks to make it and send it by post.
-All sensors are tested before shipping.
-If you have any mistake I will help you to fix it or replace the eTextile sensor.</p>
-
-
-<h2 id="copyright">Copyright</h2>
-<p>Except as otherwise noted, all files in the resistiveMatrix project folder</p>
-
-
-<div class="highlighter-rouge"><div class="highlight"><pre class="highlight"><code>Copyright (c) 2005-2017 Maurin Donneaud and others.
-</code></pre></div></div>
-<p>For information on usage and redistribution, and for a DISCLAIMER OF ALL
-WARRANTIES, see LICENSE.txt included in the resistiveMatrix project folder.</p>
-
-
-<h2 id="acknowledgements">Acknowledgements</h2>
-<p>Thanks to Vincent Roudaut, Hannah Perner Willson, Cedric Honnet, Antoine Meisso, Paul Strohmeier</p>
+      <a class="carousel-control-prev" href="#carouselExampleIndicators" role="button" data-slide="prev">
+          <span class="carousel-control-prev-icon" aria-hidden="true"></span>
+          <span class="sr-only">Previous</span>
+        </a>
+      <a class="carousel-control-next" href="#carouselExampleIndicators" role="button" data-slide="next">
+          <span class="carousel-control-next-icon" aria-hidden="true"></span>
+          <span class="sr-only">Next</span>
+        </a>
+    </div>
+  </header>
 
 
-<h2 id="docs">Docs</h2>
-<ul>
-  <li><a href="https://www.youtube.com/watch?v=jWTeH4bodww">Video made by ARTE 2018</a></li>
-  <li><a href="http://www.kobakant.at/DIY/?p=4305/">Video made at Schmiede 2014</a></li>
-</ul>
+  <!-- Page Content -->
+  <section class="py-5">
+    <div id="about" class="container">
+      <div class="row">
+        <div class="col-sm-4">
+          <img src="./LOGO.png" class="float-right" alt="Responsive image">
+        </div>
+        <div class="col-sm-8">
+          <h1><strong><a href="http://matrix.eTextile.org">E256 - eTextile matrix sensor</a></strong></h1>
+          <h4><p>Using a fabric to sense the touch is now possible with the E256 - eTextile matrix sensor.
+                The E256 development kit is a highly customisable solution for designers, makers and companies who want to combine textile and programing into new eTextile projects.</p></h4>
+          <p>This kit features 30cm by 30cm sensitive textile that allow multi touch sensing and pressures topographic analysis. Made out of conductive textile shaped in rows and columns and a layer of piezoresistive fabric, this textile sensor is designed
+            to be easy to make. The E256 firmware implement all the functionalities to sense the touch and trigger OSC messages that can be used in many application such as PureData, SuperCollider, etc. The E256 firmware is running on Teensy 3.1 &amp;
+            3.2 MCUs. The electronic hardware and the firmware are free and open source and can be easely ported to others Arduino like microcontrollers. In order to use the sensor in combination with any mobile devices, the E256 firmware will be ported
+            on MCU with BLE capabilities. From the beginning this project stimulates the development of technologies in artistic use cases: playing music, combine graphics and sound, imagine objects that can have tactile properties, etc.</p>
+        </div>
+      </div>
+    </div>
+  </section>
 
-<div class="footer border-top border-gray-light mt-5 pt-3 text-right text-gray">
-  This project is part of <a href="http://etextile.org">www.etextile.org</a>
-</div>
+  <section class="py-5">
+    <div id="services" class="container">
+      <div class="card-deck">
+        <div class="card border-success mb-3" style="max-width: 18rem;">
+          <div class="card-header bg-success border-success">Pictures & videos</div>
+          <div class="card-body">
+            <h5 class="card-title">Success card title</h5>
+            <p class="card-text">
+              <a href="https://www.youtube.com/watch?v=jWTeH4bodww">ARTE 2018 - Fashion geek (5/10) Hackers de textile</a><br>
+              <a href="http://www.kobakant.at/DIY/?p=4305/">Schmiede 2014</a><br>
+              <a href="https://www.flickr.com/photos/maurin/albums/72157673740361510/" title="Share your pictures with us">Pictures of the project</a><br>
+            </p>
+          </div>
+        </div>
+        <div class="card border-info mb-3" style="max-width: 18rem;">
+          <div class="card-header bg-info border-info">Publications</div>
+          <div class="card-body">
+            <p class="card-text">
+              <strong><a href="http://www.nime2017.org/">NIME17</a></strong><br> Designing a Multi-Touch eTextile for Music Performances - <a href="https://etextile.github.io/resistiveMatrix/publications/NIME17-eTextile.pdf">Paper</a> - <a href="https://vimeo.com/217690743">Video</a><br>
+              <strong><a href="http://moco17.movementcomputing.org/">MOCO17</a></strong><br> Music Skin: Fabric Interface for Expressive Music Control - <a href="https://etextile.github.io/resistiveMatrix/publications/MOCO17-MusicSkin.pdf">Paper</a><br>
+              <strong><a href="http://projetenigmes.free.fr/wiki/index.php?title=Accueil">ENIGMES</a></strong><br> Navigable score - <a href="http://www.grame.fr/jim07/download/16-Cahen.pdf">Paper</a> - <a href="http://theatrophone.free.fr/ENIGMES/ENIGMES-CR.mp4">Video</a><br>
+            </p>
+          </div>
+        </div>
+        <div class="card border-warning mb-3" style="max-width: 18rem;">
+          <div class="card-header bg-warning border-warning">Repository</div>
+          <div class="card-body">
+            <h5 class="card-title"><a href="https://github.com/eTextile/Matrix/tree/master">gitHub.com</a></h5>
+            <p class="card-text">All the project source code is hosted on Github. Feel free to ask questions, write comments, and open pull requests.</p>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
 
-</div>
+  <section class="py-5">
+    <div id="contact" class="container">
+      <!-- Container (Contact Section) -->
+      <div class="row">
+        <div class="col-sm-5">
+          <p>The E256 eTextile matrix sensor demo kit is available for sale.
+            All sensors are made by hand and tested before shipping.
+            We also provide a guarantee to fix or replace the device.</p>
+          <p><span class="glyphicon glyphicon-map-marker"></span>Paris, FR</p>
+          <p><span class="glyphicon glyphicon-envelope"></span>matrix@eTextile.org</p>
+        </div>
+        <div class="col-sm-7 slideanim">
+          <div class="row">
+            <div class="col-sm-6 form-group">
+              <input class="form-control bg-light" id="name" name="name" placeholder="Name" type="text" required>
+            </div>
+            <div class="col-sm-6 form-group">
+              <input class="form-control bg-light" id="email" name="email" placeholder="Email" type="email" required>
+            </div>
+          </div>
+          <textarea class="form-control bg-light" id="comments" name="comments" placeholder="Comment" rows="5"></textarea><br>
+          <div class="row">
+            <div class="col-sm-12 form-group">
+              <button class="btn btn-default pull-right" type="submit">Send</button>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
 
-<script src="/assets/javascript/anchor-js/anchor.min.js"></script>
-<script>anchors.add();</script>
+  </div>
+
+  <!-- Footer -->
+  <footer id="footer" <div class="container-fluid bg-light">
+    <br>
+    <p class="text-right">Copyright (c) 2014-2018 Maurin Donneaud and others.</p>
+    <br>
+    </div>
+  </footer>
+
+  <!-- Bootstrap core JavaScript -->
+  <script src="vendor/jquery/jquery.min.js"></script>
+  <script src="vendor/bootstrap/js/bootstrap.bundle.min.js"></script>
 
 </body>
 
