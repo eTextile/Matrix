@@ -19,8 +19,8 @@
 #include "blob.h"
 #include "llist.h"
 
-// #define BUILTIN_LED    13      // FIXME - Hardware SPI conflict
-// #define BUTTON_PIN     32      // FIXME - NO BUTTON_PIN ON the E256
+//#define BUILTIN_LED     13      // FIXME - Hardware SPI conflict
+//#define BUTTON_PIN      32      // FIXME - NO BUTTON_PIN ON the E256
 #define BAUD_RATE         230400
 #define COLS              16
 #define ROWS              16

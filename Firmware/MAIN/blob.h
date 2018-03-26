@@ -88,11 +88,10 @@ typedef struct {
 } point_t;
 
 // Blob states
-#define   NEW       0
+#define   FREE      0
 #define   UPDATE    1
 #define   TOADD     2
-// #define   USED      3
-#define   DEAD      4
+#define   DEAD      3
 
 typedef struct blob {
   int8_t UID;

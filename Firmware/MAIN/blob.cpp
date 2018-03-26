@@ -141,7 +141,7 @@ void find_blobs(
 
 #ifdef E256_OSC
   OSCBundle bndl;
-  OSCMessage msg("/sensors");
+  // OSCMessage msg("/sensors");
 #endif /*__E256_OSC__*/
 
   if (DEBUG_BLOB) Serial.printf(F("\n DEBUG_BLOB / **blobs** linked list index: %d"), blob_ptr->index);
@@ -207,7 +207,7 @@ void find_blobs(
       if (blobB->UID == blobA->UID && blobB->state == UPDATE) {
         found = true;
         blob_copy(blobA, blobB);
-        blobB->state = NEW;
+        blobB->state = FREE;
 #ifdef E256_OSC
         // Add the blob values to the OSC bundle
         msg.add(blobA->UID);
@@ -216,6 +216,7 @@ void find_blobs(
         msg.add(blobA->centroid.Z);
         msg.add(blobA->pixels);
         bndl.add(msg);
+
 #endif /*__E256_OSC__*/
 #ifdef DEBUG_OSC
         Serial.printf(F("\n DEBUG_OSC / Update outputBlobs / UID:%d\tX:%d\tY:%d\tZ:%d\tPIX:%d"),
@@ -297,6 +298,7 @@ void find_blobs(
   bndl.send(SLIPSerial);     // Send the bytes to the SLIP stream
   SLIPSerial.endPacket();    // Mark the end of the OSC packet
   bndl.empty();              // Empty the bundle to free room for a new one
+  msg.empty();               // Empty the message to free room for a new one
 #endif /*__E256_OSC__*/
 #endif /*__E256_BLOB_ID__*/
 
@@ -329,7 +331,7 @@ void blob_copy(blob_t* dst, blob_t* src) {
 
 void blob_raz(blob_t* node) {
   node->UID = -1;
-  node->state = NEW;
+  node->state = FREE;
   node->centroid.X = 0;
   node->centroid.Y = 0;
   node->centroid.Z = 0;
