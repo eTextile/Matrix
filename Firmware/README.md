@@ -60,11 +60,11 @@ Thanks to Vincent Roudaut, Hannah Perner Willson, Cedric Honnet, Antoine Meisso,
 - Optimise interpolation method
   - Retrieval method from Microchip TB3064 white paper (p12)
   - microchip.com/stellent/groups/techpub_sg/documents/devicedoc/en550192.pdf
+- Add TUIO 1.0 Protocol Specification: https://www.tuio.org/?tuio10
 
+## E256 PCB Hardware routing 
 
-## E256 PCB
-
-## Shift register_0
+## Shift register_0 is pluged to MUX_A & MUX_B
     Q0 -> SO_A  // Pin Q0 connected to Analog MUX_A pin S0
     Q1 -> S1_A  // Pin Q1 connected to Analog MUX_A pin S1
     Q2 -> S2_A  // Pin Q2 connected to Analog MUX_A pin S2
@@ -74,7 +74,7 @@ Thanks to Vincent Roudaut, Hannah Perner Willson, Cedric Honnet, Antoine Meisso,
     Q6 -> S2_B  // Pin Q6 connected to Analog MUX_B pin S2
     Q7 -> EN_B  // Pin Q7 connected to Analog MUX_A pin Enable (active LOW)
 
-### Analog MUX_A
+### Analog MUX_A outputs are direcly pluged to the columns
     Y0 -> ROW_6 // Pin Y0 connected to ROW 6
     Y1 -> ROW_5 // Pin Y1 connected to ROW 5
     Y2 -> ROW_4 // Pin Y2 connected to ROW 4
@@ -84,7 +84,7 @@ Thanks to Vincent Roudaut, Hannah Perner Willson, Cedric Honnet, Antoine Meisso,
     Y6 -> ROW_2 // Pin Y6 connected to ROW 2
     Y7 -> ROW_1 // Pin Y7 connected to ROW 1
 
-### Analog MUX_B
+### Analog MUX_B outputs are direcly pluged to the columns
     Y0 -> ROW_14 // Pin Y0 connected to ROW 14
     Y1 -> ROW_13 // Pin Y1 connected to ROW 13
     Y2 -> ROW_12 // Pin Y2 connected to ROW 12
@@ -94,7 +94,7 @@ Thanks to Vincent Roudaut, Hannah Perner Willson, Cedric Honnet, Antoine Meisso,
     Y6 -> ROW_10 // Pin Y6 connected to ROW 10
     Y7 -> ROW_9  // Pin Y7 connected to ROW 9
 
-## Shift register_1
+## Shift register_1 outputs are direcly pluged to the columns
     Q0 -> COL_7  // Pin Q0 connected to column 7
     Q1 -> COL_6  // Pin Q1 connected to column 6
     Q2 -> COL_5  // Pin Q2 connected to column 5
@@ -104,7 +104,7 @@ Thanks to Vincent Roudaut, Hannah Perner Willson, Cedric Honnet, Antoine Meisso,
     Q6 -> COL_1  // Pin Q6 connected to column 1
     Q7 -> COL_0  // Pin Q7 connected to column 0
 
-## Shift register_2
+## Shift register_2 outputs are direcly pluged to the columns
     Q0 -> COL_15  // Pin Q0 connected to column 15
     Q1 -> COL_14  // Pin Q1 connected to column 14
     Q2 -> COL_13  // Pin Q2 connected to column 13
@@ -114,9 +114,9 @@ Thanks to Vincent Roudaut, Hannah Perner Willson, Cedric Honnet, Antoine Meisso,
     Q6 -> COL_9   // Pin Q6 connected to column 9
     Q7 -> COL_8   // Pin Q7 connected to column 8
 
-## Bytes to achieve the matrix scanning
+## Bytes to scan the matrix
 
-### Byte_C
+### Byte_A
     COL_8 ->  Q7 : 10000000 -> HEX 0x80
     COL_9 ->  Q6 : 01000000 -> HEX 0x40
     COL_10 -> Q5 : 00100000 -> HEX 0x20
@@ -136,24 +136,12 @@ Thanks to Vincent Roudaut, Hannah Perner Willson, Cedric Honnet, Antoine Meisso,
     COL_6 -> Q1 : 00000010 -> HEX 0x2
     COL_7 -> Q0 : 00000001 -> HEX 0x1
 
-### Byte_A
-    ROW_0 -> Y5 : 10000101 -> HEX 0x85
-    ROW_1 -> Y7 : 10000111 -> HEX 0x87
-    ROW_2 -> Y6 : 10000011 -> HEX 0x83
-    ROW_3 -> Y4 : 10000001 -> HEX 0x81
-    ROW_4 -> Y2 : 10000010 -> HEX 0x82
-    ROW_5 -> Y1 : 10000100 -> HEX 0x84
-    ROW_6 -> Y0 : 10000000 -> HEX 0x80
-    ROW_7 -> Y3 : 10000110 -> HEX 0x86
-    /
-    ROW_8  -> Y5 : 01011000 -> HEX 0x58
-    ROW_9  -> Y7 : 01111000 -> HEX 0x78
-    ROW_10 -> Y6 : 00111000 -> HEX 0x38
-    ROW_11 -> Y4 : 00011000 -> HEX 0x18
-    ROW_12 -> Y2 : 00101000 -> HEX 0x28
-    ROW_13 -> Y1 : 01001000 -> HEX 0x48
-    ROW_14 -> Y0 : 00001000 -> HEX 0x8
-    ROW_15 -> Y3 : 01101000 -> HEX 0x68
-
-## REFs
-
+### Byte_C
+    ROW_0 & ROW_8  -> Y5 : 0101 0101 -> HEX 0x55
+    ROW_1 & ROW_9  -> Y7 : 0111 0111 -> HEX 0x77
+    ROW_2 & ROW_10 -> Y6 : 0110 0110 -> HEX 0x66
+    ROW_3 & ROW_11 -> Y4 : 0100 0100 -> HEX 0x44
+    ROW_4 & ROW_12 -> Y2 : 0010 0010 -> HEX 0x22
+    ROW_5 & ROW_13 -> Y1 : 0001 0001 -> HEX 0x11
+    ROW_6 & ROW_14 -> Y0 : 0000 0000 -> HEX 0x00
+    ROW_7 & ROW_15 -> Y3 : 0011 0011 -> HEX 0x33
