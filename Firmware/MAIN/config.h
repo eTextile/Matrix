@@ -33,7 +33,7 @@
 #define NEW_FRAME         (NEW_COLS * NEW_ROWS)
 #define INC               (1.0 / SCALE)
 #define CYCLES            10    // Set the calibration cycles
-#define THRESHOLD         25    // Set the threshold that determine toutch sensitivity (10 is low 30 is high)
+#define THRESHOLD         35    // Set the threshold that determine toutch sensitivity (10 is low 30 is high)
 #define MAX_NODES         40    // Set the maximum nodes number
 #define MIN_BLOB_PIX      4     // Set the minimum blob pixels
 #define MAX_BLOB_PIX      1024  // Set the maximum blob pixels
@@ -47,17 +47,17 @@
 #define ADC1_PIN         A3     // The output of multiplexerB (SIG pin) is connected to Analog pin 3
 
 // Here is the board control
-#define E256_FPS
+//#define E256_FPS
 #define E256_ADC
 #define E256_ADC_SYNCHRO
 #define E256_SERIAL
 #define E256_INTERP
 #define E256_BLOB
 #define E256_BLOB_ID
-// #define E256_OSC
+#define E256_OSC
 
 //#define DEBUG_ADC
-#define DEBUG_OSC
+//#define DEBUG_OSC
 //#define DEBUG_INTERP
 
 #define DEBUG_BITMAP      false

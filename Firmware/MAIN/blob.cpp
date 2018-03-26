@@ -170,7 +170,7 @@ void find_blobs(
     // If the distance between curent blob and last blob position is less than minDist:
     // Take the ID of the nearestBlob in outputBlobs linked list and give it to the curent input blob.
     // Move the curent blob to the blobsToUpdate linked list.
-    if (minDist <= 5.0f) {
+    if (minDist < 10) {
       if (DEBUG_BLOB) Serial.printf(F("\n DEBUG_BLOB / Found corresponding blob: %p in the **outputBlobs** linked list"), nearestBlob);
       blobA->UID = nearestBlob->UID;
       blobA->state = UPDATE;
@@ -204,9 +204,9 @@ void find_blobs(
   for (blob_t* blobA = iterator_start_from_head(outputBlobs_ptr); blobA != NULL; blobA = iterator_next(blobA)) {
     boolean found = false;
     for (blob_t* blobB = iterator_start_from_head(blob_ptr); blobB != NULL; blobB = iterator_next(blobB)) {
-      if (blobB->state == UPDATE && blobB->UID == blobA->UID) {
+      if (blobB->UID == blobA->UID && blobB->state == UPDATE) {
         found = true;
-        blob_copy(blobA, blobB, USED);
+        blob_copy(blobA, blobB);
         blobB->state = NEW;
 #ifdef E256_OSC
         // Add the blob values to the OSC bundle
@@ -218,7 +218,7 @@ void find_blobs(
         bndl.add(msg);
 #endif /*__E256_OSC__*/
 #ifdef DEBUG_OSC
-        Serial.printf(F("\n DEBUG_OSC / UID:%d\tX:%d\tY:%d\tZ:%d\tPIX:%d"),
+        Serial.printf(F("\n DEBUG_OSC / Update outputBlobs / UID:%d\tX:%d\tY:%d\tZ:%d\tPIX:%d"),
                       blobA->UID,
                       blobA->centroid.X,
                       blobA->centroid.Y,
@@ -254,7 +254,7 @@ void find_blobs(
         bndl.add(msg);
 #endif /*__E256_OSC__*/
 #ifdef DEBUG_OSC
-        Serial.printf(F("\n DEBUG_OSC / UID:%d\tX:%d\tY:%d\tZ:%d\tPIX:%d"), blob->UID, -1, -1, -1, -1);
+        Serial.printf(F("\n DEBUG_OSC / Suppress dead blob / UID:%d\tX:%d\tY:%d\tZ:%d\tPIX:%d"), blob->UID, -1, -1, -1, -1);
 #endif
         break;
       }
@@ -268,7 +268,7 @@ void find_blobs(
   for (blob_t* blob = iterator_start_from_head(blob_ptr); blob != NULL; blob = iterator_next(blob)) {
     if (blob->state == TOADD) {
       blob_t* newBlob = llist_pop_front(freeBlobs_ptr);
-      blob_copy(newBlob, blob, USED);
+      blob_copy(newBlob, blob);
       llist_push_back(outputBlobs_ptr, newBlob);
       if (DEBUG_BLOB) Serial.printf(F("\n DEBUG_BLOB / Blob: %p added to **outputBlobs** linked list"), blob);
       // Add the blob values to the OSC bundle
@@ -281,7 +281,7 @@ void find_blobs(
       bndl.add(msg);
 #endif #endif /*__E256_OSC__*/
 #ifdef DEBUG_OSC
-      Serial.printf(F("\n DEBUG_OSC / UID:%d\tX:%d\tY:%d\tZ:%d\tPIX:%d"),
+      Serial.printf(F("\n DEBUG_OSC / Add the new blob / UID:%d\tX:%d\tY:%d\tZ:%d\tPIX:%d"),
                     blob->UID,
                     blob->centroid.X,
                     blob->centroid.Y,
@@ -319,9 +319,8 @@ void bitmap_clear(char* bitmap_ptr, const uint16_t Size) {
   memset(bitmap_ptr, 0, Size * sizeof(char));
 }
 
-void blob_copy(blob_t* dst, blob_t* src, uint8_t stete) {
+void blob_copy(blob_t* dst, blob_t* src) {
   dst->UID = src->UID;
-  dst->state = stete;
   dst->centroid.X = src->centroid.X;
   dst->centroid.Y = src->centroid.Y;
   dst->centroid.Z = src->centroid.Z;

@@ -10,7 +10,7 @@
 - Arduino IDE additional library
   - SPI: https://www.pjrc.com/teensy/td_libs_SPI.html (Hardware)
   - ADC: https://github.com/pedvide/ADC (include in Teensyduino)
-  - OSC: https://github.com/CNMAT/OSC (Using 
+  - OSC: https://github.com/CNMAT/OSC (Installed with Arduino library manager)
 
 ### Settings for Arduino IDE
 - Board:       Teensy 3.1-3.2

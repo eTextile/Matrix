@@ -91,7 +91,7 @@ typedef struct {
 #define   NEW       0
 #define   UPDATE    1
 #define   TOADD     2
-#define   USED      3
+// #define   USED      3
 #define   DEAD      4
 
 typedef struct blob {
@@ -110,7 +110,7 @@ typedef struct {
 } llist_t;
 
 void blob_raz(blob_t* node);
-void blob_copy(blob_t* dst, blob_t* src, uint8_t state);
+void blob_copy(blob_t* dst, blob_t* src);
 
 void find_blobs(
   image_t* inFrame_ptr,

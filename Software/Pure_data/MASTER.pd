@@ -1,10 +1,10 @@
-#N canvas 618 237 450 300 10;
-#X obj 182 205 print;
-#X obj 164 167 OSCroute /sensors;
-#X msg 203 22 close;
-#X msg 265 84 devices;
-#X msg 202 78 open 0;
-#X obj 150 120 comport 0 230400;
+#N canvas 501 297 281 256 10;
+#X obj 165 166 print;
+#X obj 66 139 OSCroute /sensors;
+#X msg 89 73 close;
+#X msg 67 31 devices;
+#X msg 79 52 open 0;
+#X obj 66 114 comport 0 230400;
 #X connect 1 1 0 0;
 #X connect 2 0 5 0;
 #X connect 3 0 5 0;
