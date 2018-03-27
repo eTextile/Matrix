@@ -141,7 +141,7 @@ void find_blobs(
 
 #ifdef E256_OSC
   OSCBundle bndl;
-  // OSCMessage msg("/sensors");
+  OSCMessage msg("/sensors");
 #endif /*__E256_OSC__*/
 
   if (DEBUG_BLOB) Serial.printf(F("\n DEBUG_BLOB / **blobs** linked list index: %d"), blob_ptr->index);
@@ -292,7 +292,7 @@ void find_blobs(
 #endif /*__DEBUG_OSC__*/
     }
   }
-  // Send the blobs values with the OSC bundle
+  // Send an OSC bundlethe with all blobs values  
 #ifdef E256_OSC
   SLIPSerial.beginPacket();
   bndl.send(SLIPSerial);     // Send the bytes to the SLIP stream
