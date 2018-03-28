@@ -1,6 +1,6 @@
-#N canvas 451 68 717 391 10;
-#X obj 339 85 o.io.slipserial;
-#X obj 339 106 mrpeach/unpackOSC;
+#N canvas 230 24 745 557 10;
+#X obj 426 107 o.io.slipserial;
+#X obj 426 128 mrpeach/unpackOSC;
 #X text 70 2 Oscuino Serial Adrian Freed 2013;
 #X text 70 112 - comport;
 #X text 70 91 - cyclone;
@@ -9,23 +9,62 @@
 #X text 70 23 This patch depends on several third party externals available
 in PD-extended (deprecated?) \, Purr \, or through deken plugin (Help
 -> Find externals):;
-#X obj 339 152 print;
-#X msg 426 36 devicename /dev/ttyACM0 \, baud 230400 \, pollintervall
+#X msg 426 33 devicename /dev/ttyACM0 \, baud 230400 \, pollintervall
 4 \, verbose 1;
-#X obj 339 127 mrpeach/routeOSC /sensors;
-#X msg 585 152 devices;
-#X msg 579 106 close;
-#X obj 195 152 vsl 15 128 0 64 0 0 empty empty empty 0 -9 0 10 -262144
+#X obj 426 149 mrpeach/routeOSC /sensors;
+#X msg 441 72 devices;
+#X msg 500 72 close;
+#X obj 115 322 vsl 15 128 0 64 0 0 empty 0-posY empty 0 -9 0 10 -262144
 -1 -1 0 1;
-#X obj 323 216 unpack f f f f f;
-#X obj 211 285 hsl 128 15 0 64 0 0 empty empty empty -2 -8 0 10 -262144
+#X obj 131 455 hsl 128 15 0 64 0 0 empty 0-posX empty -2 -8 0 10 -262144
 -1 -1 0 1;
+#X obj 426 214 until;
+#X obj 426 237 list append;
+#X obj 515 264 bang;
+#X obj 426 264 list split 5;
+#X obj 426 291 s OSC_Blobs;
+#X obj 426 171 t b l;
+#X obj 156 381 unpack float float float float;
+#X obj 156 360 route 0;
+#X obj 156 338 r OSC_Blobs;
+#X obj 156 402 s 0-posX;
+#X obj 215 402 s 0-posY;
+#X obj 274 402 s 0-posZ;
+#X obj 333 402 s 0-zone;
+#X obj 426 322 vsl 15 128 0 64 0 0 empty 1-posY empty 0 -9 0 10 -262144
+-1 -1 0 1;
+#X obj 442 455 hsl 128 15 0 64 0 0 empty 1-posX empty -2 -8 0 10 -262144
+-1 -1 0 1;
+#X obj 467 381 unpack float float float float;
+#X obj 467 338 r OSC_Blobs;
+#X obj 467 360 route 1;
+#X obj 467 402 s 1-posX;
+#X obj 526 402 s 1-posY;
+#X obj 585 402 s 1-posZ;
+#X obj 644 402 s 1-zone;
 #X connect 0 0 1 0;
-#X connect 1 0 10 0;
-#X connect 9 0 0 1;
-#X connect 10 0 8 0;
-#X connect 10 0 14 0;
-#X connect 11 0 0 1;
-#X connect 12 0 0 1;
-#X connect 14 1 13 0;
-#X connect 14 2 15 0;
+#X connect 1 0 9 0;
+#X connect 8 0 0 0;
+#X connect 9 0 19 0;
+#X connect 10 0 0 0;
+#X connect 11 0 0 0;
+#X connect 14 0 15 0;
+#X connect 15 0 17 0;
+#X connect 16 0 14 1;
+#X connect 17 0 18 0;
+#X connect 17 1 15 1;
+#X connect 17 2 16 0;
+#X connect 19 0 14 0;
+#X connect 19 1 15 1;
+#X connect 20 0 23 0;
+#X connect 20 1 24 0;
+#X connect 20 2 25 0;
+#X connect 20 3 26 0;
+#X connect 21 0 20 0;
+#X connect 22 0 21 0;
+#X connect 29 0 32 0;
+#X connect 29 1 33 0;
+#X connect 29 2 34 0;
+#X connect 29 3 35 0;
+#X connect 30 0 31 0;
+#X connect 31 0 29 0;
