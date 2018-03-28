@@ -152,27 +152,27 @@
       <!-- Container (Contact Section) -->
       <div class="row">
         <div class="col-sm-5">
-          <p>The E256 eTextile matrix sensor demo kit is available for sale.
-            All sensors are made by hand and tested before shipping.
-            We also provide a guarantee to fix or replace the device.</p>
+          <p>The E256 eTextile matrix sensor demo kit is available for sale. All sensors are made by hand and tested before shipping. We also provide a guarantee to fix or replace the device.</p>
           <p><span class="glyphicon glyphicon-map-marker"></span>Paris - France</p>
           <p><span class="glyphicon glyphicon-envelope"></span>matrix@eTextile.org</p>
         </div>
         <div class="col-sm-7 slideanim">
-          <div class="row">
-            <div class="col-sm-6 form-group">
-              <input class="form-control bg-light" id="name" name="name" placeholder="Name" type="text" required>
+          <form action="https://formspree.io/matrix@etextile.org" method="POST">
+            <div class="row">
+              <div class="col-sm-6 form-group">
+                <input class="form-control bg-light" id="name" name="name" placeholder="Name" type="text" required>
+              </div>
+              <div class="col-sm-6 form-group">
+                <input class="form-control bg-light" id="email" name="email" placeholder="Email" type="email" required>
+              </div>
             </div>
-            <div class="col-sm-6 form-group">
-              <input class="form-control bg-light" id="email" name="email" placeholder="Email" type="email" required>
+            <textarea class="form-control bg-light" id="comments" name="comments" placeholder="Comment" rows="5"></textarea><br>
+            <div class="row">
+              <div class="col-sm-12 form-group">
+                <button class="btn btn-default pull-right" type="submit" value='Submit'>Send</button>
+              </div>
             </div>
-          </div>
-          <textarea class="form-control bg-light" id="comments" name="comments" placeholder="Comment" rows="5"></textarea><br>
-          <div class="row">
-            <div class="col-sm-12 form-group">
-              <button class="btn btn-default pull-right" type="submit">Send</button>
-            </div>
-          </div>
+          </form>
         </div>
       </div>
     </div>
