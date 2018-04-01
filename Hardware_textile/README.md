@@ -7,3 +7,5 @@
 http://wiki.datapaulette.org/doku.php/atelier/documentation/outillage/plotter
 
 https://github.com/codelv/inkcut
+
+![Alt text](./E256_path.svg)<img src="./E256_path.svg">
