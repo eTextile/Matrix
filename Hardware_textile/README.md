@@ -1,11 +1,18 @@
-# eTextile matrix sensor / E256 / HOWTO
+# E256 - eTextile matrix sensor
+## Hardware textile HOWTO
 
-### Transforming textiles into an intuitive way to interact with computers. This project is part of an electronic textiles research on HCI gesture interaction that was started in 2005.
+### Transforming textiles into an intuitive way to interact with computers
+
+The eTextile hardware have been designed to be easy to make and customize with accesibles and cheap tools.
+There is some tricks to make conductive patterns on regular cotton fabric.
+First of all we will need some experience with cutting tip plotters to cutt a conductive fabric with hot melt adhesive.
+
+- https://inkscape.org/fr/
+- https://github.com/codelv/inkcut
+
+![Alt text](./E256_path.svg)
 
 ![alt tag](https://farm1.staticflickr.com/789/40837526952_12d6bf42cf_z_d.jpg)
 
 http://wiki.datapaulette.org/doku.php/atelier/documentation/outillage/plotter
 
-https://github.com/codelv/inkcut
-
-![Alt text](./E256_path.svg)
