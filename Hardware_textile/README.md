@@ -1,6 +1,5 @@
 # E256 - eTextile matrix sensor
-## Hardware textile HOWTO
-
+## eTextile hardware HOWTO
 ### Transforming textiles into an intuitive way to interact with computers
 
 The eTextile hardware have been designed to be easy to make and customize with accesibles and cheap tools.
