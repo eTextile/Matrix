@@ -1,6 +1,6 @@
 # E256 - eTextile matrix sensor
-## eTextile hardware HOWTO
 ### Transforming textiles into an intuitive way to interact with computers
+## eTextile hardware HOWTO
 
 The eTextile hardware have been designed to be easy to make and customize with accesibles and cheap tools.
 There is some tricks to make conductive patterns on regular cotton fabric.
