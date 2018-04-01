@@ -5,15 +5,16 @@
 ![eTextile matrix sensor - teensy_matrix](https://farm6.staticflickr.com/5572/30306414062_22bba76566_z_d.jpg) ![eTextile matrix sensor - E256](https://farm1.staticflickr.com/798/40904680852_d5c9b1b35d_z_d.jpg)
 
 ## About The project
+
 Using a fabric to sense the touch is now possible with the E256 - eTextile matrix sensor.
-The E256 development kit is a highly customisable solution for designers, makers and companies who want to combine textile and programing into new eTextile projects.
-This kit features 30cm by 30cm sensitive textile that allow multi touch sensing and pressures topographic analysis.
+The E256 development kit is a highly customizable solution for designers, makers, and companies who want to combine textile and programming into new eTextile projects.
+This kit features 30cm by 30cm sensitive textile that allows multi-touch sensing and pressures topographic analysis.
 Made out of conductive textile shaped in rows and columns and a layer of piezoresistive fabric, this textile sensor is designed to be easy to make.
-The E256 firmware implement all the functionalities to sense the touch and trigger OSC messages that can be used in many application such as PureData, SuperCollider, etc.
+The E256 firmware implements all the functionalities to sense the touch and trigger OSC messages that can be used in many application such as PureData, SuperCollider, etc.
 The E256 firmware is running on Teensy 3.1 & 3.2 MCUs.
-The electronic hardware and the firmware are free and open source and can be easely ported to others Arduino like microcontrollers.
+The electronic hardware and the firmware are free and open source and can be easily ported to others Arduino like microcontrollers.
 In order to use the sensor in combination with any mobile devices, the E256 firmware will be ported on MCU with BLE capabilities.
-From the beginning this project stimulates the development of technologies in artistic use cases: playing music, combine graphics and sound, imagine objects that can have tactile properties, etc.
+From the beginning, this project stimulates the development of technologies in artistic use cases: playing music, combine graphics and sound, imagine objects that can have tactile properties, etc.
 
 ### Development tools & DOCs
 * **Web page:** [http://matrix.eTextile.org/](http://matrix.eTextile.org "Web page")
