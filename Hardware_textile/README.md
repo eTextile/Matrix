@@ -9,7 +9,7 @@ Plotters are CNC tools that you can buy for cheap on second hand websites.
 We suggest to look for an "obsolete" one that work with parallel communication port (NO USB!) this will be cheapest!
 Then you will need to buy a parallel to USB adapter and use the inkscape plugin to plot your design... 
 
-- https://inkscape.org/fr/
+- https://inkscape.org/
 - https://github.com/codelv/inkcut
 
 ![Alt text](./E256_path.svg)
