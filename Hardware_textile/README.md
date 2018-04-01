@@ -5,6 +5,9 @@
 The eTextile hardware have been designed to be easy to make and customize with accesibles and cheap tools.
 There is some tricks to make conductive patterns on regular cotton fabric.
 First of all we will need some experience with cutting tip plotters to cutt a conductive fabric with hot melt adhesive.
+Plotters are CNC tools that you can buy for cheap on second hand websites.
+We suggest to look for an "obsolete" one that work with parallel communication port (NO USB!) this will be cheapest!
+Then you will need to buy a parallel to USB adapter and use the inkscape plugin to plot your design... 
 
 - https://inkscape.org/fr/
 - https://github.com/codelv/inkcut
