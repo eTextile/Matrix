@@ -34,8 +34,8 @@ From the beginning, this project stimulates the development of technologies in a
 * **Softwear:** demos made with cool applications
 
 ## Publications
-- [NIME17](http://www.nime2017.org/) - Designing a Multi-Touch eTextile for Music Performances / [Paper](https://etextile.github.io/resistiveMatrix/publications/NIME17-eTextile.pdf) - [Video](https://vimeo.com/217690743)
-- [MOCO17](http://moco17.movementcomputing.org/) - Music Skin: Fabric Interface for Expressive Music Control / [Paper](https://etextile.github.io/resistiveMatrix/publications/MOCO17-MusicSkin.pdf)
+- [NIME17](http://www.nime2017.org/) - Designing a Multi-Touch eTextile for Music Performances / [Paper](https://github.com/eTextile/Matrix/blob/teensy_matrix/docs/publications/NIME17-eTextile.pdf) - [Video](https://vimeo.com/217690743)
+- [MOCO17](http://moco17.movementcomputing.org/) - Music Skin: Fabric Interface for Expressive Music Control / [Paper](https://github.com/eTextile/Matrix/blob/teensy_matrix/docs/publications/MOCO17-MusicSkin.pdf)
 
 ## Copyright
 Except as otherwise noted, all files in the resistiveMatrix project folder
@@ -51,5 +51,3 @@ Thanks to Vincent Roudaut, Hannah Perner Willson, Cedric Honnet, Antoine Meisso,
 ## Docs
 - [Video made by ARTE 2018](https://www.youtube.com/watch?v=jWTeH4bodww)
 - [Video made at Schmiede 2014](http://www.kobakant.at/DIY/?p=4305/)
-
-
