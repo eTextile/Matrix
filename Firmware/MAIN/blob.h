@@ -88,14 +88,16 @@ typedef struct {
 } point_t;
 
 // Blob states
-#define   FREE      0
-#define   UPDATE    1
-#define   TOADD     2
-#define   DEAD      3
+typedef enum {
+  FREE,
+  UPDATE,
+  TOADD,
+  DEAD
+} state_t;
 
 typedef struct blob {
   int8_t UID;
-  uint8_t state;
+  state_t state;
   point_t centroid;
   uint16_t pixels;
   struct blob* next_ptr;
@@ -124,5 +126,6 @@ void find_blobs(
   llist_t* outputBlobs_ptr,
   SLIPEncodedUSBSerial  SLIPSerial
 );
+
 
 #endif /*__BLOB_H__*/

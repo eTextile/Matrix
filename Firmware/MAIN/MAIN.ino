@@ -126,7 +126,7 @@ void loop() {
 #ifdef E256_ADC_SYNCHRO
       result = adc->analogSynchronizedRead(ADC0_PIN, ADC1_PIN);
       frameValues[rowIndexA] = constrain(result.result_adc0 - minVals[rowIndexA], 0, 255); // float32_t frameValues[ROW_FRAME]
-      frameValues[rowIndexB] = constrain(result.result_adc1 - minVals[rowIndexB], 0, 255);
+      frameValues[rowIndexB] = constrain(result.result_adc1 - minVals[rowIndexB], 0, 255); // float32_t frameValues[ROW_FRAME]
 #else
       frameValues[rowIndexA] =  constrain(analogRead(ADC0_PIN) - minVals[rowIndexA], 0, 255); // float32_t frameValues[ROW_FRAME];
       frameValues[rowIndexB] =  constrain(analogRead(ADC1_PIN) - minVals[rowIndexB], 0, 255); // float32_t frameValues[ROW_FRAME];
@@ -179,7 +179,9 @@ void loop() {
 #endif /*__DEBUG_INTERP__*/
 #endif /*__E256_INTERP__*/
 
-#ifdef E256_BLOB
+
+
+#ifdef E256_BLOBS
   find_blobs(
     &inputFrame,        // image_t 64 x 64 (1D array) uint8_t
     bitmap,             // char Array
@@ -191,9 +193,9 @@ void loop() {
     &freeBlobs,         // list_t
     &blobs,             // list_t
     &outputBlobs,       // list_t
-    SLIPSerial          // SLIPEncodedUSBSerial
+    SLIPSerial
   );
-#endif /*__E256_BLOB__*/
+#endif /*__E256_BLOBS__*/
 
 #ifdef E256_FPS
   if ((millis() - lastFarme) >= 1000) {
@@ -202,7 +204,7 @@ void loop() {
     fps = 0;
   }
   fps++;
-  Serial.println();
+  //Serial.println();
 #endif /*__E256_FPS__*/
 
 }

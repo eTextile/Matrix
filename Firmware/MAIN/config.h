@@ -52,13 +52,13 @@
 #define E256_ADC_SYNCHRO
 #define E256_SERIAL
 #define E256_INTERP
-#define E256_BLOB
-#define E256_BLOB_ID
-#define E256_OSC
+#define E256_BLOBS
+#define E256_BLOBS_ID
+#define E256_BLOBS_OSC
 
 //#define DEBUG_ADC
-//#define DEBUG_OSC
 //#define DEBUG_INTERP
+//#define DEBUG_BLOBS_OSC
 
 #define DEBUG_BITMAP      false
 #define DEBUG_CCL         false
