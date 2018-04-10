@@ -23,10 +23,6 @@ From the beginning, this project stimulates the development of technologies in a
 * **Mail:** [matrix@etextile.org](mailto:lulu@etextile.org "eMail")
 * **Pictures:** [flickr.com](https://www.flickr.com/photos/maurin/albums/72157673740361510/ "Share your pictures with us")
 
-### eTextile matrix sensor branches
-* **teensy_matrix:** V1.0 Teensy extension board - use all Teensy analogs inputs.
-* **E256:** V2.0 Teensy extension board - Use only two ADC to performe synchronized readings.
-
 ## Project content
 * **Hardware_textile:** eTextile matrix sensor tutorial
 * **Hardware_electronic:** extension board PCB sources
