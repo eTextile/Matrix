@@ -4,10 +4,10 @@
   This work is licensed under Creative Commons Attribution-ShareAlike 4.0 International license, see the LICENSE file for details.
 */
 
-#include "config.h"
-
 #ifndef __BLOB_H__
 #define __BLOB_H__
+
+#include "config.h"
 
 #define IM_LOG2_2(x)    (((x) &                0x2ULL) ? ( 2                        ) :             1) // NO ({ ... }) !
 #define IM_LOG2_4(x)    (((x) &                0xCULL) ? ( 2 +  IM_LOG2_2((x) >>  2)) :  IM_LOG2_2(x)) // NO ({ ... }) !
@@ -110,11 +110,11 @@ typedef struct {
   int8_t index; // If no element index is -1
 } llist_t;
 
-void blob_raz(blob_t* node);
-void blob_copy(blob_t* dst, blob_t* src);
+inline void blob_raz(blob_t* node);
+inline void blob_copy(blob_t* dst, blob_t* src);
 
-void find_blobs(
-  image_t* inFrame_ptr,
+inline void find_blobs(
+  image_t* interpolatedFrame_ptr,
   char* bitmap_ptr,
   const int rows,
   const int cols,
@@ -124,8 +124,7 @@ void find_blobs(
   llist_t* freeBlob_ptr,
   llist_t* blobs_ptr,
   llist_t* outputBlobs_ptr,
-  SLIPEncodedUSBSerial  SLIPSerial
+  SLIPEncodedUSBSerial SLIPSerial
 );
-
 
 #endif /*__BLOB_H__*/

@@ -14,9 +14,11 @@
 void setup() {
   // pinMode(BUILTIN_LED, OUTPUT); // FIXME - BUILTIN_LED is used for SPI hardware
 
-#ifdef E256_SERIAL
-  // Select MODE while booting
   Serial.begin(BAUD_RATE);   // Arduino serial standard library ** 230400 **
+  while (!Serial.dtr());     // Wait for user to start the serial monitor
+
+#ifdef E256_SERIAL_CONFIG
+  // Select MODE while booting
   while (!Serial.dtr());     // Wait for user to start the serial monitor
   uint8_t waitOn = 0;
   sensor = 0;
@@ -42,7 +44,7 @@ void setup() {
       }
     }
   }
-#endif /*__E256_SERIAL__*/
+#endif /*__E256_SERIAL_CONFIG__*/
 
   // pinMode(BUTTON_PIN, INPUT_PULLUP);          // Set button pin as input and activate the input pullup resistor // FIXME - NO BUTTON_PIN ON the E256!
   // attachInterrupt(BUTTON_PIN, calib, RISING); // Attach interrrupt on button PIN // FIXME - NO BUTTON_PIN ON the E256
@@ -78,16 +80,21 @@ void setup() {
   adc->setSamplingSpeed(ADC_SAMPLING_SPEED::VERY_HIGH_SPEED, ADC_1);     // Change the sampling speed
   // adc->setSamplingSpeed(ADC_SAMPLING_SPEED::HIGH_SPEED, ADC_1);       // Change the sampling speed
   // adc->enableCompare(1.0 / 3.3 * adc->getMaxValue(ADC_1), 0, ADC_1);  // Measurement will be ready if value < 1.0V
+#else
+  analogReadRes(8); // Set the ADC converteur resolution to 10 bit
 #endif /*__E256_ADC_SYNCHRO__*/
 
-  interpolate.numCols = COLS;
-  interpolate.numRows = ROWS;
-  interpolate.pData = frameValues; // 16 x 16
+  // Raw frame init
+  rawFrame.numCols = COLS;
+  rawFrame.numRows = ROWS;
+  rawFrame.pData = frameValues; // 16 x 16 // float32_t frameValues[ROW_FRAME];
 
-  inputFrame.numCols = NEW_COLS;
-  inputFrame.numRows = NEW_ROWS;
-  inputFrame.pData = bilinIntOutput; // 64 x 64
+  // Interpolated frame init
+  interpolatedFrame.numCols = NEW_COLS;
+  interpolatedFrame.numRows = NEW_ROWS;
+  interpolatedFrame.pData = bilinIntOutput; // 64 x 64
 
+  // Blobs list init
   llist_raz(&freeBlobs);
   llist_init(&freeBlobs, blobArray, MAX_NODES); // add 40 nodes in the freeBlobs linked list
   llist_raz(&blobs);
@@ -97,50 +104,48 @@ void setup() {
   // bootBlink(BUILTIN_LED, 9); // FIXME - BUILTIN_LED is used for hardware SPI
   Serial.printf("\n Calibrated!");
 
-#ifdef E256_OSC
-  SLIPSerial.begin(BAUD_RATE); // Extended Arduino serial library
-#endif /*__E256_OSC__*/
+#ifdef E256_BLOBS_OSC
+  SLIPSerial.begin(BAUD_RATE);  // Extended Arduino serial library with SLIP encoding
+#endif /*__E256_BLOBS_OSC__*/
 }
 
 void loop() {
 
 #ifdef E256_ADC
-  // Columns are digital OUTPUT PINS - We scan one column at a time
-  // Rows are analog INPUT PINS - We read two rows at a time
+  // Columns are digital OUTPUT PINS - We supply one column at a time
+  // Rows are analog INPUT PINS - We sens two rows at a time
   uint16_t setCols = 0x8000;
 
   for (uint8_t col = 0; col < COLS; col++) {        // 0 to 15
     for (uint8_t row = 0; row < DUAL_ROWS; row++) { // 0 to 7
 
       digitalWriteFast(E256_SS_PIN, LOW);     // Set latchPin LOW
-      // delayMicroseconds(10);
       SPI.transfer(setCols & 0xff);           // Shift out the LSB byte to set up the OUTPUT shift register
       SPI.transfer(setCols >> 8);             // Shift out the MSB byte to set up the OUTPUT shift register
       SPI.transfer(setDualRows[row]);         // Shift out one byte that setup the two 8:1 analog multiplexers
       digitalWriteFast(E256_SS_PIN, HIGH);    // Set latchPin HIGH
-      // delayMicroseconds(100);
+      // delayMicroseconds(1);                // See switching time of the 74HC4051BQ multiplexeur
 
-      uint8_t rowIndexA = row * COLS + col;    // Can be optimized later
-      uint8_t rowIndexB = rowIndexA + 128;     // ROW_FRAME/2 == 128
+      uint8_t rowIndexA = row * COLS + col;    // Row IndexA computation
+      uint8_t rowIndexB = rowIndexA + 128;     // Row IndexB computation (ROW_FRAME/2 == 128)
 
 #ifdef E256_ADC_SYNCHRO
       result = adc->analogSynchronizedRead(ADC0_PIN, ADC1_PIN);
-      frameValues[rowIndexA] = constrain(result.result_adc0 - minVals[rowIndexA], 0, 255); // float32_t frameValues[ROW_FRAME]
-      frameValues[rowIndexB] = constrain(result.result_adc1 - minVals[rowIndexB], 0, 255); // float32_t frameValues[ROW_FRAME]
+      frameValues[rowIndexA] = constrain(result.result_adc0 - minVals[rowIndexA], 0, 255);
+      frameValues[rowIndexB] = constrain(result.result_adc1 - minVals[rowIndexB], 0, 255);
 #else
-      frameValues[rowIndexA] =  constrain(analogRead(ADC0_PIN) - minVals[rowIndexA], 0, 255); // float32_t frameValues[ROW_FRAME];
-      frameValues[rowIndexB] =  constrain(analogRead(ADC1_PIN) - minVals[rowIndexB], 0, 255); // float32_t frameValues[ROW_FRAME];
+      frameValues[rowIndexA] = constrain(analogRead(ADC0_PIN) - minVals[rowIndexA], 0, 255);
+      frameValues[rowIndexB] = constrain(analogRead(ADC1_PIN) - minVals[rowIndexB], 0, 255);
 #endif /*__E256_ADC_SYNCHRO__*/
     }
     setCols = setCols >> 1;
-    // delay(10);
   }
 
 #ifdef DEBUG_ADC
   sensor = 0;
   for (uint8_t col = 0; col < COLS; col++) {
     for (uint8_t row = 0; row < ROWS; row++) {
-      Serial.printf(F("\t%d"), (uint8_t) frameValues[sensor]);
+      Serial.printf(F("\t%d"), frameValues[sensor]);
       sensor++;
     }
     Serial.println();
@@ -148,19 +153,23 @@ void loop() {
   Serial.println();
   delay(500);
 #endif /*__DEBUG_ADC__*/
+
+  // Send frame raw values
+#ifdef E256_SEND_RAW
+  SLIPSerial.beginPacket();
+  SLIPSerial.write(frameValues, ROW_FRAME * sizeof(uint8_t));
+  SLIPSerial.endPacket();
+#endif /*__E256_SEND_RAW__*/
+
 #endif /*__E256_ADC__*/
 
   //////////////////// Bilinear intrerpolation
 #ifdef E256_INTERP
-  float rowInterPos = 0;
-  float colInterPos = 0;
-  sensor = 0;
 
+  sensor = 0;
   for (uint8_t col = 0; col < NEW_COLS; col++) {
-    colInterPos = (float) col / SCALE;
     for (uint8_t row = 0; row < NEW_ROWS; row++) {
-      rowInterPos = (float) row / SCALE;
-      bilinIntOutput[sensor] = (uint8_t) arm_bilinear_interp_f32(&interpolate, rowInterPos, colInterPos);
+      bilinIntOutput[sensor] = bilinear_interp(&rawFrame, row, col);
       sensor++;
     }
   }
@@ -179,11 +188,9 @@ void loop() {
 #endif /*__DEBUG_INTERP__*/
 #endif /*__E256_INTERP__*/
 
-
-
 #ifdef E256_BLOBS
   find_blobs(
-    &inputFrame,        // image_t 64 x 64 (1D array) uint8_t
+    &interpolatedFrame, // image_t 64 x 64 (1D array) uint8_t
     bitmap,             // char Array
     NEW_ROWS,           // const int
     NEW_COLS,           // const int
@@ -204,7 +211,6 @@ void loop() {
     fps = 0;
   }
   fps++;
-  //Serial.println();
 #endif /*__E256_FPS__*/
 
 }
@@ -214,34 +220,32 @@ void calib(void) {
   memset(minVals, 0, sizeof(uint8_t) * ROW_FRAME); // Set all values to 0
 
   for (uint8_t i = 0; i < CYCLES; i++) {
-
-    // Columns are digital OUTPUT PINS
-    // Rows are analog INPUT PINS
-    // uint16_t setCols = 0x8080; // Powering two cols at a time (NOTGOOD) -> 1000 0000 1000 0000
-    uint16_t setCols = 0x8000;    // We must powering one col at a time (GOOD) -> 1000 0000 0000 0000
+    // Columns are digital OUTPUT PINS - We supply one column at a time
+    // Rows are analog INPUT PINS - We sens two rows at a time
+    uint16_t setCols = 0x8000;
 
     for (uint8_t col = 0; col < COLS; col++) {
       for (uint8_t row = 0; row < DUAL_ROWS; row++) {
 
         digitalWriteFast(E256_SS_PIN, LOW);   // Set latchPin LOW
-        // delayMicroseconds(10);
         SPI.transfer(setCols & 0xff);         // Shift out the LSB byte to set up the OUTPUT shift register
         SPI.transfer(setCols >> 8);           // Shift out the MSB byte to set up the OUTPUT shift register
         SPI.transfer(setDualRows[row]);       // Shift out one byte that setup the two 8:1 analog multiplexers
         digitalWriteFast(E256_SS_PIN, HIGH);  // Set latchPin HIGH
-        // delayMicroseconds(100);
+        // delayMicroseconds(1);              // See switching time of the 74HC4051BQ multiplexeur
 
 #ifdef E256_ADC_SYNCHRO
         result = adc->analogSynchronizedRead(ADC0_PIN, ADC1_PIN);
         uint8_t ADC0_val = result.result_adc0;
         uint8_t ADC1_val = result.result_adc1;
 #else
-        uint8_t ADC0_val =  analogRead(ADC0_PIN);; // float32_t frameValues[ROW_FRAME]
-        uint8_t ADC1_val =  analogRead(ADC1_PIN);;
+        uint8_t ADC0_val = analogRead(ADC0_PIN);
+        uint8_t ADC1_val = analogRead(ADC1_PIN);
 #endif /*__E256_ADC_SYNCHRO__*/
 
-        uint8_t rowIndexA = row * COLS + col;    // Can be optimized later
-        uint8_t rowIndexB = rowIndexA + 128;     // ROW_FRAME/2 == 128
+
+        uint8_t rowIndexA = row * COLS + col;    // Row IndexA computation
+        uint8_t rowIndexB = rowIndexA + 128;     // Row IndexB computation (ROW_FRAME/2 == 128)
 
         if (ADC0_val > minVals[rowIndexA]) {
           minVals[rowIndexA] = ADC0_val;

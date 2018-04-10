@@ -4,10 +4,10 @@
   This work is licensed under Creative Commons Attribution-ShareAlike 4.0 International license, see the LICENSE file for details.
 */
 
-#include "config.h"
-
 #ifndef __LLIST_H__
 #define __LLIST_H__
+
+#include "config.h"
 
 ////////////// Linked list - Fonction prototypes //////////////
 

@@ -14,7 +14,7 @@ SPISettings settings(16000000, MSBFIRST, SPI_MODE0); // LSBFIRST
 ADC *adc = new ADC();     // ADC object
 ADC::Sync_result result;  // ADC_0 & ADC_1
 
-SLIPEncodedUSBSerial SLIPSerial(thisBoardsSerialUSB); // Extended serial library object
+SLIPEncodedUSBSerial SLIPSerial(thisBoardsSerialUSB);
 
 unsigned long lastFarme = 0;
 uint16_t fps = 0;
@@ -27,20 +27,14 @@ byte setDualRows[ROWS] = {
 
 uint16_t sensor = 0;
 
-char serialConf[4] = {0};                 // Array to store boot serial config
-uint8_t minVals[ROW_FRAME] = {0};         // Array to store smallest values
-float32_t frameValues[ROW_FRAME] = {0};   // Array to store ofseted input values
-uint8_t bilinIntOutput[NEW_FRAME] = {0};  // Bilinear interpolation Output buffer
+char      serialConf[4] = {0};              // Array to store boot serial config
+uint8_t   minVals[ROW_FRAME] = {0};         // Array to store smallest values
 
+uint8_t   frameValues[ROW_FRAME] = {0};     // Array to store ofseted input values
+image_t   rawFrame;                         // Instance of struct image_t 
 
-#ifdef CORE_TEENSY
-// See : https://os.mbed.com/teams/Renesas/code/mbed-dsp-neon/docs/a912b042151f/group__BilinearInterpolate.html
-arm_bilinear_interp_instance_f32 interpolate;
-// image_t interpolate;
-// arm_bilinear_interp_q7 TODO?
-#endif // __CORE_TEENSY__
-
-image_t   inputFrame;
+uint8_t   bilinIntOutput[NEW_FRAME] = {0};  // Bilinear interpolation output buffer
+image_t   interpolatedFrame;                // Instance of struct image_t 
 
 char      bitmap[NEW_FRAME] = {0};    // 64 x 64
 blob_t    blobArray[MAX_NODES] = {0}; // 20 nodes
@@ -51,5 +45,6 @@ llist_t   outputBlobs;
 
 void bootBlink(const uint8_t pin, uint8_t flash);
 void calib(void);
+void onPacket(const uint8_t* buffer, size_t size);
 
 #endif /*__MAIN_H__*/
