@@ -6,55 +6,41 @@
 
 #include "config.h"
 
-/**
+/*
     Bilinear interpolation
-    param[in,out] S  points to an instance of the interpolation structure
-    param[in]     X  interpolation coordinate
-    param[in]     Y  interpolation coordinate
-    return out interpolated value
+
+    param[in]      inputFrame   // Points to an instance of an image_t structure
+    param[OUT]     outputFrame  // Points to an instance of an image_t structure
 */
 
-inline uint8_t bilinear_interp(const image_t* inputFrame, int posX, int posY) {
-  
-  uint8_t  xIndex, yIndex, index;
-  uint8_t  f00, f01, f10, f11;
-  uint8_t* pData = inputFrame->pData;
-  float    xdiff, ydiff;
-  uint8_t  b1, b2, b3, b4;
-  uint8_t  out;
+inline void bilinear_interp(const image_t* outputFrame, const image_t* inputFrame) {
 
-  xIndex =  posX >> 2; // 0 0 0 0, 1 1 1 1, 2 2 2 2... WARNING - If SCALE != 4
-  yIndex =  posY >> 2; // 0 0 0 0, 1 1 1 1, 2 2 2 2... WARNING - If SCALE != 4
+  for (uint8_t rowPos = 0; rowPos < ROWS; rowPos = rowPos + 2) {
+    for (uint8_t colPos = 0; colPos < COLS; colPos = colPos + 2) {
 
-  // Index computation for two nearest points in X-direction
-  index = (xIndex - 1) + (yIndex - 1) * inputFrame->numCols;
-  // Read two nearest points in X-direction
-  f00 = pData[index];
-  f01 = pData[index + 1];
+      uint8_t indexA = rowPos * ROWS + colPos;
+      uint8_t indexB = indexA + 1;
+      uint8_t indexC = indexA + COLS;
+      uint8_t indexD = indexC + 1;
 
-  // Index computation for two nearest points in Y-direction
-  index = (xIndex - 1) + (yIndex) * inputFrame->numCols;
-  // Read two nearest points in Y-direction
-  f10 = pData[index];
-  f11 = pData[index + 1];
+      Serial.printf(F("\n\tQ00=%d\tQ01%d\tQ10=%d\tQ11=%d"), indexA, indexB, indexC, indexD);
 
-  // Calculation of intermediate values
-  b1 = f00;
-  b2 = f01 - f00;
-  b3 = f10 - f00;
-  b4 = f00 - f01 - f10 + f11;
+      for (uint8_t row = 0; row < 4; row++) {
+        for (uint8_t col = 0; col < 4; col++) {
 
-  // Calculation of fractional part in X
-  // xdiff = posX - xIndex;
-  xdiff = (posX / SCALE) - xIndex;
+          uint16_t index = indexA + col + row * COLS; // FIXME
+          Serial.printf(F("\n%d"), index);
 
-  // Calculation of fractional part in Y
-  // ydiff = posY - yIndex;
-  ydiff = (posY / SCALE) - yIndex;
+          outputFrame->pData[index] =
+            inputFrame->pData[indexA] * coefficient_A[row][col] +
+            inputFrame->pData[indexB] * coefficient_B[row][col] +
+            inputFrame->pData[indexC] * coefficient_C[row][col] +
+            inputFrame->pData[indexD] * coefficient_D[row][col];
+        }
+      }
+    }
+  }
 
-  // Calculation of bi-linear interpolated output
-  out = b1 + b2 * xdiff + b3 * ydiff + b4 * xdiff * ydiff;
-
-  // return to application
-  return (out);
 }
+
+

@@ -14,14 +14,14 @@
 #include <OSCBundle.h>            // https://github.com/CNMAT/OSC
 #include <OSCBoards.h>            // https://github.com/CNMAT/OSC
 #include <SLIPEncodedUSBSerial.h> // https://github.com/CNMAT/OSC
-#include <PacketSerial.h>
+// #include <PacketSerial.h>
 
 #include "blob.h"
 #include "llist.h"
 #include "interp.h"
 
 //#define BUILTIN_LED     13      // FIXME - Hardware SPI conflict
-//#define BUTTON_PIN      32      // FIXME - NO BUTTON_PIN ON the E256
+//#define BUTTON_PIN      32      // FIXME - NO BUTTON_PIN on the E256
 #define BAUD_RATE         230400
 #define COLS              16
 #define ROWS              16
@@ -52,7 +52,7 @@
 // #define E256_ADC
 #define E256_ADC_SYNCHRO
 //#define E256_SERIAL_CONFIG
-#define E256_SEND_RAW
+//#define E256_SEND_RAW
 
 //#define E256_INTERP
 //#define E256_BLOBS
@@ -60,7 +60,7 @@
 //#define E256_BLOBS_OSC
 
 //#define DEBUG_ADC
-//#define DEBUG_INTERP
+// #define DEBUG_INTERP
 //#define DEBUG_BLOBS_OSC
 
 #define DEBUG_BITMAP      false

@@ -142,13 +142,10 @@ void loop() {
   }
 
 #ifdef DEBUG_ADC
-  sensor = 0;
-  for (uint8_t col = 0; col < COLS; col++) {
-    for (uint8_t row = 0; row < ROWS; row++) {
-      Serial.printf(F("\t%d"), frameValues[sensor]);
-      sensor++;
-    }
-    Serial.println();
+  for (uint16_t i = 0; i < NEW_FRAME; i++) {
+    if ((i % NEW_COLS) == (NEW_COLS - 1)) Serial.println();
+    Serial.printf(F("\t%d"), frameValues[i]);
+    delay(1);
   }
   Serial.println();
   delay(500);
@@ -166,26 +163,20 @@ void loop() {
   //////////////////// Bilinear intrerpolation
 #ifdef E256_INTERP
 
-  sensor = 0;
-  for (uint8_t col = 0; col < NEW_COLS; col++) {
-    for (uint8_t row = 0; row < NEW_ROWS; row++) {
-      bilinIntOutput[sensor] = bilinear_interp(&rawFrame, row, col);
-      sensor++;
-    }
-  }
+  bilinear_interp(&interpolatedFrame, &rawFrame, row, col);
+
+
 
 #ifdef DEBUG_INTERP
-  sensor = 0;
-  for (uint8_t col = 0; col < NEW_COLS; col++) {
-    for (uint8_t row = 0; row < NEW_ROWS; row++) {
-      Serial.printf(F(" %d"), (uint8_t) bilinIntOutput[sensor]);
-      sensor++;
-    }
-    Serial.println();
+  for (uint16_t i = 0; i < NEW_FRAME; i++) {
+    if ((i % NEW_COLS) == (NEW_COLS - 1)) Serial.println();
+    Serial.printf(F(" %d"), bilinIntOutput[i]);
+    delay(1);
   }
   Serial.println();
   delay(500);
 #endif /*__DEBUG_INTERP__*/
+
 #endif /*__E256_INTERP__*/
 
 #ifdef E256_BLOBS
