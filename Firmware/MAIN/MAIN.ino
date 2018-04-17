@@ -144,16 +144,7 @@ void loop() {
 
   //////////////////// Bilinear intrerpolation
 #ifdef E256_INTERP
-  bilinear_interp(&interpolatedFrame, &rawFrame);
-#ifdef DEBUG_INTERP
-  for (uint16_t i = 0; i < NEW_FRAME; i++) {
-    if ((i % NEW_COLS) == (NEW_COLS - 1)) Serial.println();
-    Serial.printf(F(" %d"), bilinIntOutput[i]);
-    delay(1);
-  }
-  Serial.println();
-  delay(500);
-#endif /*__DEBUG_INTERP__*/
+  bilinear_interp(&interpolatedFrame, &interp, &rawFrame);
 #endif /*__E256_INTERP__*/
 
   //////////////////// Blobs detection

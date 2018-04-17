@@ -29,8 +29,8 @@
 #define X_SCALE           4
 #define Y_SCALE           4
 #define ROW_FRAME         (COLS * ROWS)
-#define NEW_COLS          (COLS * SCALE)
-#define NEW_ROWS          (ROWS * SCALE)
+#define NEW_COLS          (COLS * X_SCALE)
+#define NEW_ROWS          (ROWS * Y_SCALE)
 #define NEW_FRAME         (NEW_COLS * NEW_ROWS)
 #define CYCLES            10    // Set the calibration cycles
 #define THRESHOLD         35    // Set the threshold that determine toutch sensitivity (10 is low 30 is high)

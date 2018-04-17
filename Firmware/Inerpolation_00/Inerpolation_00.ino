@@ -76,18 +76,21 @@ void setup() {
 
 void loop() {
 
-  bilinear_interp(&interpolatedFrame, &rawFrame);
+  bilinear_interp(&interpolatedFrame, &interp, &rawFrame);
 
   for (int i = 0; i < NEW_FRAME; i++) {
     if ((i % NEW_COLS) == (NEW_COLS - 1)) Serial.println();
-    Serial.printf(F(" %d"), interpolatedFrame.pData[i]);
+    Serial.printf(F("%d "), interpolatedFrame.pData[i]);
   }
   Serial.println();
 
   while (1);
 }
+/*
+    Bilinear interpolation
+    Pre-compute the four coefficient values for all interpolated output matrix positions
+*/
 
-// Pre-compute the four coefficient values for all interpolated matrix positions
 void bilinear_interp_init(interp_t* interp) {
 
   float sFactor = interp->numCols * interp->numRows;
@@ -112,30 +115,33 @@ void bilinear_interp_init(interp_t* interp) {
     param[IN]      inputFrame   // Points to an instance of an image_t structure
     param[OUT]     outputFrame  // Points to an instance of an image_t structure
 */
-inline void bilinear_interp(const image_t* outputFrame, const image_t* inputFrame) {
 
-  for (uint8_t rowPos = 0; rowPos < ROWS; rowPos++) {
-    for (uint8_t colPos = 0; colPos < COLS - 1; colPos++) {
+inline void bilinear_interp(const image_t* outputFrame, const interp_t* interp, const image_t* inputFrame) {
 
-      uint8_t indexA = rowPos * COLS + colPos;
-      uint8_t indexB = indexA + 1;
-      uint8_t indexC = indexA + COLS;
-      uint8_t indexD = indexC + 1;
+  for (uint8_t rowPos = 0; rowPos < inputFrame->numRows; rowPos++) {
+    for (uint8_t colPos = 0; colPos < inputFrame->numCols - 1; colPos++) {
 
-      Serial.printf(F("\nA=%d\tB=%d\tC=%d\tD=%d\n"), indexA, indexB, indexC, indexD);
+      uint8_t inIndexA = rowPos * inputFrame->numCols + colPos;
+      uint8_t inIndexB = inIndexA + 1;
+      uint8_t inIndexC = inIndexA + inputFrame->numCols;
+      uint8_t inIndexD = inIndexC + 1;
 
-      for (int row = 0; row < X_SCALE; row++) {
-        for (int col = 0; col < Y_SCALE; col++) {
+      Serial.printf(F("\nA=%d\tB=%d\tC=%d\tD=%d\n"), inIndexA, inIndexB, inIndexC, inIndexD);
 
-          int outIndex = indexA * X_SCALE + row * NEW_COLS + col;
+      for (uint8_t row = 0; row < interp->numRows; row++) {
+        for (uint8_t col = 0; col < interp->numCols; col++) {
+
+          uint8_t coefIndex = row * interp->numCols + col;
+          uint16_t outIndex = inIndexA * interp->numCols + row * outputFrame->numCols + col;
+
           Serial.printf(F("%d\t"), outIndex);
 
           outputFrame->pData[outIndex] =
             (uint8_t) round(
-              inputFrame->pData[indexA] * interp.pCoefA[row * X_SCALE + col] +
-              inputFrame->pData[indexB] * interp.pCoefB[row * X_SCALE + col] +
-              inputFrame->pData[indexC] * interp.pCoefC[row * X_SCALE + col] +
-              inputFrame->pData[indexD] * interp.pCoefD[row * X_SCALE + col]
+              inputFrame->pData[inIndexA] * interp->pCoefA[coefIndex] +
+              inputFrame->pData[inIndexB] * interp->pCoefB[coefIndex] +
+              inputFrame->pData[inIndexC] * interp->pCoefC[coefIndex] +
+              inputFrame->pData[inIndexD] * interp->pCoefD[coefIndex]
             );
         }
         Serial.println();

@@ -9,10 +9,15 @@
 
 #include "config.h"
 
-float coef_A[X_SCALE * Y_SCALE] = {0};
-float coef_B[X_SCALE * Y_SCALE] = {0};
-float coef_C[X_SCALE * Y_SCALE] = {0};
-float coef_D[X_SCALE * Y_SCALE] = {0};
+//float coef_A[X_SCALE * Y_SCALE] = {0};
+//float coef_B[X_SCALE * Y_SCALE] = {0};
+//float coef_C[X_SCALE * Y_SCALE] = {0};
+//float coef_D[X_SCALE * Y_SCALE] = {0};
+
+float coef_A[16] = {0};
+float coef_B[16] = {0};
+float coef_C[16] = {0};
+float coef_D[16] = {0};
 
 typedef struct {
   uint8_t numCols;
@@ -26,6 +31,6 @@ typedef struct {
 interp_t  interp;
 
 void bilinear_interp_init(interp_t* interp);
-inline void bilinear_interp(const image_t* outputFrame, const image_t* inputFrame);
+inline void bilinear_interp(const image_t* outputFrame, const interp_t* interp, const image_t* inputFrame);
 
 #endif /*__INTERP_H__*/
