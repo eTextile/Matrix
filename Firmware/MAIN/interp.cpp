@@ -34,8 +34,6 @@ void bilinear_interp_init(interp_t* interp) {
 
 inline void bilinear_interp(const image_t* outputFrame, const interp_t* interp, const image_t* inputFrame) {
 
-  float rowInc = interp->scale_X * interp->scale_Y * inputFrame->numCols;
-
   for (uint8_t rowPos = 0; rowPos < inputFrame->numRows; rowPos++) {
     for (uint8_t colPos = 0; colPos < inputFrame->numCols - 1; colPos++) {
 
