@@ -13,14 +13,14 @@
 
 void bilinear_interp_init(interp_t* interp) {
 
-  float sFactor = interp->Xscale * interp->Yscale;
+  float sFactor = interp->scale_X * interp->scale_Y;
 
-  for (uint8_t row = 0; row < interp->Yscale; row++) {
-    for (uint8_t col = 0; col < interp->Xscale; col++) {
-      interp->pCoefA[row * interp->Xscale + col] = (interp->Xscale - col) * (interp->Yscale - row) / sFactor;
-      interp->pCoefB[row * interp->Xscale + col] = col * (interp->Yscale - row) / sFactor;
-      interp->pCoefC[row * interp->Xscale + col] = (interp->Xscale - col) *  row / sFactor;
-      interp->pCoefD[row * interp->Xscale + col] = row * col / sFactor;
+  for (uint8_t row = 0; row < interp->scale_Y; row++) {
+    for (uint8_t col = 0; col < interp->scale_X; col++) {
+      interp->pCoefA[row * interp->scale_X + col] = (interp->scale_X - col) * (interp->scale_Y - row) / sFactor;
+      interp->pCoefB[row * interp->scale_X + col] = col * (interp->scale_Y - row) / sFactor;
+      interp->pCoefC[row * interp->scale_X + col] = (interp->scale_X - col) *  row / sFactor;
+      interp->pCoefD[row * interp->scale_X + col] = row * col / sFactor;
     }
   }
 }
@@ -34,7 +34,7 @@ void bilinear_interp_init(interp_t* interp) {
 
 inline void bilinear_interp(const image_t* outputFrame, const interp_t* interp, const image_t* inputFrame) {
 
-  float rowInc = interp->Xscale * interp->Yscale * inputFrame->numCols;
+  float rowInc = interp->scale_X * interp->scale_Y * inputFrame->numCols;
 
   for (uint8_t rowPos = 0; rowPos < inputFrame->numRows; rowPos++) {
     for (uint8_t colPos = 0; colPos < inputFrame->numCols - 1; colPos++) {
@@ -44,11 +44,11 @@ inline void bilinear_interp(const image_t* outputFrame, const interp_t* interp, 
       uint8_t inIndexC = inIndexA + inputFrame->numCols;
       uint8_t inIndexD = inIndexC + 1;
 
-      for (uint8_t row = 0; row < interp->Yscale; row++) {
-        for (uint8_t col = 0; col < interp->Xscale; col++) {
+      for (uint8_t row = 0; row < interp->scale_Y; row++) {
+        for (uint8_t col = 0; col < interp->scale_X; col++) {
 
-          uint8_t coefIndex = row * interp->Xscale + col;
-          uint16_t outIndex = row * outputFrame->numCols + colPos * interp->Xscale + col + rowPos * rowInc;
+          uint8_t coefIndex = row * interp->scale_X + col;
+          uint16_t outIndex = rowPos * interp->outputStride_Y +  colPos * interp->scale_X + row * outputFrame->numCols + col;
 
           outputFrame->pData[outIndex] =
             (uint8_t) round(
@@ -61,7 +61,6 @@ inline void bilinear_interp(const image_t* outputFrame, const interp_t* interp, 
       }
     }
   }
-
 #ifdef DEBUG_INTERP
   for (uint16_t i = 0; i < NEW_FRAME; i++) {
     if ((i % outputFrame->numCols) == (outputFrame->numCols - 1)) Serial.println();

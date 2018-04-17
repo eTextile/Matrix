@@ -3,18 +3,18 @@
 #define COLS           16
 #define ROWS           16
 #define ROW_FRAME      (COLS * ROWS)
-#define X_SCALE        4
-#define Y_SCALE        4
-#define NEW_COLS       (COLS * X_SCALE)
-#define NEW_ROWS       (ROWS * Y_SCALE)
+#define SCALE_X        4
+#define SCALE_Y        4
+#define NEW_COLS       (COLS * SCALE_X)
+#define NEW_ROWS       (ROWS * SCALE_Y)
 #define NEW_FRAME      (NEW_COLS * NEW_ROWS)
 
 uint8_t frameValues[ROW_FRAME] = {0};     // Array to store ofseted input values TODO
 
-float coef_A[X_SCALE * Y_SCALE] = {0};
-float coef_B[X_SCALE * Y_SCALE] = {0};
-float coef_C[X_SCALE * Y_SCALE] = {0};
-float coef_D[X_SCALE * Y_SCALE] = {0};
+float coef_A[SCALE_X * SCALE_Y] = {0};
+float coef_B[SCALE_X * SCALE_Y] = {0};
+float coef_C[SCALE_X * SCALE_Y] = {0};
+float coef_D[SCALE_X * SCALE_Y] = {0};
 
 uint8_t bilinIntOutput[NEW_FRAME] = {0};  // Bilinear interpolation Output buffer
 
@@ -28,8 +28,9 @@ image_t   rawFrame;
 image_t   interpolatedFrame;
 
 typedef struct {
-  uint8_t Xscale;
-  uint8_t Yscale;
+  uint8_t scale_X;
+  uint8_t scale_Y;
+  uint16_t outputStride_Y;
   float* pCoefA;
   float* pCoefB;
   float* pCoefC;
@@ -49,8 +50,9 @@ void setup() {
   rawFrame.numRows = ROWS;
   rawFrame.pData = frameValues; // 16 x 16
 
-  interp.Xscale = X_SCALE;
-  interp.Yscale = Y_SCALE;
+  interp.scale_X = SCALE_X;
+  interp.scale_Y = SCALE_Y;
+  interp.outputStride_Y = SCALE_X * SCALE_Y * COLS;
   interp.pCoefA = coef_A;
   interp.pCoefB = coef_B;
   interp.pCoefC = coef_C;
@@ -94,14 +96,14 @@ void loop() {
 
 void bilinear_interp_init(interp_t* interp) {
 
-  float sFactor = interp->Xscale * interp->Yscale;
+  float sFactor = interp->scale_X * interp->scale_Y;
 
-  for (uint8_t row = 0; row < interp->Yscale; row++) {
-    for (uint8_t col = 0; col < interp->Xscale; col++) {
-      interp->pCoefA[row * interp->Xscale + col] = (interp->Xscale - col) * (interp->Yscale - row) / sFactor;
-      interp->pCoefB[row * interp->Xscale + col] = col * (interp->Yscale - row) / sFactor;
-      interp->pCoefC[row * interp->Xscale + col] = (interp->Xscale - col) *  row / sFactor;
-      interp->pCoefD[row * interp->Xscale + col] = row * col / sFactor;
+  for (uint8_t row = 0; row < interp->scale_Y; row++) {
+    for (uint8_t col = 0; col < interp->scale_X; col++) {
+      interp->pCoefA[row * interp->scale_X + col] = (interp->scale_X - col) * (interp->scale_Y - row) / sFactor;
+      interp->pCoefB[row * interp->scale_X + col] = col * (interp->scale_Y - row) / sFactor;
+      interp->pCoefC[row * interp->scale_X + col] = (interp->scale_X - col) *  row / sFactor;
+      interp->pCoefD[row * interp->scale_X + col] = row * col / sFactor;
     }
   }
 
@@ -119,7 +121,7 @@ void bilinear_interp_init(interp_t* interp) {
 
 inline void bilinear_interp(const image_t* outputFrame, const interp_t* interp, const image_t* inputFrame) {
 
-  float rowInc = interp->Xscale * interp->Yscale * inputFrame->numCols;
+  float rowInc = interp->scale_X * interp->scale_Y * inputFrame->numCols;
 
   for (uint8_t rowPos = 0; rowPos < inputFrame->numRows; rowPos++) {
     for (uint8_t colPos = 0; colPos < inputFrame->numCols - 1; colPos++) {
@@ -131,11 +133,11 @@ inline void bilinear_interp(const image_t* outputFrame, const interp_t* interp, 
 
       Serial.printf(F("\nA=%d\tB=%d\tC=%d\tD=%d\n"), inIndexA, inIndexB, inIndexC, inIndexD);
 
-      for (uint8_t row = 0; row < interp->Yscale; row++) {
-        for (uint8_t col = 0; col < interp->Xscale; col++) {
+      for (uint8_t row = 0; row < interp->scale_Y; row++) {
+        for (uint8_t col = 0; col < interp->scale_X; col++) {
 
-          uint8_t coefIndex = row * interp->Xscale + col;
-          uint16_t outIndex = row * outputFrame->numCols + colPos * interp->Xscale + col + rowPos * rowInc;
+          uint8_t coefIndex = row * interp->scale_X + col;
+          uint16_t outIndex = rowPos * interp->outputStride_Y +  colPos * interp->scale_X + row * outputFrame->numCols + col;
 
           //Serial.printf(F("%d\t"), coefIndex);
           Serial.printf(F("%d\t"), outIndex);

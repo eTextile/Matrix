@@ -9,10 +9,10 @@
 
 #include "config.h"
 
-//float coef_A[X_SCALE * Y_SCALE] = {0}; // FIXME
-//float coef_B[X_SCALE * Y_SCALE] = {0}; // FIXME
-//float coef_C[X_SCALE * Y_SCALE] = {0}; // FIXME
-//float coef_D[X_SCALE * Y_SCALE] = {0}; // FIXME
+//float coef_A[scale_X * scale_Y] = {0}; // FIXME
+//float coef_B[scale_X * scale_Y] = {0}; // FIXME
+//float coef_C[scale_X * scale_Y] = {0}; // FIXME
+//float coef_D[scale_X * scale_Y] = {0}; // FIXME
 
 float coef_A[16] = {0};
 float coef_B[16] = {0};
@@ -20,8 +20,9 @@ float coef_C[16] = {0};
 float coef_D[16] = {0};
 
 typedef struct {
-  uint8_t Xscale;
-  uint8_t Yscale;
+  uint8_t scale_X;
+  uint8_t scale_Y;
+  uint16_t outputStride_Y;
   float* pCoefA;
   float* pCoefB;
   float* pCoefC;
@@ -31,6 +32,6 @@ typedef struct {
 interp_t  interp;
 
 void bilinear_interp_init(interp_t* interp);
-inline void bilinear_interp(const image_t* outputFrame, const interp_t* interp, const image_t* inputFrame);
+inline void bilinear_interp(const image_t* outputFrame, const image_t* inputFrame, const interp_t* interp);
 
 #endif /*__INTERP_H__*/

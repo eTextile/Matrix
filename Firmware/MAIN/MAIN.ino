@@ -65,8 +65,9 @@ void setup() {
   rawFrame.numRows = ROWS;
   rawFrame.pData = frameValues; // 16 x 16 // float32_t frameValues[ROW_FRAME];
   
-  interp.Xscale = X_SCALE;
-  interp.Yscale = Y_SCALE;
+  interp.scale_X = SCALE_X;
+  interp.scale_Y = SCALE_Y;
+  interp.outputStride_Y = SCALE_X * SCALE_Y * COLS;
   interp.pCoefA = coef_A;
   interp.pCoefB = coef_B;
   interp.pCoefC = coef_C;
@@ -144,7 +145,7 @@ void loop() {
 
   //////////////////// Bilinear intrerpolation
 #ifdef E256_INTERP
-  bilinear_interp(&interpolatedFrame, &interp, &rawFrame);
+  bilinear_interp(&interpolatedFrame, &rawFrame, &interp);
 #endif /*__E256_INTERP__*/
 
   //////////////////// Blobs detection
