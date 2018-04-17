@@ -29,7 +29,7 @@
   - ROWS = One 8_Bits shift register connected to two analog multiplexers that sens the matrix rows.
 - The 16x16 matrix is interpolated to 64x64 with bilinear algorithm (will be optimised).
 - The blob tracking is applyed on to the interpolated matrix.
-- The blobs coordinates ans size are transmit via OSC.
+- The blobs coordinates ans size are transmit via SLIP-OSC protocol.
 
 ## E256 & Teensy pins
 Control pins to send values to the 8-BITs shift registers used on the E-256 PCB
