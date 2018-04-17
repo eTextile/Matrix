@@ -6,41 +6,52 @@
 
 #include "config.h"
 
+// Pre-compute the four coefficient values for all interpolated matrix positions
+void bilinear_interp_init(interp_t* interp) {
+
+  float sFactor = interp->numCols * interp->numRows;
+
+  for (uint8_t row = 0; row < interp->numRows; row++) {
+    for (uint8_t col = 0; col < interp->numCols; col++) {
+      interp->pCoefA[row * interp->numCols + col] = (interp->numCols - col) * (interp->numRows - row) / sFactor;
+      interp->pCoefB[row * interp->numCols + col] = col * (interp->numRows - row) / sFactor;
+      interp->pCoefC[row * interp->numCols + col] = (interp->numCols - col) *  row / sFactor;
+      interp->pCoefD[row * interp->numCols + col] = row * col / sFactor;
+    }
+  }
+}
+
 /*
     Bilinear interpolation
 
-    param[in]      inputFrame   // Points to an instance of an image_t structure
+    param[IN]      inputFrame   // Points to an instance of an image_t structure
     param[OUT]     outputFrame  // Points to an instance of an image_t structure
 */
-
 inline void bilinear_interp(const image_t* outputFrame, const image_t* inputFrame) {
 
-  for (uint8_t rowPos = 0; rowPos < ROWS; rowPos = rowPos + 2) {
-    for (uint8_t colPos = 0; colPos < COLS; colPos = colPos + 2) {
+  for (uint8_t rowPos = 0; rowPos < ROWS; rowPos++) {
+    for (uint8_t colPos = 0; colPos < COLS - 1; colPos++) {
 
-      uint8_t indexA = rowPos * ROWS + colPos;
+      uint8_t indexA = rowPos * COLS + colPos;
       uint8_t indexB = indexA + 1;
       uint8_t indexC = indexA + COLS;
       uint8_t indexD = indexC + 1;
 
-      Serial.printf(F("\n\tQ00=%d\tQ01%d\tQ10=%d\tQ11=%d"), indexA, indexB, indexC, indexD);
+      for (int row = 0; row < X_SCALE; row++) {
+        for (int col = 0; col < Y_SCALE; col++) {
 
-      for (uint8_t row = 0; row < 4; row++) {
-        for (uint8_t col = 0; col < 4; col++) {
+          int outIndex = indexA * X_SCALE + row * NEW_COLS + col;
 
-          uint16_t index = indexA + col + row * COLS; // FIXME
-          Serial.printf(F("\n%d"), index);
-
-          outputFrame->pData[index] =
-            inputFrame->pData[indexA] * coefficient_A[row][col] +
-            inputFrame->pData[indexB] * coefficient_B[row][col] +
-            inputFrame->pData[indexC] * coefficient_C[row][col] +
-            inputFrame->pData[indexD] * coefficient_D[row][col];
+          outputFrame->pData[outIndex] =
+            (uint8_t) round(
+              inputFrame->pData[indexA] * interp.pCoefA[row * X_SCALE + col] +
+              inputFrame->pData[indexB] * interp.pCoefB[row * X_SCALE + col] +
+              inputFrame->pData[indexC] * interp.pCoefC[row * X_SCALE + col] +
+              inputFrame->pData[indexD] * interp.pCoefD[row * X_SCALE + col]
+            );
         }
       }
     }
   }
-
 }
-
 

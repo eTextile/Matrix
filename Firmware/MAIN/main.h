@@ -45,6 +45,6 @@ llist_t   outputBlobs;
 
 void bootBlink(const uint8_t pin, uint8_t flash);
 void calib(void);
-void onPacket(const uint8_t* buffer, size_t size);
+// void onPacket(const uint8_t* buffer, size_t size);
 
 #endif /*__MAIN_H__*/

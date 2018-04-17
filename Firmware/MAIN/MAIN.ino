@@ -17,33 +17,9 @@ void setup() {
   Serial.begin(BAUD_RATE);   // Arduino serial standard library ** 230400 **
   while (!Serial.dtr());     // Wait for user to start the serial monitor
 
-#ifdef E256_SERIAL_CONFIG
   // Select MODE while booting
-  while (!Serial.dtr());     // Wait for user to start the serial monitor
-  uint8_t waitOn = 0;
-  sensor = 0;
-
-  Serial.printf(F("\nWaiting for config: "));
-  while (1) {
-    if (Serial.available()) {
-      serialConf[sensor] = Serial.read();
-      if (serialConf[sensor] == E256_EOF) {
-        Serial.printf(F("\nMODE = %d\n"), serialConf[0]); // TODO
-        // bootBlink(BUILTIN_LED, 3); // FIXME - BUILTIN_LED is used for SPI hardware
-        break;
-      }
-      sensor++;
-    }
-    if ((millis() - lastFarme) >= 500) {
-      Serial.printf(F("."));
-      lastFarme = millis();
-      fps = 0;
-      waitOn++;
-      if (waitOn == 5) {
-        break;
-      }
-    }
-  }
+#ifdef E256_SERIAL_CONFIG
+  bootConfig();
 #endif /*__E256_SERIAL_CONFIG__*/
 
   // pinMode(BUTTON_PIN, INPUT_PULLUP);          // Set button pin as input and activate the input pullup resistor // FIXME - NO BUTTON_PIN ON the E256!
@@ -88,7 +64,14 @@ void setup() {
   rawFrame.numCols = COLS;
   rawFrame.numRows = ROWS;
   rawFrame.pData = frameValues; // 16 x 16 // float32_t frameValues[ROW_FRAME];
-
+  
+  interp.numCols = X_SCALE;
+  interp.numRows = Y_SCALE;
+  interp.pCoefA = coef_A;
+  interp.pCoefB = coef_B;
+  interp.pCoefC = coef_C;
+  interp.pCoefD = coef_D;
+  
   // Interpolated frame init
   interpolatedFrame.numCols = NEW_COLS;
   interpolatedFrame.numRows = NEW_ROWS;
@@ -103,6 +86,8 @@ void setup() {
   calib();
   // bootBlink(BUILTIN_LED, 9); // FIXME - BUILTIN_LED is used for hardware SPI
   Serial.printf("\n Calibrated!");
+  
+  bilinear_interp_init(&interp);
 
 #ifdef E256_BLOBS_OSC
   SLIPSerial.begin(BAUD_RATE);  // Extended Arduino serial library with SLIP encoding
@@ -111,7 +96,6 @@ void setup() {
 
 void loop() {
 
-#ifdef E256_ADC
   // Columns are digital OUTPUT PINS - We supply one column at a time
   // Rows are analog INPUT PINS - We sens two rows at a time
   uint16_t setCols = 0x8000;
@@ -158,15 +142,9 @@ void loop() {
   SLIPSerial.endPacket();
 #endif /*__E256_SEND_RAW__*/
 
-#endif /*__E256_ADC__*/
-
   //////////////////// Bilinear intrerpolation
 #ifdef E256_INTERP
-
-  bilinear_interp(&interpolatedFrame, &rawFrame, row, col);
-
-
-
+  bilinear_interp(&interpolatedFrame, &rawFrame);
 #ifdef DEBUG_INTERP
   for (uint16_t i = 0; i < NEW_FRAME; i++) {
     if ((i % NEW_COLS) == (NEW_COLS - 1)) Serial.println();
@@ -176,9 +154,9 @@ void loop() {
   Serial.println();
   delay(500);
 #endif /*__DEBUG_INTERP__*/
-
 #endif /*__E256_INTERP__*/
 
+  //////////////////// Blobs detection
 #ifdef E256_BLOBS
   find_blobs(
     &interpolatedFrame, // image_t 64 x 64 (1D array) uint8_t
@@ -223,7 +201,7 @@ void calib(void) {
         SPI.transfer(setCols >> 8);           // Shift out the MSB byte to set up the OUTPUT shift register
         SPI.transfer(setDualRows[row]);       // Shift out one byte that setup the two 8:1 analog multiplexers
         digitalWriteFast(E256_SS_PIN, HIGH);  // Set latchPin HIGH
-        // delayMicroseconds(1);              // See switching time of the 74HC4051BQ multiplexeur
+        delayMicroseconds(1);                 // See switching time of the 74HC4051BQ multiplexeur
 
 #ifdef E256_ADC_SYNCHRO
         result = adc->analogSynchronizedRead(ADC0_PIN, ADC1_PIN);
@@ -233,7 +211,6 @@ void calib(void) {
         uint8_t ADC0_val = analogRead(ADC0_PIN);
         uint8_t ADC1_val = analogRead(ADC1_PIN);
 #endif /*__E256_ADC_SYNCHRO__*/
-
 
         uint8_t rowIndexA = row * COLS + col;    // Row IndexA computation
         uint8_t rowIndexB = rowIndexA + 128;     // Row IndexB computation (ROW_FRAME/2 == 128)
@@ -247,6 +224,33 @@ void calib(void) {
       }
       setCols = setCols >> 1;
       delay(1);
+    }
+  }
+}
+
+void bootConfig() {
+  uint8_t waitOn = 0;
+  sensor = 0;
+
+  Serial.printf(F("\nWaiting for config: "));
+  while (1) {
+    if (Serial.available()) {
+      serialConf[sensor] = Serial.read();
+      if (serialConf[sensor] == E256_EOF) {
+        Serial.printf(F("\nMODE = %d\n"), serialConf[0]); // TODO
+        // bootBlink(BUILTIN_LED, 3); // FIXME - BUILTIN_LED is used for SPI hardware
+        break;
+      }
+      sensor++;
+    }
+    if ((millis() - lastFarme) >= 500) {
+      Serial.printf(F("."));
+      lastFarme = millis();
+      fps = 0;
+      waitOn++;
+      if (waitOn == 5) {
+        break;
+      }
     }
   }
 }
