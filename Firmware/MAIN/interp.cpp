@@ -13,19 +13,15 @@
 
 void bilinear_interp_init(interp_t* interp) {
 
-  float sFactor = interp->numCols * interp->numRows;
+  float sFactor = interp->Xscale * interp->Yscale;
 
-  for (uint8_t row = 0; row < interp->numRows; row++) {
-    for (uint8_t col = 0; col < interp->numCols; col++) {
-      interp->pCoefA[row * interp->numCols + col] = (interp->numCols - col) * (interp->numRows - row) / sFactor;
-      interp->pCoefB[row * interp->numCols + col] = col * (interp->numRows - row) / sFactor;
-      interp->pCoefC[row * interp->numCols + col] = (interp->numCols - col) *  row / sFactor;
-      interp->pCoefD[row * interp->numCols + col] = row * col / sFactor;
+  for (uint8_t row = 0; row < interp->Yscale; row++) {
+    for (uint8_t col = 0; col < interp->Xscale; col++) {
+      interp->pCoefA[row * interp->Xscale + col] = (interp->Xscale - col) * (interp->Yscale - row) / sFactor;
+      interp->pCoefB[row * interp->Xscale + col] = col * (interp->Yscale - row) / sFactor;
+      interp->pCoefC[row * interp->Xscale + col] = (interp->Xscale - col) *  row / sFactor;
+      interp->pCoefD[row * interp->Xscale + col] = row * col / sFactor;
     }
-  }
-
-  for (uint8_t i = 0; i < sFactor; i++) {
-    Serial.printf(F("Ax%f\tBx%f\tCx%f\tDx%f\n"), interp->pCoefA[i], interp->pCoefB[i], interp->pCoefC[i], interp->pCoefD[i]);
   }
 }
 
@@ -38,6 +34,8 @@ void bilinear_interp_init(interp_t* interp) {
 
 inline void bilinear_interp(const image_t* outputFrame, const interp_t* interp, const image_t* inputFrame) {
 
+  float rowInc = interp->Xscale * interp->Yscale * inputFrame->numCols;
+
   for (uint8_t rowPos = 0; rowPos < inputFrame->numRows; rowPos++) {
     for (uint8_t colPos = 0; colPos < inputFrame->numCols - 1; colPos++) {
 
@@ -46,15 +44,11 @@ inline void bilinear_interp(const image_t* outputFrame, const interp_t* interp, 
       uint8_t inIndexC = inIndexA + inputFrame->numCols;
       uint8_t inIndexD = inIndexC + 1;
 
-      Serial.printf(F("\nA=%d\tB=%d\tC=%d\tD=%d\n"), inIndexA, inIndexB, inIndexC, inIndexD);
+      for (uint8_t row = 0; row < interp->Yscale; row++) {
+        for (uint8_t col = 0; col < interp->Xscale; col++) {
 
-      for (uint8_t row = 0; row < interp->numRows; row++) {
-        for (uint8_t col = 0; col < interp->numCols; col++) {
-
-          uint8_t coefIndex = row * interp->numCols + col;
-          uint16_t outIndex = inIndexA * interp->numCols + row * outputFrame->numCols + col;
-
-          Serial.printf(F("%d\t"), outIndex);
+          uint8_t coefIndex = row * interp->Xscale + col;
+          uint16_t outIndex = row * outputFrame->numCols + colPos * interp->Xscale + col + rowPos * rowInc;
 
           outputFrame->pData[outIndex] =
             (uint8_t) round(
@@ -64,11 +58,10 @@ inline void bilinear_interp(const image_t* outputFrame, const interp_t* interp, 
               inputFrame->pData[inIndexD] * interp->pCoefD[coefIndex]
             );
         }
-        Serial.println();
       }
-      Serial.println();
     }
   }
+
 #ifdef DEBUG_INTERP
   for (uint16_t i = 0; i < NEW_FRAME; i++) {
     if ((i % outputFrame->numCols) == (outputFrame->numCols - 1)) Serial.println();

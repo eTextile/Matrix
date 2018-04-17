@@ -9,10 +9,10 @@
 
 #include "config.h"
 
-//float coef_A[X_SCALE * Y_SCALE] = {0};
-//float coef_B[X_SCALE * Y_SCALE] = {0};
-//float coef_C[X_SCALE * Y_SCALE] = {0};
-//float coef_D[X_SCALE * Y_SCALE] = {0};
+//float coef_A[X_SCALE * Y_SCALE] = {0}; // FIXME
+//float coef_B[X_SCALE * Y_SCALE] = {0}; // FIXME
+//float coef_C[X_SCALE * Y_SCALE] = {0}; // FIXME
+//float coef_D[X_SCALE * Y_SCALE] = {0}; // FIXME
 
 float coef_A[16] = {0};
 float coef_B[16] = {0};
@@ -20,8 +20,8 @@ float coef_C[16] = {0};
 float coef_D[16] = {0};
 
 typedef struct {
-  uint8_t numCols;
-  uint8_t numRows;
+  uint8_t Xscale;
+  uint8_t Yscale;
   float* pCoefA;
   float* pCoefB;
   float* pCoefC;

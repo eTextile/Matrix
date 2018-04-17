@@ -65,8 +65,8 @@ void setup() {
   rawFrame.numRows = ROWS;
   rawFrame.pData = frameValues; // 16 x 16 // float32_t frameValues[ROW_FRAME];
   
-  interp.numCols = X_SCALE;
-  interp.numRows = Y_SCALE;
+  interp.Xscale = X_SCALE;
+  interp.Yscale = Y_SCALE;
   interp.pCoefA = coef_A;
   interp.pCoefB = coef_B;
   interp.pCoefC = coef_C;
