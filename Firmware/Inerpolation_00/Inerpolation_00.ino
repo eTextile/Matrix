@@ -86,6 +86,7 @@ void loop() {
 
   while (1);
 }
+
 /*
     Bilinear interpolation
     Pre-compute the four coefficient values for all interpolated output matrix positions
