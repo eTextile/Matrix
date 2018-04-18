@@ -29,9 +29,7 @@ typedef struct {
   float* pCoefD;
 } interp_t;
 
-interp_t  interp;
-
 void bilinear_interp_init(interp_t* interp);
-inline void bilinear_interp(const image_t* outputFrame, const image_t* inputFrame, const interp_t* interp);
+void bilinear_interp(const image_t* outputFrame, const image_t* inputFrame, const interp_t* interp);
 
 #endif /*__INTERP_H__*/

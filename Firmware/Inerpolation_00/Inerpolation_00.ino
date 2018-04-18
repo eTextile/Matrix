@@ -78,7 +78,7 @@ void setup() {
 
 void loop() {
 
-  bilinear_interp(&interpolatedFrame, &interp, &rawFrame);
+  bilinear_interp(&interpolatedFrame, &rawFrame, &interp);
 
   for (int i = 0; i < NEW_FRAME; i++) {
     if ((i % NEW_COLS) == (NEW_COLS - 1)) Serial.println();
@@ -119,7 +119,7 @@ void bilinear_interp_init(interp_t* interp) {
     param[OUT]     outputFrame  // Points to an instance of an image_t structure
 */
 
-inline void bilinear_interp(const image_t* outputFrame, const interp_t* interp, const image_t* inputFrame) {
+inline void bilinear_interp(const image_t* outputFrame, const image_t* inputFrame, const interp_t* interp) {
 
   for (uint8_t rowPos = 0; rowPos < inputFrame->numRows; rowPos++) {
     for (uint8_t colPos = 0; colPos < inputFrame->numCols - 1; colPos++) {

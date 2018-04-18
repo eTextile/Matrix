@@ -4,7 +4,7 @@
   This work is licensed under Creative Commons Attribution-ShareAlike 4.0 International license, see the LICENSE file for details.
 */
 
-#include "config.h"
+#include "interp.h"
 
 /*
     Bilinear interpolation
@@ -27,12 +27,11 @@ void bilinear_interp_init(interp_t* interp) {
 
 /*
     Bilinear interpolation
-
     param[IN]      inputFrame   // Points to an instance of an image_t structure
     param[OUT]     outputFrame  // Points to an instance of an image_t structure
 */
 
-inline void bilinear_interp(const image_t* outputFrame, const interp_t* interp, const image_t* inputFrame) {
+void bilinear_interp(const image_t* outputFrame, const image_t* inputFrame, const interp_t* interp) {
 
   for (uint8_t rowPos = 0; rowPos < inputFrame->numRows; rowPos++) {
     for (uint8_t colPos = 0; colPos < inputFrame->numCols - 1; colPos++) {
@@ -46,7 +45,7 @@ inline void bilinear_interp(const image_t* outputFrame, const interp_t* interp, 
         for (uint8_t col = 0; col < interp->scale_X; col++) {
 
           uint8_t coefIndex = row * interp->scale_X + col;
-          uint16_t outIndex = rowPos * interp->outputStride_Y +  colPos * interp->scale_X + row * outputFrame->numCols + col;
+          uint16_t outIndex = rowPos * interp->outputStride_Y + colPos * interp->scale_X + row * outputFrame->numCols + col;
 
           outputFrame->pData[outIndex] =
             (uint8_t) round(

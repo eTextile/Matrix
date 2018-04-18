@@ -4,7 +4,7 @@
   This work is licensed under Creative Commons Attribution-ShareAlike 4.0 International license, see the LICENSE file for details.
 */
 
-#include "config.h"
+#include "blob.h"
 
 inline void find_blobs(
   image_t*              inFrame_ptr,

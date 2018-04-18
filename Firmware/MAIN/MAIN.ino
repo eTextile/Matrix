@@ -4,12 +4,12 @@
   This work is licensed under Creative Commons Attribution-ShareAlike 4.0 International license, see the LICENSE file for details.
 */
 
+#include "main.h"
+
 // FPS with CPU speed to 120 MHz (Overclock)
 // 523 FPS ADC input
 //  24 FPS with BILINEAR_INTERPOLATION
 //  23 FPS with interpolation & blob tracking
-
-#include "main.h"
 
 void setup() {
   // pinMode(BUILTIN_LED, OUTPUT); // FIXME - BUILTIN_LED is used for SPI hardware
@@ -41,16 +41,16 @@ void setup() {
   pinMode(ADC1_PIN, INPUT);          // Teensy PIN_A3
 
 #ifdef E256_ADC_SYNCHRO
-  adc->setAveraging(1, ADC_0);   // set number of averages
-  adc->setResolution(8, ADC_0);  // set bits of resolution
+  adc->setAveraging(1, ADC_0);                                           // Set number of averages
+  adc->setResolution(8, ADC_0);                                          // Set bits of resolution
   adc->setConversionSpeed(ADC_CONVERSION_SPEED::VERY_HIGH_SPEED, ADC_0); // Change the conversion speed
   // adc->setConversionSpeed(ADC_CONVERSION_SPEED::HIGH_SPEED, ADC_0);   // Change the conversion speed
   adc->setSamplingSpeed(ADC_SAMPLING_SPEED::VERY_HIGH_SPEED, ADC_0);     // Change the sampling speed
   // adc->setSamplingSpeed(ADC_SAMPLING_SPEED::HIGH_SPEED, ADC_0);       // Change the sampling speed
   // adc->enableCompare(1.0 / 3.3 * adc->getMaxValue(ADC_0), 0, ADC_0);  // Measurement will be ready if value < 1.0V
 
-  adc->setAveraging(1, ADC_1);   // set number of averages
-  adc->setResolution(8, ADC_1);  // set bits of resolution
+  adc->setAveraging(1, ADC_1);                                           // Set number of averages
+  adc->setResolution(8, ADC_1);                                          // Set bits of resolution
   adc->setConversionSpeed(ADC_CONVERSION_SPEED::VERY_HIGH_SPEED, ADC_1); // Change the conversion speed
   // adc->setConversionSpeed(ADC_CONVERSION_SPEED::HIGH_SPEED, ADC_1);   // Change the conversion speed
   adc->setSamplingSpeed(ADC_SAMPLING_SPEED::VERY_HIGH_SPEED, ADC_1);     // Change the sampling speed
@@ -64,7 +64,8 @@ void setup() {
   rawFrame.numCols = COLS;
   rawFrame.numRows = ROWS;
   rawFrame.pData = frameValues; // 16 x 16 // float32_t frameValues[ROW_FRAME];
-  
+
+  // Interpolate config init
   interp.scale_X = SCALE_X;
   interp.scale_Y = SCALE_Y;
   interp.outputStride_Y = SCALE_X * SCALE_Y * COLS;
@@ -151,8 +152,8 @@ void loop() {
   //////////////////// Blobs detection
 #ifdef E256_BLOBS
   find_blobs(
-    &interpolatedFrame, // image_t 64 x 64 (1D array) uint8_t
-    bitmap,             // char Array
+    &interpolatedFrame, // image_t uint8_t [NEW_FRAME] - 1D array
+    bitmap,             // char array [NEW_FRAME] - 1D array
     NEW_ROWS,           // const int
     NEW_COLS,           // const int
     THRESHOLD,          // const int

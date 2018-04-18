@@ -7,7 +7,7 @@
 #ifndef __BLOB_H__
 #define __BLOB_H__
 
-#include "config.h"
+#include "llist.h"
 
 #define IM_LOG2_2(x)    (((x) &                0x2ULL) ? ( 2                        ) :             1) // NO ({ ... }) !
 #define IM_LOG2_4(x)    (((x) &                0xCULL) ? ( 2 +  IM_LOG2_2((x) >>  2)) :  IM_LOG2_2(x)) // NO ({ ... }) !
@@ -102,13 +102,6 @@ typedef struct blob {
   uint16_t pixels;
   struct blob* next_ptr;
 } blob_t;
-
-typedef struct {
-  blob_t* head_ptr;
-  blob_t* tail_ptr;
-  uint8_t max_nodes;
-  int8_t index; // If no element index is -1
-} llist_t;
 
 inline void blob_raz(blob_t* node);
 inline void blob_copy(blob_t* dst, blob_t* src);

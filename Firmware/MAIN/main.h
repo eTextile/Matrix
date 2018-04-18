@@ -9,6 +9,10 @@
 
 #include "config.h"
 
+#include "blob.h"
+#include "llist.h"
+#include "interp.h"
+
 SPISettings settings(16000000, MSBFIRST, SPI_MODE0); // LSBFIRST
 
 ADC *adc = new ADC();     // ADC object
@@ -33,11 +37,13 @@ uint8_t   minVals[ROW_FRAME] = {0};         // Array to store smallest values
 uint8_t   frameValues[ROW_FRAME] = {0};     // Array to store ofseted input values
 image_t   rawFrame;                         // Instance of struct image_t 
 
+interp_t  interp;                           // Instance of struct interp_t
+
 uint8_t   bilinIntOutput[NEW_FRAME] = {0};  // Bilinear interpolation output buffer
 image_t   interpolatedFrame;                // Instance of struct image_t 
 
 char      bitmap[NEW_FRAME] = {0};    // 64 x 64
-blob_t    blobArray[MAX_NODES] = {0}; // 20 nodes
+blob_t    blobArray[MAX_NODES] = {0}; // 40 nodes
 
 llist_t   freeBlobs;
 llist_t   blobs;
