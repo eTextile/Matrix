@@ -5,6 +5,7 @@
 */
 
 #include "main.h"
+#include "config.h"
 
 // FPS with CPU speed to 120 MHz (Overclock)
 // 523 FPS ADC input

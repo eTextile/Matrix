@@ -7,14 +7,6 @@
 #ifndef __CONFIG_H__
 #define __CONFIG_H__
 
-#include <Arduino.h>
-#include <ADC.h>                  // https://github.com/pedvide/ADC
-#include <SPI.h>                  // https://www.pjrc.com/teensy/td_libs_SPI.html
-#include <OSCMessage.h>           // https://github.com/CNMAT/OSC
-#include <OSCBundle.h>            // https://github.com/CNMAT/OSC
-#include <OSCBoards.h>            // https://github.com/CNMAT/OSC
-#include <SLIPEncodedUSBSerial.h> // https://github.com/CNMAT/OSC
-
 //#define BUILTIN_LED     13      // FIXME - Hardware SPI conflict
 //#define BUTTON_PIN      32      // FIXME - NO BUTTON_PIN on the E256
 #define BAUD_RATE         230400

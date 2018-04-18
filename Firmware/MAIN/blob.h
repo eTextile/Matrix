@@ -7,6 +7,7 @@
 #ifndef __BLOB_H__
 #define __BLOB_H__
 
+#include <Arduino.h>
 #include "llist.h"
 
 #define IM_LOG2_2(x)    (((x) &                0x2ULL) ? ( 2                        ) :             1) // NO ({ ... }) !

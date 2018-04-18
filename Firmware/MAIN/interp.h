@@ -7,17 +7,16 @@
 #ifndef __INTERP_H__
 #define __INTERP_H__
 
+#include <Arduino.h>
 #include "config.h"
+#include "blob.h"
 
-//float coef_A[scale_X * scale_Y] = {0}; // FIXME
-//float coef_B[scale_X * scale_Y] = {0}; // FIXME
-//float coef_C[scale_X * scale_Y] = {0}; // FIXME
-//float coef_D[scale_X * scale_Y] = {0}; // FIXME
+#define round(x) lround(x)
 
-float coef_A[16] = {0};
-float coef_B[16] = {0};
-float coef_C[16] = {0};
-float coef_D[16] = {0};
+float coef_A[SCALE_X * SCALE_Y] = {0};
+float coef_B[SCALE_X * SCALE_Y] = {0};
+float coef_C[SCALE_X * SCALE_Y] = {0};
+float coef_D[SCALE_X * SCALE_Y] = {0};
 
 typedef struct {
   uint8_t scale_X;
@@ -28,6 +27,7 @@ typedef struct {
   float* pCoefC;
   float* pCoefD;
 } interp_t;
+
 
 void bilinear_interp_init(interp_t* interp);
 void bilinear_interp(const image_t* outputFrame, const image_t* inputFrame, const interp_t* interp);

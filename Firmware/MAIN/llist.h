@@ -7,13 +7,14 @@
 #ifndef __LLIST_H__
 #define __LLIST_H__
 
+#include <Arduino.h>
 #include "blob.h"
 
 typedef struct {
   blob_t* head_ptr;
   blob_t* tail_ptr;
   uint8_t max_nodes;
-  int8_t index; // If no element index is -1
+  int8_t index; // If no element in the linked list, index is -1
 } llist_t;
 
 ////////////// Linked list - Fonction prototypes //////////////
@@ -21,7 +22,7 @@ typedef struct {
 void llist_raz(llist_t* ptr);
 void llist_init(llist_t* dst, blob_t* nodesArray, const uint8_t max_nodes);
 blob_t* llist_pop_front(llist_t* src);
-inline void llist_push_back(llist_t* dst, blob_t* blob);
+void llist_push_back(llist_t* dst, blob_t* blob);
 void llist_save_blobs(llist_t* dst, llist_t* src);
 void llist_remove_blob(llist_t* src, blob_t* blob);
 int8_t llist_size(llist_t* ptr);

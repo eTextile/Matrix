@@ -7,6 +7,15 @@
 #ifndef __MAIN_H__
 #define __MAIN_H__
 
+#include <Arduino.h>
+
+#include <ADC.h>                  // https://github.com/pedvide/ADC
+#include <SPI.h>                  // https://www.pjrc.com/teensy/td_libs_SPI.html
+#include <OSCMessage.h>           // https://github.com/CNMAT/OSC
+#include <OSCBundle.h>            // https://github.com/CNMAT/OSC
+#include <OSCBoards.h>            // https://github.com/CNMAT/OSC
+#include <SLIPEncodedUSBSerial.h> // https://github.com/CNMAT/OSC
+
 #include "config.h"
 
 #include "blob.h"

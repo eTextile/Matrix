@@ -9,6 +9,11 @@
 #define NEW_ROWS       (ROWS * SCALE_Y)
 #define NEW_FRAME      (NEW_COLS * NEW_ROWS)
 
+#define round(x)       lround(x)
+
+#define E256_FPS
+// #define DEBUG_INTERP
+
 uint8_t frameValues[ROW_FRAME] = {0};     // Array to store ofseted input values TODO
 
 float coef_A[SCALE_X * SCALE_Y] = {0};
@@ -39,6 +44,9 @@ typedef struct {
 
 interp_t  interp;
 
+unsigned long lastFarme = 0;
+uint16_t fps = 0;
+
 boolean DEBUG = false;
 
 void setup() {
@@ -68,10 +76,9 @@ void setup() {
   bilinear_interp_init(&interp);
 
   for (int i = 0; i < ROW_FRAME; i++) {
-    rawFrame.pData[i] = i;
+    rawFrame.pData[i] = random(255);
     Serial.printf("%d ", rawFrame.pData[i]);
     if ((i % COLS) == (COLS - 1)) Serial.println();
-    delay(1);
   }
   Serial.println("START");
 }
@@ -80,13 +87,25 @@ void loop() {
 
   bilinear_interp(&interpolatedFrame, &rawFrame, &interp);
 
+#ifdef DEBUG_INTERP
   for (int i = 0; i < NEW_FRAME; i++) {
     if ((i % NEW_COLS) == (NEW_COLS - 1)) Serial.println();
     Serial.printf(F("%d "), interpolatedFrame.pData[i]);
   }
   Serial.println();
+#endif /*__DEBUG_INTERP__*/
 
-  while (1);
+  // while (1);
+
+#ifdef E256_FPS
+  if ((millis() - lastFarme) >= 1000) {
+    Serial.printf(F("\n\nFPS: %d\n\n"), fps);
+    lastFarme = millis();
+    fps = 0;
+  }
+  fps++;
+#endif /*__E256_FPS__*/
+
 }
 
 /*
@@ -129,7 +148,9 @@ inline void bilinear_interp(const image_t* outputFrame, const image_t* inputFram
       uint8_t inIndexC = inIndexA + inputFrame->numCols;
       uint8_t inIndexD = inIndexC + 1;
 
-      Serial.printf(F("\nA=%d\tB=%d\tC=%d\tD=%d\n"), inIndexA, inIndexB, inIndexC, inIndexD);
+      // TODO: windowing implementation !!!!
+
+      //Serial.printf(F("\nA=%d\tB=%d\tC=%d\tD=%d\n"), inIndexA, inIndexB, inIndexC, inIndexD);
 
       for (uint8_t row = 0; row < interp->scale_Y; row++) {
         for (uint8_t col = 0; col < interp->scale_X; col++) {
@@ -138,19 +159,18 @@ inline void bilinear_interp(const image_t* outputFrame, const image_t* inputFram
           uint16_t outIndex = rowPos * interp->outputStride_Y + colPos * interp->scale_X + row * outputFrame->numCols + col;
 
           //Serial.printf(F("%d\t"), coefIndex);
-          Serial.printf(F("%d\t"), outIndex);
+          //Serial.printf(F("%d\t"), outIndex);
 
           outputFrame->pData[outIndex] =
-            (uint8_t) round(
-              inputFrame->pData[inIndexA] * interp->pCoefA[coefIndex] +
-              inputFrame->pData[inIndexB] * interp->pCoefB[coefIndex] +
-              inputFrame->pData[inIndexC] * interp->pCoefC[coefIndex] +
-              inputFrame->pData[inIndexD] * interp->pCoefD[coefIndex]
-            );
+            (uint8_t) round(inputFrame->pData[inIndexA] * interp->pCoefA[coefIndex] +
+                            inputFrame->pData[inIndexB] * interp->pCoefB[coefIndex] +
+                            inputFrame->pData[inIndexC] * interp->pCoefC[coefIndex] +
+                            inputFrame->pData[inIndexD] * interp->pCoefD[coefIndex]
+                           );
         }
-        Serial.println();
+        // Serial.println();
       }
-      Serial.println();
+      // Serial.println();
     }
   }
 }
