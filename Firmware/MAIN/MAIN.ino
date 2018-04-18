@@ -5,7 +5,6 @@
 */
 
 #include "main.h"
-#include "config.h"
 
 // FPS with CPU speed to 120 MHz (Overclock)
 // 523 FPS ADC input
@@ -82,7 +81,7 @@ void setup() {
 
   // Blobs list init
   llist_raz(&freeBlobs);
-  llist_init(&freeBlobs, blobArray, MAX_NODES); // add 40 nodes in the freeBlobs linked list
+  llist_init(&freeBlobs, blobArray, MAX_NODES); // Add 40 nodes in the freeBlobs linked list
   llist_raz(&blobs);
   llist_raz(&outputBlobs);
 
@@ -147,7 +146,7 @@ void loop() {
 
   //////////////////// Bilinear intrerpolation
 #ifdef E256_INTERP
-  bilinear_interp(&interpolatedFrame, &rawFrame, &interp);
+  bilinear_interp(&interpolatedFrame, rawFrame, &interp);
 #endif /*__E256_INTERP__*/
 
   //////////////////// Blobs detection
@@ -195,7 +194,7 @@ void calib(void) {
         SPI.transfer(setCols >> 8);           // Shift out the MSB byte to set up the OUTPUT shift register
         SPI.transfer(setDualRows[row]);       // Shift out one byte that setup the two 8:1 analog multiplexers
         digitalWriteFast(E256_SS_PIN, HIGH);  // Set latchPin HIGH
-        delayMicroseconds(1);                 // See switching time of the 74HC4051BQ multiplexeur
+        delayMicroseconds(5);                 // See switching time of the 74HC4051BQ multiplexeur
 
 #ifdef E256_ADC_SYNCHRO
         result = adc->analogSynchronizedRead(ADC0_PIN, ADC1_PIN);
@@ -217,25 +216,24 @@ void calib(void) {
         }
       }
       setCols = setCols >> 1;
-      delay(1);
     }
   }
 }
 
 void bootConfig() {
   uint8_t waitOn = 0;
-  sensor = 0;
+  uint8_t bytePos = 0;
 
   Serial.printf(F("\nWaiting for config: "));
   while (1) {
     if (Serial.available()) {
-      serialConf[sensor] = Serial.read();
-      if (serialConf[sensor] == E256_EOF) {
+      serialConf[bytePos] = Serial.read();
+      if (serialConf[bytePos] == E256_EOF) {
         Serial.printf(F("\nMODE = %d\n"), serialConf[0]); // TODO
         // bootBlink(BUILTIN_LED, 3); // FIXME - BUILTIN_LED is used for SPI hardware
         break;
       }
-      sensor++;
+      bytePos++;
     }
     if ((millis() - lastFarme) >= 500) {
       Serial.printf(F("."));
@@ -257,4 +255,5 @@ void bootBlink(const uint8_t pin, uint8_t flash) {
     delay(50);
   }
 }
+
 

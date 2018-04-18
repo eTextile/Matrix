@@ -7,20 +7,7 @@
 #ifndef __MAIN_H__
 #define __MAIN_H__
 
-#include <Arduino.h>
-
-#include <ADC.h>                  // https://github.com/pedvide/ADC
-#include <SPI.h>                  // https://www.pjrc.com/teensy/td_libs_SPI.html
-#include <OSCMessage.h>           // https://github.com/CNMAT/OSC
-#include <OSCBundle.h>            // https://github.com/CNMAT/OSC
-#include <OSCBoards.h>            // https://github.com/CNMAT/OSC
-#include <SLIPEncodedUSBSerial.h> // https://github.com/CNMAT/OSC
-
 #include "config.h"
-
-#include "blob.h"
-#include "llist.h"
-#include "interp.h"
 
 SPISettings settings(16000000, MSBFIRST, SPI_MODE0); // LSBFIRST
 
@@ -38,13 +25,16 @@ byte setDualRows[ROWS] = {
   0x55, 0x77, 0x66, 0x44, 0x22, 0x11, 0x00, 0x33
 };
 
-uint16_t sensor = 0;
-
 char      serialConf[4] = {0};              // Array to store boot serial config
 uint8_t   minVals[ROW_FRAME] = {0};         // Array to store smallest values
 
 uint8_t   frameValues[ROW_FRAME] = {0};     // Array to store ofseted input values
 image_t   rawFrame;                         // Instance of struct image_t 
+
+float     coef_A[SCALE_X * SCALE_Y] = {0};
+float     coef_B[SCALE_X * SCALE_Y] = {0};
+float     coef_C[SCALE_X * SCALE_Y] = {0};
+float     coef_D[SCALE_X * SCALE_Y] = {0};
 
 interp_t  interp;                           // Instance of struct interp_t
 
@@ -59,7 +49,8 @@ llist_t   blobs;
 llist_t   outputBlobs;
 
 void bootBlink(const uint8_t pin, uint8_t flash);
+void bootConfig(void);
 void calib(void);
-// void onPacket(const uint8_t* buffer, size_t size);
 
 #endif /*__MAIN_H__*/
+

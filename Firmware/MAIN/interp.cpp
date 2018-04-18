@@ -11,7 +11,7 @@
     Pre-compute the four coefficient values for all interpolated output matrix positions
 */
 
-void bilinear_interp_init(interp_t* interp) {
+void bilinear_interp_init(const interp_t* interp) {
 
   float sFactor = interp->scale_X * interp->scale_Y;
 
@@ -31,7 +31,7 @@ void bilinear_interp_init(interp_t* interp) {
     param[OUT]     outputFrame  // Points to an instance of an image_t structure
 */
 
-void bilinear_interp(const image_t* outputFrame, const image_t* inputFrame, const interp_t* interp) {
+void bilinear_interp(const image_t *outputFrame, const image_t* inputFrame, const interp_t* interp) {
 
   for (uint8_t rowPos = 0; rowPos < inputFrame->numRows; rowPos++) {
     for (uint8_t colPos = 0; colPos < inputFrame->numCols - 1; colPos++) {
@@ -40,6 +40,8 @@ void bilinear_interp(const image_t* outputFrame, const image_t* inputFrame, cons
       uint8_t inIndexB = inIndexA + 1;
       uint8_t inIndexC = inIndexA + inputFrame->numCols;
       uint8_t inIndexD = inIndexC + 1;
+
+      // TODO: windowing implementation
 
       for (uint8_t row = 0; row < interp->scale_Y; row++) {
         for (uint8_t col = 0; col < interp->scale_X; col++) {
@@ -68,5 +70,6 @@ void bilinear_interp(const image_t* outputFrame, const image_t* inputFrame, cons
   delay(500);
 #endif /*__DEBUG_INTERP__*/
 }
+
 
 

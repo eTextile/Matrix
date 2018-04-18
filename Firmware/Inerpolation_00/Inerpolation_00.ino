@@ -1,4 +1,4 @@
-// #undef round
+#undef round
 
 #define COLS           16
 #define ROWS           16

@@ -6,7 +6,7 @@
 
 #include "blob.h"
 
-inline void find_blobs(
+void find_blobs(
   image_t*              inFrame_ptr,
   char*                 bitmap_ptr,
   const int             rows,
@@ -323,7 +323,7 @@ void bitmap_clear(char* bitmap_ptr, const uint16_t Size) {
   memset(bitmap_ptr, 0, Size * sizeof(char));
 }
 
-inline void blob_copy(blob_t* dst, blob_t* src) {
+void blob_copy(blob_t* dst, blob_t* src) {
   dst->UID = src->UID;
   dst->centroid.X = src->centroid.X;
   dst->centroid.Y = src->centroid.Y;
@@ -331,7 +331,7 @@ inline void blob_copy(blob_t* dst, blob_t* src) {
   dst->pixels = src->pixels;
 }
 
-inline void blob_raz(blob_t* node) {
+void blob_raz(blob_t* node) {
   node->UID = -1;
   node->state = FREE;
   node->centroid.X = 0;
@@ -339,4 +339,5 @@ inline void blob_raz(blob_t* node) {
   node->centroid.Z = 0;
   node->pixels = 0;
 }
+
 

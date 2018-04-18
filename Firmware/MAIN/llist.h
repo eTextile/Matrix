@@ -7,8 +7,7 @@
 #ifndef __LLIST_H__
 #define __LLIST_H__
 
-#include <Arduino.h>
-#include "blob.h"
+#include "config.h"
 
 typedef struct {
   blob_t* head_ptr;
@@ -34,3 +33,4 @@ blob_t* iterator_start_from_head(llist_t* src);
 blob_t* iterator_next(blob_t* src);
 
 #endif /*__LLIST_H__*/
+
