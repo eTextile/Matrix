@@ -8,6 +8,7 @@
 #define __BLOB_H__
 
 #include "config.h"
+#include "llist.h"
 
 #define IM_LOG2_2(x)    (((x) &                0x2ULL) ? ( 2                        ) :             1) // NO ({ ... }) !
 #define IM_LOG2_4(x)    (((x) &                0xCULL) ? ( 2 +  IM_LOG2_2((x) >>  2)) :  IM_LOG2_2(x)) // NO ({ ... }) !
@@ -71,7 +72,7 @@
 
 ////////////// Image stuff //////////////
 
-typedef struct {
+typedef struct image {
   uint8_t numCols;
   uint8_t numRows;
   uint8_t* pData;
@@ -105,6 +106,8 @@ typedef struct blob {
 
 void blob_raz(blob_t* node);
 void blob_copy(blob_t* dst, blob_t* src);
+
+typedef struct llist llist_t; // forward declaration
 
 void find_blobs(
   image_t* interpolatedFrame_ptr,

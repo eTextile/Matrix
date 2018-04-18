@@ -8,6 +8,7 @@
 #define __INTERP_H__
 
 #include "config.h"
+#include "blob.h"
 
 #undef round
 #define round(x) lround(x)
@@ -21,6 +22,8 @@ typedef struct {
   float* pCoefC;
   float* pCoefD;
 } interp_t;
+
+typedef struct image image_t; // forward declaration
 
 void bilinear_interp_init(const interp_t* interp);
 void bilinear_interp(const image_t* outputFrame, const image_t* inputFrame, const interp_t* interp);

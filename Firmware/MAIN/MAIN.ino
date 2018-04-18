@@ -146,7 +146,7 @@ void loop() {
 
   //////////////////// Bilinear intrerpolation
 #ifdef E256_INTERP
-  bilinear_interp(&interpolatedFrame, rawFrame, &interp);
+  bilinear_interp(&interpolatedFrame, &rawFrame, &interp);
 #endif /*__E256_INTERP__*/
 
   //////////////////// Blobs detection

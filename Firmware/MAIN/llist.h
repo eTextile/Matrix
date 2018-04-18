@@ -8,8 +8,11 @@
 #define __LLIST_H__
 
 #include "config.h"
+//#include "blob.h"
 
-typedef struct {
+typedef struct blob blob_t; // forward declaration
+
+typedef struct llist {
   blob_t* head_ptr;
   blob_t* tail_ptr;
   uint8_t max_nodes;
