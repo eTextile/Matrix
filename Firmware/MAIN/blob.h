@@ -1,5 +1,5 @@
 /*
-  This file is part of the eTextile-matrix-sensor project - http://matrix.eTextile.org
+  This file is partSLIPSerial of the eTextile-matrix-sensor project - http://matrix.eTextile.org
   Copyright (c) 2014-2018 Maurin Donneaud <maurin@etextile.org>
   This work is licensed under Creative Commons Attribution-ShareAlike 4.0 International license, see the LICENSE file for details.
 */
@@ -104,8 +104,8 @@ typedef struct blob {
   struct blob* next_ptr;
 } blob_t;
 
-void blob_raz(blob_t* node);
-void blob_copy(blob_t* dst, blob_t* src);
+inline void blob_raz(blob_t* node);
+inline void blob_copy(blob_t* dst, blob_t* src);
 
 typedef struct llist llist_t; // forward declaration
 
@@ -119,8 +119,8 @@ void find_blobs(
   const unsigned int maxBlobPix,
   llist_t* freeBlob_ptr,
   llist_t* blobs_ptr,
-  llist_t* outputBlobs_ptr,
-  SLIPEncodedUSBSerial SLIPSerial
+  llist_t* outputBlobs_ptr
+  // SLIPEncodedUSBSerial SLIPSerial_ptr
 );
 
 #endif /*__BLOB_H__*/

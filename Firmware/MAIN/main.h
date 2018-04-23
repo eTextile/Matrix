@@ -8,13 +8,18 @@
 #define __MAIN_H__
 
 #include "config.h"
+#include "interp.h"
+#include "llist.h"
+#include "blob.h"
 
 SPISettings settings(16000000, MSBFIRST, SPI_MODE0); // LSBFIRST
 
 ADC *adc = new ADC();     // ADC object
 ADC::Sync_result result;  // ADC_0 & ADC_1
 
-SLIPEncodedUSBSerial SLIPSerial(thisBoardsSerialUSB);
+SLIPEncodedUSBSerial SLIPSerial( thisBoardsSerialUSB );
+
+OSCBundle inputBundle;
 
 unsigned long lastFarme = 0;
 uint16_t fps = 0;
@@ -31,6 +36,8 @@ uint8_t   minVals[ROW_FRAME] = {0};         // Array to store smallest values
 uint8_t   frameValues[ROW_FRAME] = {0};     // Array to store ofseted input values
 image_t   rawFrame;                         // Instance of struct image_t 
 
+boolean   scan = true;
+
 float     coef_A[SCALE_X * SCALE_Y] = {0};
 float     coef_B[SCALE_X * SCALE_Y] = {0};
 float     coef_C[SCALE_X * SCALE_Y] = {0};
@@ -41,16 +48,22 @@ interp_t  interp;                           // Instance of struct interp_t
 uint8_t   bilinIntOutput[NEW_FRAME] = {0};  // Bilinear interpolation output buffer
 image_t   interpolatedFrame;                // Instance of struct image_t 
 
-char      bitmap[NEW_FRAME] = {0};    // 64 x 64
-blob_t    blobArray[MAX_NODES] = {0}; // 40 nodes
+char      bitmap[NEW_FRAME] = {0};          // 64 x 64
+blob_t    blobArray[MAX_NODES] = {0};       // 40 nodes
 
 llist_t   freeBlobs;
 llist_t   blobs;
 llist_t   outputBlobs;
 
+void onPacketReceived(const uint8_t* buffer, size_t size);
+
+inline void matrix_scan(void);
+void matrix_config(OSCMessage &msg);
+void matrix_calibration(OSCMessage &msg);
+void matrix_raw_data(OSCMessage &msg);
+void matrix_blobs(OSCMessage &msg);
+
 void bootBlink(const uint8_t pin, uint8_t flash);
-void bootConfig(void);
-void calib(void);
 
 #endif /*__MAIN_H__*/
 

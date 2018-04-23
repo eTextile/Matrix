@@ -7,18 +7,12 @@
 #ifndef __CONFIG_H__
 #define __CONFIG_H__
 
-#include <Arduino.h>
-
-#include <ADC.h>                  // https://github.com/pedvide/ADC
-#include <SPI.h>                  // https://www.pjrc.com/teensy/td_libs_SPI.html
-#include <OSCMessage.h>           // https://github.com/CNMAT/OSC
-#include <OSCBundle.h>            // https://github.com/CNMAT/OSC
-#include <OSCBoards.h>            // https://github.com/CNMAT/OSC
-#include <SLIPEncodedUSBSerial.h> // https://github.com/CNMAT/OSC
-
-#include "interp.h"
-#include "llist.h"
-#include "blob.h"
+#include <ADC.h>                    // https://github.com/pedvide/ADC
+#include <SPI.h>                    // https://www.pjrc.com/teensy/td_libs_SPI.html
+#include <OSCBoards.h>              // https://github.com/CNMAT/OSC
+#include <OSCMessage.h>             // https://github.com/CNMAT/OSC
+#include <OSCBundle.h>              // https://github.com/CNMAT/OSC
+#include <SLIPEncodedUSBSerial.h>   // 
 
 //#define BUILTIN_LED     13      // FIXME - Hardware SPI conflict
 //#define BUTTON_PIN      32      // FIXME - NO BUTTON_PIN on the E256
@@ -49,13 +43,11 @@
 // Here is the board control
 //#define E256_FPS
 #define E256_ADC_SYNCHRO
-//#define E256_SERIAL_CONFIG
-//#define E256_SEND_RAW
 
 #define E256_INTERP
-//#define E256_BLOBS
-//#define E256_BLOBS_ID
-//#define E256_BLOBS_OSC
+#define E256_BLOBS
+#define E256_BLOBS_ID
+#define E256_BLOBS_SLIP_OSC
 
 //#define DEBUG_ADC
 //#define DEBUG_INTERP

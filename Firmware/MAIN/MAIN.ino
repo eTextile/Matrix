@@ -11,16 +11,18 @@
 //  24 FPS with BILINEAR_INTERPOLATION
 //  23 FPS with interpolation & blob tracking
 
+//////////////////////////////////////////////////// SETUP
+
 void setup() {
+
   // pinMode(BUILTIN_LED, OUTPUT); // FIXME - BUILTIN_LED is used for SPI hardware
 
-  Serial.begin(BAUD_RATE);   // Arduino serial standard library ** 230400 **
-  while (!Serial.dtr());     // Wait for user to start the serial monitor
-
-  // Select MODE while booting
-#ifdef E256_SERIAL_CONFIG
-  bootConfig();
-#endif /*__E256_SERIAL_CONFIG__*/
+#ifdef E256_BLOBS_SLIP_OSC
+  SLIPSerial.begin(BAUD_RATE);   // Arduino serial library ** 230400 ** extended with SLIP encoding
+#else
+  Serial.begin(BAUD_RATE);       // Arduino serial library ** 230400 **
+  while (!Serial.dtr());         // Wait for user to start the serial monitor
+#endif /*__E256_BLOBS_OSC__*/
 
   // pinMode(BUTTON_PIN, INPUT_PULLUP);          // Set button pin as input and activate the input pullup resistor // FIXME - NO BUTTON_PIN ON the E256!
   // attachInterrupt(BUTTON_PIN, calib, RISING); // Attach interrrupt on button PIN // FIXME - NO BUTTON_PIN ON the E256
@@ -37,8 +39,8 @@ void setup() {
   SPI.begin();                       // Start the SPI module
   SPI.beginTransaction(settings);    // (16000000, MSBFIRST, SPI_MODE0);
 
-  pinMode(ADC0_PIN, INPUT);          // Teensy PIN_A9
-  pinMode(ADC1_PIN, INPUT);          // Teensy PIN_A3
+  pinMode(ADC0_PIN, INPUT);          // Teensy PIN A9
+  pinMode(ADC1_PIN, INPUT);          // Teensy PIN A3
 
 #ifdef E256_ADC_SYNCHRO
   adc->setAveraging(1, ADC_0);                                           // Set number of averages
@@ -73,7 +75,7 @@ void setup() {
   interp.pCoefB = coef_B;
   interp.pCoefC = coef_C;
   interp.pCoefD = coef_D;
-  
+
   // Interpolated frame init
   interpolatedFrame.numCols = NEW_COLS;
   interpolatedFrame.numRows = NEW_ROWS;
@@ -85,18 +87,52 @@ void setup() {
   llist_raz(&blobs);
   llist_raz(&outputBlobs);
 
-  calib();
-  // bootBlink(BUILTIN_LED, 9); // FIXME - BUILTIN_LED is used for hardware SPI
-  Serial.printf("\n Calibrated!");
-  
   bilinear_interp_init(&interp);
+  // bootBlink(BUILTIN_LED, 9); // FIXME - BUILTIN_LED is used for hardware SPI
 
-#ifdef E256_BLOBS_OSC
-  SLIPSerial.begin(BAUD_RATE);  // Extended Arduino serial library with SLIP encoding
-#endif /*__E256_BLOBS_OSC__*/
 }
 
+//////////////////////////////////////////////////// LOOP
+
 void loop() {
+
+  if (scan) {
+    matrix_scan();
+#ifdef E256_INTERP
+    bilinear_interp(&interpolatedFrame, &rawFrame, &interp);
+#endif /*__E256_INTERP__*/
+    scan = false;
+  }
+
+  int size = 0;
+
+  while (!SLIPSerial.endofPacket()) {
+    if ((size = SLIPSerial.available()) > 0) {
+      while (size--)
+        inputBundle.fill(SLIPSerial.read());
+    }
+  }
+  if (!inputBundle.hasError()) {
+    inputBundle.dispatch("/config", matrix_config);
+    inputBundle.dispatch("/calibrate", matrix_calibration);
+    inputBundle.dispatch("/rowData", matrix_raw_data);
+    inputBundle.dispatch("/blobs", matrix_blobs);
+  }
+
+#ifdef E256_FPS
+  if ((millis() - lastFarme) >= 1000) {
+    Serial.printf(F("\nFPS: %d"), fps);
+    lastFarme = millis();
+    fps = 0;
+  }
+  fps++;
+#endif /*__E256_FPS__*/
+
+}
+
+//////////////////////////////////////////////////// FONCTIONS
+
+inline void matrix_scan() {
 
   // Columns are digital OUTPUT PINS - We supply one column at a time
   // Rows are analog INPUT PINS - We sens two rows at a time
@@ -136,50 +172,9 @@ void loop() {
   Serial.println();
   delay(500);
 #endif /*__DEBUG_ADC__*/
-
-  // Send frame raw values
-#ifdef E256_SEND_RAW
-  SLIPSerial.beginPacket();
-  SLIPSerial.write(frameValues, ROW_FRAME * sizeof(uint8_t));
-  SLIPSerial.endPacket();
-#endif /*__E256_SEND_RAW__*/
-
-  //////////////////// Bilinear intrerpolation
-#ifdef E256_INTERP
-  bilinear_interp(&interpolatedFrame, &rawFrame, &interp);
-#endif /*__E256_INTERP__*/
-
-  //////////////////// Blobs detection
-#ifdef E256_BLOBS
-  find_blobs(
-    &interpolatedFrame, // image_t uint8_t [NEW_FRAME] - 1D array
-    bitmap,             // char array [NEW_FRAME] - 1D array
-    NEW_ROWS,           // const int
-    NEW_COLS,           // const int
-    THRESHOLD,          // const int
-    MIN_BLOB_PIX,       // const int
-    MAX_BLOB_PIX,       // const int
-    &freeBlobs,         // list_t
-    &blobs,             // list_t
-    &outputBlobs,       // list_t
-    SLIPSerial
-  );
-#endif /*__E256_BLOBS__*/
-
-#ifdef E256_FPS
-  if ((millis() - lastFarme) >= 1000) {
-    Serial.printf(F("\nFPS: %d"), fps);
-    lastFarme = millis();
-    fps = 0;
-  }
-  fps++;
-#endif /*__E256_FPS__*/
-
 }
 
-void calib(void) {
-
-  memset(minVals, 0, sizeof(uint8_t) * ROW_FRAME); // Set all values to 0
+void matrix_calibration(OSCMessage &msg) {
 
   for (uint8_t i = 0; i < CYCLES; i++) {
     // Columns are digital OUTPUT PINS - We supply one column at a time
@@ -220,31 +215,34 @@ void calib(void) {
   }
 }
 
-void bootConfig() {
-  uint8_t waitOn = 0;
-  uint8_t bytePos = 0;
+/// Blobs detection
+void matrix_blobs(OSCMessage &msg) {
+  find_blobs(
+    &interpolatedFrame, // image_t uint8_t [NEW_FRAME] - 1D array
+    bitmap,             // char array [NEW_FRAME] - 1D array
+    NEW_ROWS,           // const int
+    NEW_COLS,           // const int
+    THRESHOLD,          // const int
+    MIN_BLOB_PIX,       // const int
+    MAX_BLOB_PIX,       // const int
+    &freeBlobs,         // list_t
+    &blobs,             // list_t
+    &outputBlobs        // list_t
+  );
+}
 
-  Serial.printf(F("\nWaiting for config: "));
-  while (1) {
-    if (Serial.available()) {
-      serialConf[bytePos] = Serial.read();
-      if (serialConf[bytePos] == E256_EOF) {
-        Serial.printf(F("\nMODE = %d\n"), serialConf[0]); // TODO
-        // bootBlink(BUILTIN_LED, 3); // FIXME - BUILTIN_LED is used for SPI hardware
-        break;
-      }
-      bytePos++;
-    }
-    if ((millis() - lastFarme) >= 500) {
-      Serial.printf(F("."));
-      lastFarme = millis();
-      fps = 0;
-      waitOn++;
-      if (waitOn == 5) {
-        break;
-      }
-    }
-  }
+/// Send raw frame values in SLIP-OSC formmat
+void matrix_raw_data(OSCMessage &msg) {
+  OSCBundle bndl;
+  bndl.fill(frameValues, ROW_FRAME * sizeof(uint8_t));
+  SLIPSerial.beginPacket();  // Begin SLIP packet
+  bndl.send(SLIPSerial);     // Send the bytes to the SLIP stream
+  SLIPSerial.endPacket();    // Mark the end of the OSC packet
+  bndl.empty();              // Empty the bundle to free room for a new one
+}
+
+void matrix_config(OSCMessage &msg) {
+  //TODO
 }
 
 void bootBlink(const uint8_t pin, uint8_t flash) {
@@ -255,5 +253,4 @@ void bootBlink(const uint8_t pin, uint8_t flash) {
     delay(50);
   }
 }
-
 

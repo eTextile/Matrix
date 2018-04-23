@@ -7,8 +7,7 @@
 #ifndef __LLIST_H__
 #define __LLIST_H__
 
-#include "config.h"
-//#include "blob.h"
+#include "blob.h"
 
 typedef struct blob blob_t; // forward declaration
 

@@ -16,8 +16,7 @@ void find_blobs(
   const unsigned int    maxBlobPix,
   llist_t*              freeBlobs_ptr,
   llist_t*              blob_ptr,
-  llist_t*              outputBlobs_ptr,
-  SLIPEncodedUSBSerial  SLIPSerial
+  llist_t*              outputBlobs_ptr
 ) {
 
   /////////////////////////////// Scanline flood fill algorithm
@@ -209,11 +208,7 @@ void find_blobs(
         blobB->state = FREE;
 #ifdef E256_BLOBS_OSC
         // Add the blob values to the OSC bundle
-        msg.add(blobA->UID);
-        msg.add(blobA->centroid.X);
-        msg.add(blobA->centroid.Y);
-        msg.add(blobA->centroid.Z);
-        msg.add(blobA->pixels);
+        msg.add(blobA->UID).add(blobA->centroid.X).add(blobA->centroid.Y).add(blobA->centroid.Z).add(blobA->pixels);
         bndl.add(msg);
 #endif /*__E256_BLOBS_OSC__*/
 
@@ -246,11 +241,7 @@ void find_blobs(
         if (DEBUG_BLOBS) Serial.printf(F("\n DEBUG_BLOBS / Blob: %p saved to **freeBlobList** linked list"), blob);
         // Add the blob values to the OSC bundle
 #ifdef E256_BLOBS_OSC
-        msg.add(blob->UID);
-        msg.add(-1);
-        msg.add(-1);
-        msg.add(-1);
-        msg.add(-1);
+        msg.add(blob->UID).add(-1).add(-1).add(-1).add(-1);
         bndl.add(msg);
 #endif /*__E256_BLOBS_OSC__*/
 
@@ -274,11 +265,7 @@ void find_blobs(
       if (DEBUG_BLOBS) Serial.printf(F("\n DEBUG_BLOBS / Blob: %p added to **outputBlobs** linked list"), blob);
       // Add the blob values to the OSC bundle
 #ifdef E256_BLOBS_OSC
-      msg.add(blob->UID);
-      msg.add(blob->centroid.X);
-      msg.add(blob->centroid.Y);
-      msg.add(blob->centroid.Z);
-      msg.add(blob->pixels);
+      msg.add(blob->UID).add(blob->centroid.X).add(blob->centroid.Y).add(blob->centroid.Z).add(blob->pixels);
       bndl.add(msg);
 #endif /*__E256_BLOBS_OSC__*/
 
@@ -323,7 +310,7 @@ void bitmap_clear(char* bitmap_ptr, const uint16_t Size) {
   memset(bitmap_ptr, 0, Size * sizeof(char));
 }
 
-void blob_copy(blob_t* dst, blob_t* src) {
+inline void blob_copy(blob_t* dst, blob_t* src) {
   dst->UID = src->UID;
   dst->centroid.X = src->centroid.X;
   dst->centroid.Y = src->centroid.Y;
@@ -331,7 +318,7 @@ void blob_copy(blob_t* dst, blob_t* src) {
   dst->pixels = src->pixels;
 }
 
-void blob_raz(blob_t* node) {
+inline void blob_raz(blob_t* node) {
   node->UID = -1;
   node->state = FREE;
   node->centroid.X = 0;
