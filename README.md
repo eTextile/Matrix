@@ -1,11 +1,11 @@
 # E256 - eTextile matrix sensor
 
 ### Transforming textiles into an intuitive way to interact with computers
+This project is still in a beta phase, where drastic changes may occur and backwards compatibility is not guaranteed until the final release.
 
 ![eTextile matrix sensor - teensy_matrix](https://farm6.staticflickr.com/5572/30306414062_22bba76566_z_d.jpg) ![eTextile matrix sensor - E256](https://farm1.staticflickr.com/798/40904680852_d5c9b1b35d_z_d.jpg)
 
 ## About The project
-
 Using a fabric to sense the touch is now possible with the E256 - eTextile matrix sensor.
 The E256 development kit is a highly customizable solution for designers, makers, and companies who want to combine textile and programming into new eTextile projects.
 This kit features 30cm by 30cm sensitive textile that allows multi-touch sensing and pressures topographic analysis.
