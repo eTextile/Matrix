@@ -17,9 +17,13 @@ SPISettings settings(16000000, MSBFIRST, SPI_MODE0); // LSBFIRST
 ADC *adc = new ADC();     // ADC object
 ADC::Sync_result result;  // ADC_0 & ADC_1
 
-SLIPEncodedUSBSerial SLIPSerial( thisBoardsSerialUSB );
+// By default, SLIPPacketSerial uses SLIP encoding and has a 256 byte receive buffer.
+// This can be adjusted by the user by replacing `SLIPPacketSerial`
+// with a variation of the `PacketSerial_<SLIP, SLIP::END, BufferSize>` template found in PacketSerial.h.
+//SLIPPacketSerial SLIPSerial;
+//PacketSerial_<SLIP, SLIP::END, 512> SLIPSerial;
 
-OSCBundle inputBundle;
+SLIPEncodedUSBSerial SLIPSerial(thisBoardsSerialUSB);
 
 unsigned long lastFarme = 0;
 uint16_t fps = 0;
@@ -34,9 +38,7 @@ char      serialConf[4] = {0};              // Array to store boot serial config
 uint8_t   minVals[ROW_FRAME] = {0};         // Array to store smallest values
 
 uint8_t   frameValues[ROW_FRAME] = {0};     // Array to store ofseted input values
-image_t   rawFrame;                         // Instance of struct image_t 
-
-boolean   scan = true;
+image_t   rawFrame;                         // Instance of struct image_t
 
 float     coef_A[SCALE_X * SCALE_Y] = {0};
 float     coef_B[SCALE_X * SCALE_Y] = {0};
@@ -46,7 +48,7 @@ float     coef_D[SCALE_X * SCALE_Y] = {0};
 interp_t  interp;                           // Instance of struct interp_t
 
 uint8_t   bilinIntOutput[NEW_FRAME] = {0};  // Bilinear interpolation output buffer
-image_t   interpolatedFrame;                // Instance of struct image_t 
+image_t   interpolatedFrame;                // Instance of struct image_t
 
 char      bitmap[NEW_FRAME] = {0};          // 64 x 64
 blob_t    blobArray[MAX_NODES] = {0};       // 40 nodes
@@ -55,15 +57,16 @@ llist_t   freeBlobs;
 llist_t   blobs;
 llist_t   outputBlobs;
 
-void onPacketReceived(const uint8_t* buffer, size_t size);
-
 inline void matrix_scan(void);
+
+// void onPacket(const uint8_t* buffer, size_t size);
+
 void matrix_config(OSCMessage &msg);
 void matrix_calibration(OSCMessage &msg);
 void matrix_raw_data(OSCMessage &msg);
 void matrix_blobs(OSCMessage &msg);
 
-void bootBlink(const uint8_t pin, uint8_t flash);
+//void bootBlink(const uint8_t pin, uint8_t flash);
 
 #endif /*__MAIN_H__*/
 

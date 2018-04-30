@@ -119,8 +119,8 @@ void find_blobs(
   const unsigned int maxBlobPix,
   llist_t* freeBlob_ptr,
   llist_t* blobs_ptr,
-  llist_t* outputBlobs_ptr
-  // SLIPEncodedUSBSerial SLIPSerial_ptr
+  llist_t* outputBlobs_ptr,
+  OSCBundle* bundleOut_ptr
 );
 
 #endif /*__BLOB_H__*/

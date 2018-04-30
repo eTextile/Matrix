@@ -16,7 +16,8 @@ void find_blobs(
   const unsigned int    maxBlobPix,
   llist_t*              freeBlobs_ptr,
   llist_t*              blob_ptr,
-  llist_t*              outputBlobs_ptr
+  llist_t*              outputBlobs_ptr,
+  OSCBundle*            bundleOut_ptr
 ) {
 
   /////////////////////////////// Scanline flood fill algorithm
@@ -136,7 +137,6 @@ void find_blobs(
   /////////////////////////////// PERSISTANT BLOB ID
   ///////////////////////////////
 
-#ifdef E256_BLOBS_ID
   if (DEBUG_BLOBS) Serial.printf(F("\n DEBUG_BLOBS / **blobs** linked list index: %d"), blob_ptr->index);
   if (DEBUG_BLOBS) Serial.printf(F("\n DEBUG_BLOBS / **freeBlobs** linked list index: %d"), freeBlobs_ptr->index);
   if (DEBUG_BLOBS) Serial.printf(F("\n DEBUG_BLOBS / **outputBlobs** linked list index: %d"), outputBlobs_ptr->index);
@@ -192,11 +192,8 @@ void find_blobs(
   }
   if (DEBUG_BLOBS) Serial.printf(F("\n DEBUG_BLOBS / EXIT <<<<<<<<<<<<<<<<<"));
 
-#ifdef E256_BLOBS_OSC
-  OSCBundle bndl;
   OSCMessage msg("/sensors");
-#endif /*__E256_BLOBS_OSC__*/
-
+  
   // Update outputBlobs linked list with blobsToUpdate linked list.
   // If a blob in the outputBlobs linked list is not in the blobsToUpdate linked list, set it to dead.
   for (blob_t* blobA = iterator_start_from_head(outputBlobs_ptr); blobA != NULL; blobA = iterator_next(blobA)) {
@@ -206,12 +203,10 @@ void find_blobs(
         found = true;
         blob_copy(blobA, blobB);
         blobB->state = FREE;
-#ifdef E256_BLOBS_OSC
         // Add the blob values to the OSC bundle
         msg.add(blobA->UID).add(blobA->centroid.X).add(blobA->centroid.Y).add(blobA->centroid.Z).add(blobA->pixels);
-        bndl.add(msg);
-#endif /*__E256_BLOBS_OSC__*/
-
+        bundleOut_ptr->add(msg);
+        msg.empty();  // Empty the message
 #ifdef DEBUG_BLOBS_OSC
         Serial.printf(F("\n DEBUG_BLOBS_OSC / Update outputBlobs / UID:%d\tX:%d\tY:%d\tZ:%d\tPIX:%d"),
                       blobA->UID,
@@ -240,11 +235,9 @@ void find_blobs(
         llist_push_back(freeBlobs_ptr, blob);
         if (DEBUG_BLOBS) Serial.printf(F("\n DEBUG_BLOBS / Blob: %p saved to **freeBlobList** linked list"), blob);
         // Add the blob values to the OSC bundle
-#ifdef E256_BLOBS_OSC
         msg.add(blob->UID).add(-1).add(-1).add(-1).add(-1);
-        bndl.add(msg);
-#endif /*__E256_BLOBS_OSC__*/
-
+        bundleOut_ptr->add(msg);
+        msg.empty();  // Empty the message
 #ifdef DEBUG_BLOBS_OSC
         Serial.printf(F("\n DEBUG_BLOBS_OSC / Suppress dead blob / UID:%d\tX:%d\tY:%d\tZ:%d\tPIX:%d"), blob->UID, -1, -1, -1, -1);
 #endif /*__DEBUG_BLOBS_OSC__*/
@@ -264,11 +257,9 @@ void find_blobs(
       llist_push_back(outputBlobs_ptr, newBlob);
       if (DEBUG_BLOBS) Serial.printf(F("\n DEBUG_BLOBS / Blob: %p added to **outputBlobs** linked list"), blob);
       // Add the blob values to the OSC bundle
-#ifdef E256_BLOBS_OSC
       msg.add(blob->UID).add(blob->centroid.X).add(blob->centroid.Y).add(blob->centroid.Z).add(blob->pixels);
-      bndl.add(msg);
-#endif /*__E256_BLOBS_OSC__*/
-
+      bundleOut_ptr->add(msg);
+      msg.empty();  // Empty the message
 #ifdef DEBUG_BLOBS_OSC
       Serial.printf(F("\n DEBUG_BLOBS_OSC / Add the new blob / UID:%d\tX:%d\tY:%d\tZ:%d\tPIX:%d"),
                     blob->UID,
@@ -280,16 +271,6 @@ void find_blobs(
 #endif /*__DEBUG_BLOBS_OSC__*/
     }
   }
-  // Send an OSC bundlethe with all blobs values
-#ifdef E256_BLOBS_OSC
-  SLIPSerial.beginPacket();  // Begin SLIP packet
-  bndl.send(SLIPSerial);     // Send the bytes to the SLIP stream
-  SLIPSerial.endPacket();    // Mark the end of the OSC packet
-  bndl.empty();              // Empty the bundle to free room for a new one
-  msg.empty();               // Empty the message to free room for a new one
-#endif /*__E256_BLOBS_OSC__*/
-
-#endif /*__E256_BLOBS_ID__*/
 
   llist_save_blobs(freeBlobs_ptr, blob_ptr);
   if (DEBUG_BLOBS) Serial.printf(F("\n DEBUG_BLOBS / END OFF BLOB FONCTION"));
