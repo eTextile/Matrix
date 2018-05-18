@@ -15,10 +15,10 @@
 #include <OSCBundle.h>              // https://github.com/CNMAT/OSC
 
 #include <SLIPEncodedUSBSerial.h>   // https://github.com/CNMAT/OSC
-//#include <PacketSerial.h>         // https://github.com/bakercp/PacketSerial (send bundle is not implemented!)
+//#include <PacketSerial.h>         // https://github.com/bakercp/PacketSerial (Send bundle is not implemented!)
 
-//#define BUILTIN_LED     13      // FIXME - Hardware SPI conflict
-//#define BUTTON_PIN      32      // FIXME - NO BUTTON_PIN on the E256
+//#define BUILTIN_LED     13        // FIXME - Hardware SPI conflict
+//#define BUTTON_PIN      32        // FIXME - NO BUTTON_PIN on the E256
 #define BAUD_RATE         230400
 #define COLS              16
 #define ROWS              16
@@ -46,9 +46,6 @@
 //#define E256_FPS
 
 #define E256_ADC_SYNCHRO
-#define E256_INTERP
-#define E256_BLOBS
-#define E256_BLOBS_ID
 #define E256_BLOBS_SLIP_OSC
 
 //#define DEBUG_ADC

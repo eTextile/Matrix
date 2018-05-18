@@ -206,7 +206,7 @@ void find_blobs(
         // Add the blob values to the OSC bundle
         msg.add(blobA->UID).add(blobA->centroid.X).add(blobA->centroid.Y).add(blobA->centroid.Z).add(blobA->pixels);
         bundleOut_ptr->add(msg);
-        msg.empty();  // Empty the message
+        msg.empty();
 #ifdef DEBUG_BLOBS_OSC
         Serial.printf(F("\n DEBUG_BLOBS_OSC / Update outputBlobs / UID:%d\tX:%d\tY:%d\tZ:%d\tPIX:%d"),
                       blobA->UID,
@@ -237,7 +237,7 @@ void find_blobs(
         // Add the blob values to the OSC bundle
         msg.add(blob->UID).add(-1).add(-1).add(-1).add(-1);
         bundleOut_ptr->add(msg);
-        msg.empty();  // Empty the message
+        msg.empty();
 #ifdef DEBUG_BLOBS_OSC
         Serial.printf(F("\n DEBUG_BLOBS_OSC / Suppress dead blob / UID:%d\tX:%d\tY:%d\tZ:%d\tPIX:%d"), blob->UID, -1, -1, -1, -1);
 #endif /*__DEBUG_BLOBS_OSC__*/
@@ -259,7 +259,7 @@ void find_blobs(
       // Add the blob values to the OSC bundle
       msg.add(blob->UID).add(blob->centroid.X).add(blob->centroid.Y).add(blob->centroid.Z).add(blob->pixels);
       bundleOut_ptr->add(msg);
-      msg.empty();  // Empty the message
+      msg.empty();
 #ifdef DEBUG_BLOBS_OSC
       Serial.printf(F("\n DEBUG_BLOBS_OSC / Add the new blob / UID:%d\tX:%d\tY:%d\tZ:%d\tPIX:%d"),
                     blob->UID,
@@ -275,7 +275,6 @@ void find_blobs(
   llist_save_blobs(freeBlobs_ptr, blob_ptr);
   if (DEBUG_BLOBS) Serial.printf(F("\n DEBUG_BLOBS / END OFF BLOB FONCTION"));
 }
-
 
 ////////////////////////////// Bitmap //////////////////////////////
 

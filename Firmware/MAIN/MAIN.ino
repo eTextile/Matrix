@@ -18,11 +18,10 @@ void setup() {
   //pinMode(BUILTIN_LED, OUTPUT); // FIXME - BUILTIN_LED is used for SPI hardware
 
 #ifdef E256_BLOBS_SLIP_OSC
-  //SLIPSerial.setPacketHandler(&onPacket);
   SLIPSerial.begin(BAUD_RATE);   // Arduino serial library ** 230400 ** extended with SLIP encoding
 #else
   Serial.begin(BAUD_RATE);       // Arduino serial library ** 230400 **
-  while (!Serial.dtr());         // Wait for user to start the serial monitor
+  while (!Serial.dtr());        // Wait for user to start the serial monitor
 #endif /*__E256_BLOBS_SLIP_OSC__*/
 
   //pinMode(BUTTON_PIN, INPUT_PULLUP);          // Set button pin as input and activate the input pullup resistor // FIXME - NO BUTTON_PIN ON the E256!
@@ -214,12 +213,14 @@ void matrix_calibration(OSCMessage &msg) {
 /// Send raw frame values in SLIP-OSC formmat
 void matrix_raw_data(OSCMessage &msg) {
   OSCBundle bundleOut;
-
-  bundleOut.fill(frameValues, ROW_FRAME * sizeof(uint8_t));
+  
+  matrix_scan();
+  
+  bundleOut.fill(frameValues, ROW_FRAME);
   SLIPSerial.beginPacket();
   bundleOut.send(SLIPSerial); // send the bytes to the SLIP stream
-  SLIPSerial.endPacket(); // mark the end of the OSC Packet
-  bundleOut.empty(); // empty the bundle to free room for a new one
+  SLIPSerial.endPacket();     // mark the end of the OSC Packet
+  bundleOut.empty();          // empty the bundle to free room for a new one
 }
 
 /// Blobs detection
@@ -239,7 +240,7 @@ void matrix_blobs(OSCMessage &msg) {
     &freeBlobs,         // list_t
     &blobs,             // list_t
     &outputBlobs,       // list_t
-    &bundleOut
+    &bundleOut          // OSCBundle
   );
 
   SLIPSerial.beginPacket();
