@@ -1,27 +1,10 @@
-/*
-This software is made for the eTextile matrix sensor.
-This sensor is open hardware but it use some materials that are complicate to buy.
-For exempel the piedzo-resistive fabric use to sens the presure is not accesibel in small cantity.
-Also the multiconductors ribbon (16 lignes) do not exist yet as a market product and have to be make by an industry.
-*/
-
 #include <cmath>
 #include "ofApp.h"
-
-#define DEBUG_SERIAL 0
-#define DEBUG_PRINT 0
-#define DEBUG_OSC 0
 
 void ofApp::setup() {
 
     ofSetVerticalSync(true);
-    ofSetWindowTitle("eTextile matrix sensor");
-    // 1. Upload the PacketSerialReverseEcho.ino sketch (in this example's
-    //    Arduino/ folder) to an Arduino board.  This sketch requires
-    //    the Arduino PacketSerial library https://github.com/bakercp/PacketSerial
-    // 2. Check the "listDevices" call below to make sure the correct serial
-    //    device is connected.
-    // 3. Run this app.
+    ofSetWindowTitle("E256 - eTextile matrix sensor");
 
     std::vector<SerialDeviceInfo> devicesInfo = SerialDeviceUtils::listDevices();
     ofLogNotice("ofApp::setup") << "Connected Devices: ";
@@ -31,9 +14,7 @@ void ofApp::setup() {
     }
 
     if (!devicesInfo.empty()) {
-        // Connect to the first device (ttyACM0).
         bool success = device.setup(USB_PORT, BAUD_RATE);
-
         if (success) {
             device.registerAllEvents(this);
             ofLogNotice("ofApp::setup") << "Successfully setup: " << USB_PORT;
@@ -82,26 +63,28 @@ void ofApp::setup() {
     grayBg.allocate(X_NEWSIZE, Y_NEWSIZE);
     grayDiff.allocate(X_NEWSIZE, Y_NEWSIZE);
 
-    // Initialize buffer
-    ofLogNotice("ofApp::setup") << "Ping the Teensy";
-    buffer.writeByte(65); // "A"
-    device.send(buffer);  // Request a frame from the Teensy matrix sensor
+    ofLogNotice("ofApp::setup") << "Teensy frame request";
+
+    ofxOscMessage msg;
+    msg.setAddress("/calibrate"); // Calibrate the matrix sensor
+    sender.sendMessage(msg);
+
     bLearnBakground = true;
 }
 
 /////////////////////// SERIAL EVENT ///////////////////////
+// https://github.com/workergnome/ofxOscuino
 void ofApp::onSerialBuffer(const SerialBufferEventArgs& args) {
-
-    // Copy the frame buffer (256 values) into serialData array.
-    std::copy(args.getBuffer().begin(), args.getBuffer().end(), serialData);
-
-    if (DEBUG_SERIAL) {
-    cout << "NEW packet : ";
-        for (int index=0; index<DATAS; index++) {
-            cout << "SENSOR_ID: " << sensorID << " VALUE: " << serialData[index] << endl;
-        }
+    if(serial.isInitialized() && oscBridge.update()) {
+      while(receiver.hasWaitingMessages()) {
+        ofxOscBundle bundle;
+        bundle = receiver.getBundleAt(0);
+        ofLog(OF_LOG_NOTICE) << "address:" << bundle.getAddress() << ", message: " << bundle.getArgAsInt32(0);
+        // serialData
+      }
     }
-    device.send(buffer); // Request a frame from the Teensy matrix sensor
+    msg.setAddress("/rowData");   // Raw frame request
+    sender.sendMessage(msg);
     newFrame = true;
 }
 
@@ -126,7 +109,6 @@ void ofApp::update() {
         // Find contours which are between the size of 5 pixels ($1) and 1500 pixels ($2).
         // Also, find holes is set to false ($4) so it will not get interior contours.
         contourFinder.findContours(grayDiff, 5, 1500, 8, false, true);
-
 
         vector<centroid> currentCentroids;
 
@@ -292,9 +274,9 @@ void ofApp::draw() {
     ofRotate(25, 1, 0, 0);
 
     //////////////////////// DRAW BLOBS
-    const int x = 0;   // X ofset
-    const int y = 0; // Y ofset FIXME : dont afect the matrix graph
-    const int k = 9;  // Scale 14
+    const int x = 0;  // X ofset
+    const int y = 0;  // Y ofset FIXME : dont afect the matrix graph
+    const int k = 9;  // Scale factor TODO : make it interactive
 
     ofNoFill();
     ofSetLineWidth(3);
@@ -354,7 +336,6 @@ void ofApp::handleOSC() {
 }
 
 void ofApp::exit() {
-
     device.unregisterAllEvents(this);
     toggleDsp.removeListener(this, &ofApp::toggleDspPressed);
     sliderVolume.removeListener(this, &ofApp::sliderVolumeValue);
@@ -399,4 +380,3 @@ void ofApp::keyPressed(int key) {
             break;
     }
 }
-

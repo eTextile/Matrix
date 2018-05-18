@@ -7,6 +7,8 @@
 #include "ofxCvGrayscaleImage.h"
 #include "ofxCvContourFinder.h"
 
+#include "ofx/IO/SLIPEncoding.h"
+
 #define USB_PORT         "/dev/ttyACM0"
 #define BAUD_RATE        230400  // With Teensy, it's always the same native speed. The baud rate setting is ignored.
 #define DATAS            256     // Numbur of bytes received from the teensy
@@ -20,6 +22,10 @@
 #define UDP_OUTPUT_PORT  7771
 #define UDP_INPUT_PORT   1234
 
+#define DEBUG_SERIAL 1
+#define DEBUG_PRINT  0
+#define DEBUG_OSC    0
+
 struct centroid {
     ofVec2f position;
     uint8_t pressure;
@@ -28,9 +34,7 @@ struct centroid {
     bool isDead;
 };
 
-
 using namespace ofx::IO;
-
 
 class ofApp: public ofBaseApp {
 
@@ -44,10 +48,9 @@ public:
     void                    handleOSC();
     PacketSerialDevice      device;
     ByteBuffer              buffer;  // Create a byte buffer.
-    int16_t                 highBit;
-    int16_t                 lowBit;
     int                     sensorID;
-    uint8_t                 serialData[DATAS];             //
+    uint8_t                 SerialData_SLIP[DATAS];        // SLIP Encoding
+    uint8_t                 serialData[DATAS];             // Decoded
     uint8_t                 storedValueRast[ROWS * COLS];  // 1D array
     int8_t                  threshold;
     bool                    newFrame;
