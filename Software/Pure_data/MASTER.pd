@@ -1,70 +1,108 @@
-#N canvas 230 24 745 557 10;
-#X obj 426 107 o.io.slipserial;
-#X obj 426 128 mrpeach/unpackOSC;
-#X text 70 2 Oscuino Serial Adrian Freed 2013;
-#X text 70 112 - comport;
-#X text 70 91 - cyclone;
-#X obj 426 8 import mrpeach;
-#X text 70 70 - mrpeach osc slipenc and slipdec;
-#X text 70 23 This patch depends on several third party externals available
+#N canvas 650 24 660 637 10;
+#X obj 314 278 mrpeach/unpackOSC;
+#X text 18 105 - comport;
+#X text 18 84 - cyclone;
+#X obj 305 141 import mrpeach;
+#X text 18 63 - mrpeach osc slipenc and slipdec;
+#X text 18 16 This patch depends on several third party externals available
 in PD-extended (deprecated?) \, Purr \, or through deken plugin (Help
 -> Find externals):;
-#X msg 426 33 devicename /dev/ttyACM0 \, baud 230400 \, pollintervall
-4 \, verbose 1;
-#X obj 426 149 mrpeach/routeOSC /sensors;
-#X msg 441 72 devices;
-#X msg 500 72 close;
-#X obj 115 322 vsl 15 128 0 64 0 0 empty 0-posY empty 0 -9 0 10 -262144
+#X obj 314 299 mrpeach/routeOSC /sensors;
+#X msg 305 163 devices;
+#X msg 323 205 close;
+#X obj 23 465 vsl 15 128 0 64 0 0 empty 0-posY empty 0 -9 0 10 -262144
 -1 -1 0 1;
-#X obj 131 455 hsl 128 15 0 64 0 0 empty 0-posX empty -2 -8 0 10 -262144
+#X obj 39 598 hsl 128 15 0 64 0 0 empty 0-posX empty -2 -8 0 10 -262144
 -1 -1 0 1;
-#X obj 426 214 until;
-#X obj 426 237 list append;
-#X obj 515 264 bang;
-#X obj 426 264 list split 5;
-#X obj 426 291 s OSC_Blobs;
-#X obj 426 171 t b l;
-#X obj 156 381 unpack float float float float;
-#X obj 156 360 route 0;
-#X obj 156 338 r OSC_Blobs;
-#X obj 156 402 s 0-posX;
-#X obj 215 402 s 0-posY;
-#X obj 274 402 s 0-posZ;
-#X obj 333 402 s 0-zone;
-#X obj 426 322 vsl 15 128 0 64 0 0 empty 1-posY empty 0 -9 0 10 -262144
+#X obj 314 347 until;
+#X obj 314 370 list append;
+#X obj 403 397 bang;
+#X obj 314 397 list split 5;
+#X obj 314 431 s OSC_Blobs;
+#X obj 54 544 unpack float float float float;
+#X obj 54 523 route 0;
+#X obj 54 501 r OSC_Blobs;
+#X obj 54 565 s 0-posX;
+#X obj 113 565 s 0-posY;
+#X obj 172 565 s 0-posZ;
+#X obj 229 565 s 0-zone;
+#X obj 334 465 vsl 15 128 0 64 0 0 empty 1-posY empty 0 -9 0 10 -262144
 -1 -1 0 1;
-#X obj 442 455 hsl 128 15 0 64 0 0 empty 1-posX empty -2 -8 0 10 -262144
+#X obj 350 598 hsl 128 15 0 64 0 0 empty 1-posX empty -2 -8 0 10 -262144
 -1 -1 0 1;
-#X obj 467 381 unpack float float float float;
-#X obj 467 338 r OSC_Blobs;
-#X obj 467 360 route 1;
-#X obj 467 402 s 1-posX;
-#X obj 526 402 s 1-posY;
-#X obj 585 402 s 1-posZ;
-#X obj 644 402 s 1-zone;
-#X connect 0 0 1 0;
-#X connect 1 0 9 0;
-#X connect 8 0 0 0;
-#X connect 9 0 19 0;
-#X connect 10 0 0 0;
-#X connect 11 0 0 0;
+#X obj 365 544 unpack float float float float;
+#X obj 365 501 r OSC_Blobs;
+#X obj 365 523 route 1;
+#X obj 365 565 s 1-posX;
+#X obj 424 565 s 1-posY;
+#X obj 542 565 s 1-zone;
+#X obj 2 465 vsl 15 128 0 255 0 0 empty 0-posZ empty 0 -9 0 10 -262144
+-1 -1 0 1;
+#X obj 314 465 vsl 15 128 0 255 0 0 empty 1-posZ empty 0 -9 0 10 -262144
+-1 -1 0 1;
+#X obj 482 565 s 1-posZ;
+#X obj 314 257 mrpeach/slipdec 65536;
+#X obj 314 236 comport 0 230400;
+#X msg 314 184 open 0;
+#X obj 476 159 packOSC;
+#X msg 485 114 /rowData;
+#X msg 557 123 /blobs;
+#X msg 476 93 /config;
+#X obj 314 321 trigger b l;
+#X obj 557 63 tgl 30 0 empty empty empty 17 7 0 10 -4034 -1 -1 1 1
+;
+#X msg 465 74 /calibrate;
+#X obj 475 181 mrpeach/slipenc;
+#X msg 561 152 /threshold;
+#X obj 557 97 metro 40;
+#X obj 479 -5 key;
+#X obj 479 41 print CALIBRATED;
+#X obj 479 18 sel 99;
+#X obj 235 502 print INPUT;
+#X obj 235 477 spigot;
+#X obj 268 441 tgl 30 0 empty empty empty 17 7 0 10 -204800 -1 -1 0
+1;
+#X obj 344 68 bng 40 250 50 0 empty empty empty 17 7 0 10 -262144 -1
+-1;
+#X connect 0 0 6 0;
+#X connect 6 0 41 0;
+#X connect 7 0 35 0;
+#X connect 8 0 35 0;
+#X connect 11 0 12 0;
+#X connect 12 0 14 0;
+#X connect 13 0 11 1;
 #X connect 14 0 15 0;
-#X connect 15 0 17 0;
-#X connect 16 0 14 1;
-#X connect 17 0 18 0;
-#X connect 17 1 15 1;
-#X connect 17 2 16 0;
-#X connect 19 0 14 0;
-#X connect 19 1 15 1;
-#X connect 20 0 23 0;
-#X connect 20 1 24 0;
-#X connect 20 2 25 0;
-#X connect 20 3 26 0;
-#X connect 21 0 20 0;
-#X connect 22 0 21 0;
-#X connect 29 0 32 0;
-#X connect 29 1 33 0;
-#X connect 29 2 34 0;
-#X connect 29 3 35 0;
-#X connect 30 0 31 0;
-#X connect 31 0 29 0;
+#X connect 14 0 51 0;
+#X connect 14 1 12 1;
+#X connect 14 2 13 0;
+#X connect 16 0 19 0;
+#X connect 16 1 20 0;
+#X connect 16 2 21 0;
+#X connect 16 3 22 0;
+#X connect 17 0 16 0;
+#X connect 18 0 17 0;
+#X connect 25 0 28 0;
+#X connect 25 1 29 0;
+#X connect 25 2 33 0;
+#X connect 25 3 30 0;
+#X connect 26 0 27 0;
+#X connect 27 0 25 0;
+#X connect 34 0 0 0;
+#X connect 35 0 34 0;
+#X connect 36 0 35 0;
+#X connect 37 0 44 0;
+#X connect 38 0 37 0;
+#X connect 39 0 37 0;
+#X connect 40 0 37 0;
+#X connect 41 0 11 0;
+#X connect 41 1 12 1;
+#X connect 42 0 46 0;
+#X connect 43 0 37 0;
+#X connect 44 0 35 0;
+#X connect 46 0 39 0;
+#X connect 47 0 49 0;
+#X connect 49 0 43 0;
+#X connect 49 0 48 0;
+#X connect 51 0 50 0;
+#X connect 52 0 51 1;
+#X connect 53 0 43 0;
