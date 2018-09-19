@@ -40,7 +40,7 @@
     centroid.Z (Z the maximum pressur value in all the blob pixels - from 0 to 256)
     pixels (the number of sensors that are triggered by a touch multiply by the interpolation factor)
 
-### on_touch_release
+### on_touch_release
     UID (percistant blob ID)
     -1 (centroid.X)
     -1 (centroid.Y)
