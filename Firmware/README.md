@@ -23,13 +23,29 @@
     git clone https://github.com/sudar/Arduino-Makefile.git
 
 ## Program Synopsis
-- Teensy  E256 communicate via SPI (Hardware).
-- This sketch implemant rows and columns scaning algorithm with synchronous **dual ADC sampling**.
+- Teensy and E256 brekout communicate via SPI (Hardware).
+- The Arduio sketch implemant rows and columns scaning algorithm with synchronous **dual ADC sampling**.
   - COLS = Two 8_Bits shift registers connected directly to the matrix columns.
   - ROWS = One 8_Bits shift register connected to two analog multiplexers that sens the matrix rows.
-- The 16x16 matrix is interpolated to 64x64 with bilinear algorithm (will be optimised).
-- The blob tracking is applyed on to the interpolated matrix.
-- The blobs coordinates ans size are transmit via SLIP-OSC protocol.
+- The 16x16 Analog sensors values are interpolated into 64x64 with a bilinear algorithm.
+- The blob tracking algorithm (connected component labeling) is applyed onto the interpolated matrix.
+- Each blob are tracked with persistent ID (this is done with linked list implementation).
+- The blobs coordinates, size and presure are transmit via SLIP-OSC communication protocol.
+
+## SLIP-OSC data paket
+### on_touch_pressed
+    UID (percistant blob ID)
+    centroid.X (X coordinate of the blob - from 0 to 64)
+    centroid.Y (Y coordinate of the blob - from 0 to 64)
+    centroid.Z (Z the maximum pressur value in all the blob pixels - from 0 to 256)
+    pixels (the number of sensors that are triggered by a touch multiply by the interpolation factor)
+
+### on_touch_release
+    UID (percistant blob ID)
+    -1 (centroid.X)
+    -1 (centroid.Y)
+    -1 (centroid.Z)
+    -1 (pixels)
 
 ## E256 & Teensy pins
 Control pins to send values to the 8-BITs shift registers used on the E-256 PCB
