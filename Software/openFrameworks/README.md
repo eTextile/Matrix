@@ -3,9 +3,8 @@
 ### Transforming textiles into an intuitive way to interact with computers
 
 ## Requirements
-OpenFrameworks 0.9.4 (it's not currently supported with newer versions):
 
-    http://openframeworks.cc/
+    http://openframeworks.cc/download/ (stable)
 
 To compile the code, you need to set the following variable in your ~/.bashrc, ~/.zshrc or other equivalent:
 
@@ -17,7 +16,6 @@ This Program requires the following addons:
  - ofxSerial
  - ofxOsc
  - ofxGui
- - ofxOpenCv
 
 The two 1st addons don't come by default with oFx but you can install them:
 

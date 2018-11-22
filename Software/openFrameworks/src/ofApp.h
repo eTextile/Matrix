@@ -4,8 +4,8 @@
 #include "ofxSerial.h"
 #include "ofxGui.h"
 #include "ofxOsc.h"
-#include "ofxCvGrayscaleImage.h"
-#include "ofxCvContourFinder.h"
+//#include "ofxCvGrayscaleImage.h"
+//#include "ofxCvContourFinder.h"
 
 #include "ofx/IO/SLIPEncoding.h"
 
@@ -26,12 +26,12 @@
 #define DEBUG_PRINT  0
 #define DEBUG_OSC    0
 
-struct centroid {
-    ofVec2f position;
-    uint8_t pressure;
-    float perimeter;
-    int UID;
-    bool isDead;
+struct blob {
+    uint8_t UID;
+    uint8_t X_centroid;
+    uint8_t Y_centroid;
+    uint8_t Z_centroid;
+    int pixels;
 };
 
 using namespace ofx::IO;
@@ -54,14 +54,14 @@ public:
     uint8_t                 storedValueRast[ROWS * COLS];  // 1D array
     int8_t                  threshold;
     bool                    newFrame;
-    ofPixels                interpolatedFrame;
-    ofxCvGrayscaleImage     grayImage;
-    ofxCvGrayscaleImage     grayBg;
-    ofxCvGrayscaleImage     grayDiff;
-    ofxCvContourFinder      contourFinder;
-    bool                    bLearnBakground;
-    ofxCvBlob               blob;
-    ofPixels                grayImageCopy;
+    //ofPixels                interpolatedFrame;
+    //ofxCvGrayscaleImage     grayImage;
+    //ofxCvGrayscaleImage     grayBg;
+    //ofxCvGrayscaleImage     grayDiff;
+    //ofxCvContourFinder      contourFinder;
+    //bool                    bLearnBakground;
+    //ofxCvBlob               blob;
+    //ofPixels                grayImageCopy;
     void                    toggleDspPressed(bool & toggleState);
     void                    sliderVolumeValue(float & sliderValue_A);
     void                    sliderTresholdValue(float & sliderValue_B);
@@ -74,5 +74,5 @@ public:
     ofxOscSender            sender;
     ofxOscReceiver          receiver;
     ofTrueTypeFont          font;
-    vector<centroid>        centroids;
+    vector<blobs>           blobs;
 };

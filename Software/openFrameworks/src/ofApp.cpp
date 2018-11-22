@@ -59,9 +59,9 @@ void ofApp::setup() {
     }
 
     // Initialize blob tracking
-    grayImage.allocate(X_NEWSIZE, Y_NEWSIZE);
-    grayBg.allocate(X_NEWSIZE, Y_NEWSIZE);
-    grayDiff.allocate(X_NEWSIZE, Y_NEWSIZE);
+    //grayImage.allocate(X_NEWSIZE, Y_NEWSIZE);
+    //grayBg.allocate(X_NEWSIZE, Y_NEWSIZE);
+    //grayDiff.allocate(X_NEWSIZE, Y_NEWSIZE);
 
     ofLogNotice("ofApp::setup") << "Teensy frame request";
 
@@ -69,7 +69,7 @@ void ofApp::setup() {
     msg.setAddress("/calibrate"); // Calibrate the matrix sensor
     sender.sendMessage(msg);
 
-    bLearnBakground = true;
+    //bLearnBakground = true;
 }
 
 /////////////////////// SERIAL EVENT ///////////////////////
@@ -83,7 +83,7 @@ void ofApp::onSerialBuffer(const SerialBufferEventArgs& args) {
         // serialData
       }
     }
-    msg.setAddress("/rowData");   // Raw frame request
+    msg.setAddress("/blobs");   // Blobs request
     sender.sendMessage(msg);
     newFrame = true;
 }
@@ -94,6 +94,7 @@ void ofApp::update() {
     if (newFrame) {
 
         newFrame = false;
+        /*
         /////////////////// INTERPOLATE
         interpolatedFrame.setFromPixels(serialData, ROWS, COLS, OF_PIXELS_GRAY);
         interpolatedFrame.resize(X_NEWSIZE, Y_NEWSIZE, OF_INTERPOLATE_BICUBIC);
@@ -244,6 +245,7 @@ void ofApp::update() {
         mesh.setVertex(index, p);                      // Set the new coordinates
         mesh.setColor(index, ofColor(grayImageCopy[index], 0, 255));    // Change vertex color
     }
+    */
     handleOSC();
 }
 
@@ -264,10 +266,6 @@ void ofApp::draw() {
 
     ofDrawBitmapString(ss.str(), ofVec2f(20, 200)); // Draw the GUI menu
 
-    // grayImage.draw(20, 300);
-    // grayBg.draw(20, 400);
-    // grayDiff.draw(20, 500);
-
     ofPushMatrix();
 
     ofTranslate(360, 99);
@@ -281,7 +279,7 @@ void ofApp::draw() {
     ofNoFill();
     ofSetLineWidth(3);
     ofSetColor(255, 0, 0);
-
+    /*
     for (int i=0; i<contourFinder.nBlobs; i++) {
         blob = contourFinder.blobs[i];
         ofBeginShape();
@@ -303,6 +301,7 @@ void ofApp::draw() {
             ofDrawBitmapString(ofToString(centroids[i].UID), centroids[i].position);
         }
     }
+    */
     ofPopMatrix();
 }
 
