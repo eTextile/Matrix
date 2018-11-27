@@ -1,5 +1,5 @@
-ofxJSON
 ofxIO
-ofxSerial
 ofxOsc
+ofxPoco
+ofxSerial
 ofxGui

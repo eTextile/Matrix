@@ -4,14 +4,20 @@
 
 ## Requirements
 
-    http://openframeworks.cc/download/ (stable)
+### openframeworks 0.10.1
+
+    https://github.com/openframeworks/openFrameworks/releases/tag/0.10.1
 
 To compile the code, you need to set the following variable in your ~/.bashrc, ~/.zshrc or other equivalent:
 
     # UPDATE WITH YOUR OWN OPEN FRAMEWORKS PATH:
     export OF_ROOT=/opt/openFrameworks/
 
-This Program requires the following addons:
+    cd ${OF_ROOT}
+    git submodule update --init
+    git submodule update
+
+The E256-openframeworks program requires the following addons:
  - ofxIO
  - ofxSerial
  - ofxOsc
@@ -19,11 +25,11 @@ This Program requires the following addons:
 
 The two 1st addons don't come by default with oFx but you can install them:
 
-    cd $OF_ROOT/addons
-    git clone -b stable https://github.com/bakercp/ofxIO # tested with commit ef09791
-    git clone https://github.com/bakercp/ofxSerial       # tested with commit 8086059
+    cd ${OF_ROOT}/addons
+    git clone -b stable https://github.com/bakercp/ofxIO # stable branche
+    git clone https://github.com/bakercp/ofxSerial       # stable branche
 
-## Compiling
+## Compiling E256-openframeworks
     make
 
 If you have 4 cores, it's recommended to use them all as it's long:
@@ -34,7 +40,6 @@ To accelerate the compilation we use ccache, you can get it with:
 
     apt-get install ccache  # debian-like OS
     brew install ccache     # OSX
-
 
 ### Running (at least Linux & Mac)
     make RunRelease

@@ -2,10 +2,8 @@
 
 #include "ofMain.h"
 #include "ofxSerial.h"
-#include "ofxGui.h"
 #include "ofxOsc.h"
-//#include "ofxCvGrayscaleImage.h"
-//#include "ofxCvContourFinder.h"
+#include "ofxGui.h"
 
 #include "ofx/IO/SLIPEncoding.h"
 
@@ -26,12 +24,14 @@
 #define DEBUG_PRINT  0
 #define DEBUG_OSC    0
 
-struct blob {
-    uint8_t UID;
-    uint8_t X_centroid;
-    uint8_t Y_centroid;
-    uint8_t Z_centroid;
-    int pixels;
+struct SerialMessage {
+    std::string message;
+    std::string exception;
+    int UID = -1;
+    int X_centroid = -1;
+    int Y_centroid = -1;
+    int Z_centroid = -1;
+    int pixels = -1;
 };
 
 using namespace ofx::IO;
@@ -45,23 +45,15 @@ public:
     void                    exit();
     void                    onSerialBuffer(const SerialBufferEventArgs& args);
     void                    onSerialError(const SerialBufferErrorEventArgs& args);
-    void                    handleOSC();
-    PacketSerialDevice      device;
-    ByteBuffer              buffer;  // Create a byte buffer.
-    int                     sensorID;
-    uint8_t                 SerialData_SLIP[DATAS];        // SLIP Encoding
-    uint8_t                 serialData[DATAS];             // Decoded
-    uint8_t                 storedValueRast[ROWS * COLS];  // 1D array
+    void                    appendMessage(ofxOscMessage& message, osc::OutboundPacketStream& p);
+
+    ofxOscMessage           OSCmsg;
+    SLIPPacketSerialDevice  device;
+    std::vector<SerialMessage> serialMessages;
+    //ofx::IO::ByteBuffer     outputBuffer;
+
     int8_t                  threshold;
-    bool                    newFrame;
-    //ofPixels                interpolatedFrame;
-    //ofxCvGrayscaleImage     grayImage;
-    //ofxCvGrayscaleImage     grayBg;
-    //ofxCvGrayscaleImage     grayDiff;
-    //ofxCvContourFinder      contourFinder;
-    //bool                    bLearnBakground;
-    //ofxCvBlob               blob;
-    //ofPixels                grayImageCopy;
+    bool                    frameRequest;
     void                    toggleDspPressed(bool & toggleState);
     void                    sliderVolumeValue(float & sliderValue_A);
     void                    sliderTresholdValue(float & sliderValue_B);
@@ -70,9 +62,7 @@ public:
     ofxToggle               toggleDsp;         // OSC DSP switch
     ofxFloatSlider          sliderVolume;      // OSC audio volume
     ofxFloatSlider          sliderTreshold;    // OSC threshold
-    ofMesh                  mesh;
     ofxOscSender            sender;
     ofxOscReceiver          receiver;
     ofTrueTypeFont          font;
-    vector<blobs>           blobs;
-};
+  };
