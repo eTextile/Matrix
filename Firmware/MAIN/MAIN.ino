@@ -218,9 +218,9 @@ void matrix_raw_data(OSCMessage &msg) {
   
   bundleOut.fill(frameValues, ROW_FRAME);
   SLIPSerial.beginPacket();
-  bundleOut.send(SLIPSerial); // send the bytes to the SLIP stream
-  SLIPSerial.endPacket();     // mark the end of the OSC Packet
-  bundleOut.empty();          // empty the bundle to free room for a new one
+  bundleOut.send(SLIPSerial); // Send the bytes to the SLIP stream
+  SLIPSerial.endPacket();     // Mark the end of the OSC Packet
+  bundleOut.empty();          // Empty the bundle to free room for a new one
 }
 
 /// Blobs detection
@@ -244,9 +244,9 @@ void matrix_blobs(OSCMessage &msg) {
   );
 
   SLIPSerial.beginPacket();
-  bundleOut.send(SLIPSerial); // send the bytes to the SLIP stream
-  SLIPSerial.endPacket(); // mark the end of the OSC Packet
-  bundleOut.empty(); // empty the bundle to free room for a new one
+  bundleOut.send(SLIPSerial); // Send the bytes to the SLIP stream
+  SLIPSerial.endPacket();     // Mark the end of the OSC Packet
+  bundleOut.empty();          // Empty the bundle to free room for a new one
 }
 
 /*

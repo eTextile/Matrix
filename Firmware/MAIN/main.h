@@ -69,4 +69,3 @@ void matrix_blobs(OSCMessage &msg);
 //void bootBlink(const uint8_t pin, uint8_t flash);
 
 #endif /*__MAIN_H__*/
-
