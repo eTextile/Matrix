@@ -22,7 +22,7 @@ ADC::Sync_result result;  // ADC_0 & ADC_1
 // with a variation of the `PacketSerial_<SLIP, SLIP::END, BufferSize>` template found in PacketSerial.h.
 //SLIPPacketSerial SLIPSerial;
 //PacketSerial_<SLIP, SLIP::END, 512> SLIPSerial;
-
+//typedef PacketSerial_<SLIP, SLIP::END> SLIPPacketSerial;
 SLIPEncodedUSBSerial SLIPSerial(thisBoardsSerialUSB);
 
 unsigned long lastFarme = 0;
@@ -66,6 +66,6 @@ void matrix_calibration(OSCMessage &msg);
 void matrix_raw_data(OSCMessage &msg);
 void matrix_blobs(OSCMessage &msg);
 
-//void bootBlink(const uint8_t pin, uint8_t flash);
+void bootBlink(const uint8_t pin, uint8_t flash);
 
 #endif /*__MAIN_H__*/

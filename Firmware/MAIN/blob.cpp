@@ -192,7 +192,7 @@ void find_blobs(
   }
   if (DEBUG_BLOBS) Serial.printf(F("\n DEBUG_BLOBS / EXIT <<<<<<<<<<<<<<<<<"));
 
-  OSCMessage msg("/sensors");
+  OSCMessage msg("/blobs");
   
   // Update outputBlobs linked list with blobsToUpdate linked list.
   // If a blob in the outputBlobs linked list is not in the blobsToUpdate linked list, set it to dead.
@@ -306,5 +306,3 @@ inline void blob_raz(blob_t* node) {
   node->centroid.Z = 0;
   node->pixels = 0;
 }
-
-

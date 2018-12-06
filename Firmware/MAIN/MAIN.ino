@@ -11,11 +11,14 @@
 //  24 FPS with BILINEAR_INTERPOLATION
 //  23 FPS with interpolation & blob tracking
 
+uint8_t cycles = 10;  // Set the calibration cycles
+
 //////////////////////////////////////////////////// SETUP
 
 void setup() {
 
-  //pinMode(BUILTIN_LED, OUTPUT); // FIXME - BUILTIN_LED is used for SPI hardware
+  pinMode(BUILTIN_LED, OUTPUT); // FIXME - BUILTIN_LED is used for SPI hardware
+  digitalWrite(BUILTIN_LED, LOW); // FIXME - BUILTIN_LED is used for SPI hardware
 
 #ifdef E256_BLOBS_SLIP_OSC
   SLIPSerial.begin(BAUD_RATE);   // Arduino serial library ** 230400 ** extended with SLIP encoding
@@ -36,8 +39,8 @@ void setup() {
   pinMode(E256_MOSI_PIN, OUTPUT);
   digitalWrite(E256_SS_PIN, LOW);    // Set latchPin LOW
   digitalWrite(E256_SS_PIN, HIGH);   // Set latchPin HIGH
-  SPI.begin();                       // Start the SPI module
-  SPI.beginTransaction(settings);    // (16000000, MSBFIRST, SPI_MODE0);
+  //SPI.begin();                       // Start the SPI module
+  //SPI.beginTransaction(settings);    // (16000000, MSBFIRST, SPI_MODE0);
 
   pinMode(ADC0_PIN, INPUT);          // Teensy PIN A9
   pinMode(ADC1_PIN, INPUT);          // Teensy PIN A3
@@ -88,7 +91,7 @@ void setup() {
   llist_raz(&outputBlobs);
 
   bilinear_interp_init(&interp);
-  //bootBlink(BUILTIN_LED, 9); // FIXME - BUILTIN_LED is used for hardware SPI
+  bootBlink(BUILTIN_LED, 9); // FIXME - BUILTIN_LED is used for hardware SPI
 
 }
 
@@ -110,6 +113,8 @@ void loop() {
     bundleIn.dispatch("/calibrate", matrix_calibration);
     bundleIn.dispatch("/rowData", matrix_raw_data);
     bundleIn.dispatch("/blobs", matrix_blobs);
+  } else {
+    //
   }
 
 #ifdef E256_FPS
@@ -125,7 +130,18 @@ void loop() {
 //////////////////////////////////////////////////// FONCTIONS
 
 void matrix_config(OSCMessage &msg) {
-  // TODO
+
+  if (msg.isInt(0)) {
+    analogWrite(BUILTIN_LED, msg.getInt(0));
+  }
+  OSCMessage OSCmsg("/config");
+  OSCBundle bundleOut;
+  OSCmsg.add(msg.getInt(0));
+  bundleOut.add(OSCmsg);
+
+  SLIPSerial.beginPacket();
+  bundleOut.send(SLIPSerial); // Send the bytes to the SLIP stream
+  SLIPSerial.endPacket();     // Mark the end of the OSC Packet
 }
 
 inline void matrix_scan() {
@@ -169,9 +185,13 @@ inline void matrix_scan() {
 #endif /*__DEBUG_ADC__*/
 }
 
-void matrix_calibration(OSCMessage &msg) {
+void matrix_calibration(OSCMessage & msg) {
 
-  for (uint8_t i = 0; i < CYCLES; i++) {
+  if (msg.isInt(0)) {
+    cycles = msg.getInt(0);
+  }
+
+  for (uint8_t i = 0; i < cycles; i++) {
     // Columns are digital OUTPUT PINS - We supply one column at a time
     // Rows are analog INPUT PINS - We sens two rows at a time
     uint16_t setCols = 0x8000;
@@ -211,11 +231,11 @@ void matrix_calibration(OSCMessage &msg) {
 }
 
 /// Send raw frame values in SLIP-OSC formmat
-void matrix_raw_data(OSCMessage &msg) {
+void matrix_raw_data(OSCMessage & msg) {
   OSCBundle bundleOut;
-  
+
   matrix_scan();
-  
+
   bundleOut.fill(frameValues, ROW_FRAME);
   SLIPSerial.beginPacket();
   bundleOut.send(SLIPSerial); // Send the bytes to the SLIP stream
@@ -224,10 +244,14 @@ void matrix_raw_data(OSCMessage &msg) {
 }
 
 /// Blobs detection
-void matrix_blobs(OSCMessage &msg) {
-  OSCBundle bundleOut;
+void matrix_blobs(OSCMessage & msg) {
 
+  if (msg.isInt(0)) {
+    analogWrite(BUILTIN_LED, msg.getInt(0));
+  }
+  /*
   matrix_scan();
+  
   bilinear_interp(&interpolatedFrame, &rawFrame, &interp);
   find_blobs(
     &interpolatedFrame, // image_t uint8_t [NEW_FRAME] - 1D array
@@ -242,20 +266,33 @@ void matrix_blobs(OSCMessage &msg) {
     &outputBlobs,       // list_t
     &bundleOut          // OSCBundle
   );
+  */
+  
+  OSCMessage OSCmsg;
+  OSCBundle OSCbundle;
 
+  OSCmsg.add("/blob_0");
+  OSCmsg.add(5).add(15).add(20).add(2505).add(255);
+  OSCbundle.add(OSCmsg);
+  OSCmsg.empty();
+
+  OSCmsg.add("/blob_1");
+  OSCmsg.add(2).add(30).add(1020).add(40).add(60);
+  OSCbundle.add(OSCmsg);
+  OSCmsg.empty();
+  
   SLIPSerial.beginPacket();
-  bundleOut.send(SLIPSerial); // Send the bytes to the SLIP stream
+  OSCbundle.send(SLIPSerial); // Send the bytes to the SLIP stream
   SLIPSerial.endPacket();     // Mark the end of the OSC Packet
-  bundleOut.empty();          // Empty the bundle to free room for a new one
+  OSCbundle.empty();          // Empty the bundle to free room for a new one
 }
 
-/*
-  void bootBlink(const uint8_t pin, uint8_t flash) {
+
+void bootBlink(const uint8_t pin, uint8_t flash) {
   for (uint8_t i = 0; i < flash; i++) {
     digitalWrite(pin, HIGH);
     delay(50);
     digitalWrite(pin, LOW);
     delay(50);
   }
-  }
-*/
+}

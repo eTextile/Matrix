@@ -44,13 +44,5 @@ To accelerate the compilation we use ccache, you can get it with:
 ### Running (at least Linux & Mac)
     make RunRelease
 
-## USING OSC FOR DEVELOPPMENT
-You can test the openframework demo without the textile device nor arduino.
-To do so, simply send an OSC message on port 1234 (defined as UDP_INPUT_PORT in ofApp.h).
-The message should be something like (/point (x,y,z) ) where x,y and z are floats between 0 and 1.
-you can send a /reset message to clear the map (remove all points).
-
 ## TODO
-- Update openFrameworks TUIO wrapper : https://github.com/arturoc/ofxTuioWrapper
-- add TUIO
-- https://github.com/openframeworks/openFrameworks/issues/5607 FIXME (add ofJson.h to OF_ROOT/addons/ofxIO/src/ofxIO.h ?)
+
