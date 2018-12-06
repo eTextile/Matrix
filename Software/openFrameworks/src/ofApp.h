@@ -20,49 +20,45 @@
 #define UDP_OUTPUT_PORT  7771
 #define UDP_INPUT_PORT   1234
 
-#define DEBUG_SERIAL 1
-#define DEBUG_PRINT  0
-#define DEBUG_OSC    0
+#define DEBUG_SERIAL     1
+#define DEBUG_SERIAL_OSC 1
 
-struct SerialMessage {
-    std::string message;
+typedef struct blob {
+  int16_t blobID;
+  int16_t posX;
+  int16_t posY;
+  int16_t posZ;
+  int16_t pixels;
+} blob_t;
+
+typedef struct serialMessage {
+    std::string OSCmessage;
     std::string exception;
-    int UID = -1;
-    int X_centroid = -1;
-    int Y_centroid = -1;
-    int Z_centroid = -1;
-    int pixels = -1;
-};
+} serialMessage_t;
 
-using namespace ofx::IO;
+using namespace ofxIO;
 
 class ofApp: public ofBaseApp {
 
 public:
-    void                    setup();
-    void                    update();
-    void                    draw();
-    void                    exit();
-    void                    onSerialBuffer(const SerialBufferEventArgs& args);
-    void                    onSerialError(const SerialBufferErrorEventArgs& args);
-    void                    appendMessage(ofxOscMessage& message, osc::OutboundPacketStream& p);
+    void                          setup();
+    void                          update();
+    void                          draw();
+    void                          exit();
 
-    ofxOscMessage           OSCmsg;
-    SLIPPacketSerialDevice  device;
-    std::vector<SerialMessage> serialMessages;
-    //ofx::IO::ByteBuffer     outputBuffer;
+    SLIPPacketSerialDevice        serialDevice;
+    ByteBuffer                    serialBuffer;
+    std::vector<serialMessage_t>  serialMessages; // SerialMessages is a vector of SerialMessage
+    std::vector<blob_t>           blobs;
+    void                          onSerialBuffer(const SerialBufferEventArgs& args);
+    void                          onSerialError(const SerialBufferErrorEventArgs& args);
+    char                          threshold;
+    bool                          frameRequest;
 
-    int8_t                  threshold;
-    bool                    frameRequest;
-    void                    toggleDspPressed(bool & toggleState);
-    void                    sliderVolumeValue(float & sliderValue_A);
-    void                    sliderTresholdValue(float & sliderValue_B);
-    void                    keyPressed(int key);
-    ofxPanel                gui;
-    ofxToggle               toggleDsp;         // OSC DSP switch
-    ofxFloatSlider          sliderVolume;      // OSC audio volume
-    ofxFloatSlider          sliderTreshold;    // OSC threshold
-    ofxOscSender            sender;
-    ofxOscReceiver          receiver;
-    ofTrueTypeFont          font;
+    ofxPanel                      gui;
+    ofxButton                     calirationButton; // Button to calibrate E256
+    ofxIntSlider                  tresholdSlider; // Set E256 threshold value
+    void                          setCaliration(bool & buttonState);
+    void                          setTreshold(int & sliderValue);
+    void                          keyPressed(int key);
   };
