@@ -97,7 +97,7 @@ void ofApp::onSerialBuffer(const SerialBufferEventArgs& args) {
   if (DEBUG_SERIAL) ofLogNotice("ofApp::onSerialBuffer") << "E256 - Frame requested : " << packet.Data();
   packet.Clear();
 
-  frameRequest = true;
+  //frameRequest = true;
 }
 
 void ofApp::onSerialError(const SerialBufferErrorEventArgs& args) {
@@ -111,37 +111,33 @@ void ofApp::onSerialError(const SerialBufferErrorEventArgs& args) {
 /////////////////////// UPDATE ///////////////////////
 void ofApp::update(void) {
 
-  //if (frameRequest == true) {
-
   auto message = serialMessages.begin();
   while (message != serialMessages.end()) {
-    // TODO Clean blobs
     //ofLogNotice("ofApp::update") << "E256 - OSCmessage : " << message->OSCmessage;
     std::vector<string> splitString = ofSplitString( message->OSCmessage, "$");
+
       for (size_t i=1; i<splitString.size(); i++){
-        // TODO https://fr.wikipedia.org/wiki/Complément_à_deux
-        int16_t blobID = (splitString[i][18] << 8) | splitString[i][19];
-        int16_t posX = (splitString[i][22] << 8) | splitString[i][23];
-        int16_t posY = (splitString[i][26] << 8) | splitString[i][27];
-        int16_t posZ = (splitString[i][30] << 8) | splitString[i][31];
-        int16_t pixels = (splitString[i][34] << 8) | splitString[i][35];
+
+        int32_t blobID = (((uint8_t)splitString[i][16] << 24) | ((uint8_t)splitString[i][17] << 16) | ((uint8_t)splitString[i][18] << 8) | (uint8_t)splitString[i][19]);
+        int32_t posX = (((uint8_t)splitString[i][20] << 24) | ((uint8_t)splitString[i][21] << 16) | ((uint8_t)splitString[i][22] << 8) | (uint8_t)splitString[i][23]);
+        int32_t posY = (((uint8_t)splitString[i][24] << 24) | ((uint8_t)splitString[i][25] << 16) | ((uint8_t)splitString[i][26] << 8) | (uint8_t)splitString[i][27]);
+        int32_t posZ = (((uint8_t)splitString[i][28] << 24) | ((uint8_t)splitString[i][29] << 16) | ((uint8_t)splitString[i][30] << 8) | (uint8_t)splitString[i][31]);
+        int32_t pixels = (((uint8_t)splitString[i][32] << 24) | ((uint8_t)splitString[i][33] << 16) | ((uint8_t)splitString[i][34] << 8) | (uint8_t)splitString[i][35]);
+
         if (DEBUG_SERIAL) ofLogNotice("ofApp::update") << "E256 - blob : " << blobID << " " << posX << " " << posY << " " << posZ << " " << pixels;
 
-        /*
         blob_t blob;
-        blob.blobID = blobID;
-        blob.posX = posX;
-        blob.posY = posY;
-        blob.posZ = posZ;
-        blob.pixels = pixels;
+        blob.blobID = (uint8_t)blobID;
+        blob.posX = (int8_t)posX;
+        blob.posY = (int8_t)posY;
+        blob.posZ = (int8_t)posZ;
+        blob.pixels = (int16_t)pixels;
 
         blobs.push_back(blob);
-        */
       }
-      message = serialMessages.erase(message);
+      //message = serialMessages.erase(message);
     }
-    //frameRequest = false;
-  //}
+    serialMessages.clear();
 }
 
 //////////////////////////////////////////// DRAW ////////////////////////////////////////////
@@ -158,22 +154,16 @@ void ofApp::draw(void) {
     ss << "              FPS : " << (int)ofGetFrameRate() << std::endl;
     ofDrawBitmapString(ss.str(), ofVec2f(20, 200)); // Draw the GUI menu
 
-    /*
     auto iter = blobs.begin();
     while (iter != blobs.end()) {
-       std::cout
-       << iter->blobID << '_'
-       << iter->posX << '_'
-       << iter->posY << '_'
-       << iter->posZ << '_'
-       << iter->pixels << std::endl;
+       if (DEBUG_DRAW) ofLogNotice("ofApp::draw") << "E256 - blob : "
+       << iter->blobID << ' ' << iter->posX << '_' << iter->posY << '_' << iter->posZ << '_' << iter->pixels;
     }
-    */
-
 
     // TODO
     //ofPushMatrix();
     //ofPopMatrix();
+    blobs.clear();
 }
 
 

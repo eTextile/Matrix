@@ -21,12 +21,13 @@
 #define UDP_INPUT_PORT   1234
 
 #define DEBUG_SERIAL     1
+#define DEBUG_DRAW       1
 
 typedef struct blob {
-  int16_t blobID;
-  int16_t posX;
-  int16_t posY;
-  int16_t posZ;
+  uint8_t blobID;
+  int8_t posX;
+  int8_t posY;
+  int8_t posZ;
   int16_t pixels;
 } blob_t;
 
@@ -51,7 +52,7 @@ public:
     void                          onSerialBuffer(const SerialBufferEventArgs& args);
     void                          onSerialError(const SerialBufferErrorEventArgs& args);
     char                          threshold;
-    bool                          frameRequest;
+    //bool                          frameRequest;
 
     ofxPanel                      gui;
     ofxButton                     calirationButton; // Button to calibrate E256
