@@ -18,14 +18,14 @@ void llist_init(llist_t* dst, blob_t* nodesArray, const uint8_t max_nodes) {
   dst->max_nodes = max_nodes;
 
   dst->head_ptr = dst->tail_ptr = &nodesArray[0];
-  if (DEBUG_LIST || DEBUG_CCL) Serial.printf(F("\n DEBUG_LIST / llist_init: %d: %p"), 0, &nodesArray[0]);
+  //if (DEBUG_LIST || DEBUG_CCL) Serial.printf(F("\n DEBUG_LIST / llist_init: %d: %p"), 0, &nodesArray[0]);
   dst->index++;
 
   for (int i = 1; i < dst->max_nodes; i++) {
     nodesArray[i - 1].next_ptr = &nodesArray[i];
     nodesArray[i].next_ptr = NULL;
     dst->tail_ptr = &nodesArray[i];
-    if (DEBUG_LIST || DEBUG_CCL) Serial.printf(F("\n DEBUG_LIST / llist_init: %d: %p"), i, &nodesArray[i]);
+    //if (DEBUG_LIST || DEBUG_CCL) Serial.printf(F("\n DEBUG_LIST / llist_init: %d: %p"), i, &nodesArray[i]);
     dst->index++;
   }
 }
@@ -43,7 +43,7 @@ blob_t* llist_pop_front(llist_t* src) {
     src->index--;
     return node;
   } else {
-    Serial.printf(F("\n DEBUG_LIST / list_pop_front / ERROR : SRC list is umpty!"));
+     //if (DEBUG_LIST) Serial.printf(F("\n DEBUG_LIST / list_pop_front / ERROR : SRC list is umpty!"));
     return NULL;
   }
 }
@@ -64,34 +64,34 @@ void llist_push_back(llist_t* dst, blob_t* node) {
 void llist_remove_blob(llist_t* src, blob_t* blobSuppr) {
 
   blob_t* prevBlob = NULL;
-  if (DEBUG_LIST) Serial.printf(F("\n DEBUG_LIST / list_remove_blob / Blob to remove: %p"), blobSuppr);
+  //if (DEBUG_LIST) Serial.printf(F("\n DEBUG_LIST / list_remove_blob / Blob to remove: %p"), blobSuppr);
 
   for (blob_t* blob = iterator_start_from_head(src); blob != NULL; blob = iterator_next(blob)) {
 
     if (blob == blobSuppr) {
-      if (DEBUG_LIST) Serial.printf(F("\n DEBUG_LIST / list_remove_blob / Blob: %p is found"), blob);
+      //if (DEBUG_LIST) Serial.printf(F("\n DEBUG_LIST / list_remove_blob / Blob: %p is found"), blob);
 
       if (src->index == 0) {
-        if (DEBUG_LIST) Serial.printf(F("\n DEBUG_LIST / list_remove_blob / The blob: %p is the first & last in the linked list"), blobSuppr);
+        //if (DEBUG_LIST) Serial.printf(F("\n DEBUG_LIST / list_remove_blob / The blob: %p is the first & last in the linked list"), blobSuppr);
         src->head_ptr = src->tail_ptr = NULL;
         src->index--;
         return;
       }
       else if (blob->next_ptr == NULL) {
-        if (DEBUG_LIST) Serial.printf(F("\n DEBUG_LIST / list_remove_blob / The blob: %p is the tail of the linked list"), blobSuppr);
+        //if (DEBUG_LIST) Serial.printf(F("\n DEBUG_LIST / list_remove_blob / The blob: %p is the tail of the linked list"), blobSuppr);
         prevBlob->next_ptr = NULL;
         src->tail_ptr = prevBlob;
         src->index--;
         return;
       }
       else if (blob == src->head_ptr) {
-        if (DEBUG_LIST) Serial.printf(F("\n DEBUG_LIST / list_remove_blob / The blob: %p is the hard of the linked list"), blobSuppr);
+        //if (DEBUG_LIST) Serial.printf(F("\n DEBUG_LIST / list_remove_blob / The blob: %p is the hard of the linked list"), blobSuppr);
         src->head_ptr = src->head_ptr->next_ptr;
         src->index--;
         return;
       }
       else {
-        if (DEBUG_LIST) Serial.printf(F("\n DEBUG_LIST / list_remove_blob / The blob: %p is somewear else in the linked list"), blobSuppr);
+        //if (DEBUG_LIST) Serial.printf(F("\n DEBUG_LIST / list_remove_blob / The blob: %p is somewear else in the linked list"), blobSuppr);
         prevBlob->next_ptr = blob->next_ptr;
         src->index--;
         return;
@@ -99,42 +99,42 @@ void llist_remove_blob(llist_t* src, blob_t* blobSuppr) {
     }
     prevBlob = blob;
   }
-  if (DEBUG_LIST) Serial.printf(F("\n DEBUG_LIST / list_remove_blob / ERROR / Blob not found"));
+  //if (DEBUG_LIST) Serial.printf(F("\n DEBUG_LIST / list_remove_blob / ERROR / Blob not found"));
 }
 
 void llist_save_blobs(llist_t* dst, llist_t* src) {
 
-  if (DEBUG_LIST) Serial.printf(F("\n DEBUG_LIST / list_save_blobs / START"));
+  //if (DEBUG_LIST) Serial.printf(F("\n DEBUG_LIST / list_save_blobs / START"));
   blob_t* blob = NULL;
 
   while (src->index > -1) {
     // SRC pop front
     blob = src->head_ptr;
     if (src->index > 0) {
-      if (DEBUG_LIST) Serial.printf(F("\n DEBUG_LIST / list_save_blobs / SRC pop a blob in the list: %p"), blob);
+      //if (DEBUG_LIST) Serial.printf(F("\n DEBUG_LIST / list_save_blobs / SRC pop a blob in the list: %p"), blob);
       src->head_ptr = src->head_ptr->next_ptr;
-      if (DEBUG_LIST) Serial.printf(F("\n DEBUG_LIST / list_save_blobs / SRC Move the list hed to next_ptr: %p"), src->head_ptr);
+      //if (DEBUG_LIST) Serial.printf(F("\n DEBUG_LIST / list_save_blobs / SRC Move the list hed to next_ptr: %p"), src->head_ptr);
     } else { // src->index == 0
       src->tail_ptr = src->head_ptr = NULL;
-      if (DEBUG_LIST) Serial.printf(F("\n DEBUG_LIST / list_save_blobs / SRC pop the last blob in the list: %p"), blob);
+      //if (DEBUG_LIST) Serial.printf(F("\n DEBUG_LIST / list_save_blobs / SRC pop the last blob in the list: %p"), blob);
     }
     src->index--;
-    if (DEBUG_LIST) Serial.printf(F("\n DEBUG_LIST / list_save_blobs / SRC set index to: %d"), src->index);
+    //if (DEBUG_LIST) Serial.printf(F("\n DEBUG_LIST / list_save_blobs / SRC set index to: %d"), src->index);
 
     // DST push back
     if (dst->index > -1) {
       dst->tail_ptr->next_ptr = blob;
-      if (DEBUG_LIST) Serial.printf(F("\n DEBUG_LIST / list_save_blobs / DST add the blob to the list: %p"), blob);
+      //if (DEBUG_LIST) Serial.printf(F("\n DEBUG_LIST / list_save_blobs / DST add the blob to the list: %p"), blob);
       dst->tail_ptr = blob;
     } else { // dst->index == -1
       dst->head_ptr = dst->tail_ptr = blob;
-      if (DEBUG_LIST) Serial.printf(F("\n DEBUG_LIST / list_save_blobs / DST add the first blob to the list"));
+      //if (DEBUG_LIST) Serial.printf(F("\n DEBUG_LIST / list_save_blobs / DST add the first blob to the list"));
     }
     dst->tail_ptr->next_ptr = NULL; // Same than blob->next_ptr = NULL;
     dst->index++;
-    if (DEBUG_LIST) Serial.printf(F("\n DEBUG_LIST / list_save_blobs / DST set index to: %d"), dst->index);
+    //if (DEBUG_LIST) Serial.printf(F("\n DEBUG_LIST / list_save_blobs / DST set index to: %d"), dst->index);
   }
-  if (DEBUG_LIST) Serial.printf(F("\n DEBUG_LIST / list_save_blobs / SRC linked list is umpty!"));
+  //if (DEBUG_LIST) Serial.printf(F("\n DEBUG_LIST / list_save_blobs / SRC linked list is umpty!"));
 }
 
 ////////////////////////////// Linked list iterators //////////////////////////////
@@ -149,5 +149,3 @@ blob_t* iterator_next(blob_t* src) {
 int8_t llist_size(llist_t* ptr) {
   return ptr->index;
 }
-
-

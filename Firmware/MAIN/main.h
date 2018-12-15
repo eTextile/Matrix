@@ -17,12 +17,6 @@ SPISettings settings(16000000, MSBFIRST, SPI_MODE0); // LSBFIRST
 ADC *adc = new ADC();     // ADC object
 ADC::Sync_result result;  // ADC_0 & ADC_1
 
-// By default, SLIPPacketSerial uses SLIP encoding and has a 256 byte receive buffer.
-// This can be adjusted by the user by replacing `SLIPPacketSerial`
-// with a variation of the `PacketSerial_<SLIP, SLIP::END, BufferSize>` template found in PacketSerial.h.
-//SLIPPacketSerial SLIPSerial;
-//PacketSerial_<SLIP, SLIP::END, 512> SLIPSerial;
-//typedef PacketSerial_<SLIP, SLIP::END> SLIPPacketSerial;
 SLIPEncodedUSBSerial SLIPSerial(thisBoardsSerialUSB);
 
 unsigned long lastFarme = 0;
@@ -57,15 +51,13 @@ llist_t   freeBlobs;
 llist_t   blobs;
 llist_t   outputBlobs;
 
-inline void matrix_scan(void);
+void matrix_scan(void);
 
-// void onPacket(const uint8_t* buffer, size_t size);
-
-void matrix_config(OSCMessage &msg);
 void matrix_calibration(OSCMessage &msg);
+void matrix_threshold(OSCMessage &msg);
 void matrix_raw_data(OSCMessage &msg);
 void matrix_blobs(OSCMessage &msg);
 
-void bootBlink(const uint8_t pin, uint8_t flash);
+//void bootBlink(const uint8_t pin, uint8_t flash);
 
 #endif /*__MAIN_H__*/

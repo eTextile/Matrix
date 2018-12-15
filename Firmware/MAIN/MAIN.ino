@@ -11,20 +11,20 @@
 //  24 FPS with BILINEAR_INTERPOLATION
 //  23 FPS with interpolation & blob tracking
 
-uint8_t cycles = 10;  // Set the calibration cycles
+uint8_t threshold = 30; // Set the threshold that determine toutch sensitivity (10 is low 30 is high)
 
 //////////////////////////////////////////////////// SETUP
 
 void setup() {
 
-  pinMode(BUILTIN_LED, OUTPUT); // FIXME - BUILTIN_LED is used for SPI hardware
-  digitalWrite(BUILTIN_LED, LOW); // FIXME - BUILTIN_LED is used for SPI hardware
+  //pinMode(LED_BUILTIN, OUTPUT); // FIXME - BUILTIN_LED is used for SPI hardware
+  //digitalWrite(LED_BUILTIN, LOW); // FIXME - BUILTIN_LED is used for SPI hardware
 
 #ifdef E256_BLOBS_SLIP_OSC
   SLIPSerial.begin(BAUD_RATE);   // Arduino serial library ** 230400 ** extended with SLIP encoding
 #else
   Serial.begin(BAUD_RATE);       // Arduino serial library ** 230400 **
-  while (!Serial.dtr());        // Wait for user to start the serial monitor
+  while (!Serial.dtr());         // Wait for user to start the serial monitor
 #endif /*__E256_BLOBS_SLIP_OSC__*/
 
   //pinMode(BUTTON_PIN, INPUT_PULLUP);          // Set button pin as input and activate the input pullup resistor // FIXME - NO BUTTON_PIN ON the E256!
@@ -37,10 +37,10 @@ void setup() {
   pinMode(E256_SS_PIN, OUTPUT);
   pinMode(E256_SCK_PIN, OUTPUT);
   pinMode(E256_MOSI_PIN, OUTPUT);
-  digitalWrite(E256_SS_PIN, LOW);    // Set latchPin LOW
-  digitalWrite(E256_SS_PIN, HIGH);   // Set latchPin HIGH
-  //SPI.begin();                       // Start the SPI module
-  //SPI.beginTransaction(settings);    // (16000000, MSBFIRST, SPI_MODE0);
+  digitalWriteFast(E256_SS_PIN, LOW);    // Set latchPin LOW
+  digitalWriteFast(E256_SS_PIN, HIGH);   // Set latchPin HIGH
+  SPI.begin();                           // Start the SPI module
+  SPI.beginTransaction(settings);        // (16000000, MSBFIRST, SPI_MODE0);
 
   pinMode(ADC0_PIN, INPUT);          // Teensy PIN A9
   pinMode(ADC1_PIN, INPUT);          // Teensy PIN A3
@@ -91,30 +91,26 @@ void setup() {
   llist_raz(&outputBlobs);
 
   bilinear_interp_init(&interp);
-  bootBlink(BUILTIN_LED, 9); // FIXME - BUILTIN_LED is used for hardware SPI
+  //bootBlink(LED_BUILTIN, 9); // FIXME - BUILTIN_LED is used for hardware SPI
 
 }
 
 //////////////////////////////////////////////////// LOOP
 void loop() {
 
-  OSCBundle bundleIn;
-  int size = 0;
-
+  OSCMessage OSCmsg;
+  int size;
   while (!SLIPSerial.endofPacket()) {
     if ((size = SLIPSerial.available()) > 0) {
-      while (size--) {
-        bundleIn.fill(SLIPSerial.read());
-      }
+      while (size--)
+        OSCmsg.fill(SLIPSerial.read());
     }
   }
-  if (!bundleIn.hasError()) {
-    bundleIn.dispatch("/config", matrix_config);
-    bundleIn.dispatch("/calibrate", matrix_calibration);
-    bundleIn.dispatch("/rowData", matrix_raw_data);
-    bundleIn.dispatch("/blobs", matrix_blobs);
-  } else {
-    //
+  if (!OSCmsg.hasError()) {
+    OSCmsg.dispatch("/calibrate", matrix_calibration);
+    OSCmsg.dispatch("/threshold", matrix_threshold);
+    OSCmsg.dispatch("/rowData", matrix_raw_data);
+    OSCmsg.dispatch("/blobs", matrix_blobs);
   }
 
 #ifdef E256_FPS
@@ -129,22 +125,7 @@ void loop() {
 
 //////////////////////////////////////////////////// FONCTIONS
 
-void matrix_config(OSCMessage &msg) {
-
-  if (msg.isInt(0)) {
-    analogWrite(BUILTIN_LED, msg.getInt(0));
-  }
-  OSCMessage OSCmsg("/config");
-  OSCBundle bundleOut;
-  OSCmsg.add(msg.getInt(0));
-  bundleOut.add(OSCmsg);
-
-  SLIPSerial.beginPacket();
-  bundleOut.send(SLIPSerial); // Send the bytes to the SLIP stream
-  SLIPSerial.endPacket();     // Mark the end of the OSC Packet
-}
-
-inline void matrix_scan() {
+void matrix_scan(void) {
 
   // Columns are digital OUTPUT PINS - We supply one column at a time
   // Rows are analog INPUT PINS - We sens two rows at a time
@@ -158,7 +139,7 @@ inline void matrix_scan() {
       SPI.transfer(setCols >> 8);              // Shift out the MSB byte to set up the OUTPUT shift register
       SPI.transfer(setDualRows[row]);          // Shift out one byte that setup the two 8:1 analog multiplexers
       digitalWriteFast(E256_SS_PIN, HIGH);     // Set latchPin HIGH
-      //delayMicroseconds(1);                  // See switching time of the 74HC4051BQ multiplexeur
+      delayMicroseconds(5);                    // See switching time of the 74HC4051BQ multiplexeur
 
       uint8_t rowIndexA = row * COLS + col;    // Row IndexA computation
       uint8_t rowIndexB = rowIndexA + 128;     // Row IndexB computation (ROW_FRAME/2 == 128)
@@ -185,11 +166,9 @@ inline void matrix_scan() {
 #endif /*__DEBUG_ADC__*/
 }
 
-void matrix_calibration(OSCMessage & msg) {
+void matrix_calibration(OSCMessage& msg) {
 
-  if (msg.isInt(0)) {
-    cycles = msg.getInt(0);
-  }
+  uint8_t cycles = (uint8_t)msg.getInt(0);
 
   for (uint8_t i = 0; i < cycles; i++) {
     // Columns are digital OUTPUT PINS - We supply one column at a time
@@ -204,7 +183,7 @@ void matrix_calibration(OSCMessage & msg) {
         SPI.transfer(setCols >> 8);           // Shift out the MSB byte to set up the OUTPUT shift register
         SPI.transfer(setDualRows[row]);       // Shift out one byte that setup the two 8:1 analog multiplexers
         digitalWriteFast(E256_SS_PIN, HIGH);  // Set latchPin HIGH
-        delayMicroseconds(5);                 // See switching time of the 74HC4051BQ multiplexeur
+        delayMicroseconds(10);                // See switching time of the 74HC4051BQ multiplexeur
 
 #ifdef E256_ADC_SYNCHRO
         result = adc->analogSynchronizedRead(ADC0_PIN, ADC1_PIN);
@@ -230,69 +209,66 @@ void matrix_calibration(OSCMessage & msg) {
   }
 }
 
+void matrix_threshold(OSCMessage &msg) {
+  threshold = (uint8_t)msg.isInt(0);
+}
+
 /// Send raw frame values in SLIP-OSC formmat
 void matrix_raw_data(OSCMessage & msg) {
-  OSCBundle bundleOut;
+  OSCBundle OSC_bundle;
 
   matrix_scan();
 
-  bundleOut.fill(frameValues, ROW_FRAME);
+  OSC_bundle.fill(frameValues, ROW_FRAME);
   SLIPSerial.beginPacket();
-  bundleOut.send(SLIPSerial); // Send the bytes to the SLIP stream
+  OSC_bundle.send(SLIPSerial); // Send the bytes to the SLIP stream
   SLIPSerial.endPacket();     // Mark the end of the OSC Packet
-  bundleOut.empty();          // Empty the bundle to free room for a new one
 }
 
 /// Blobs detection
 void matrix_blobs(OSCMessage & msg) {
+  OSCBundle OSC_bundle;
 
-  if (msg.isInt(0)) {
-    analogWrite(BUILTIN_LED, msg.getInt(0));
-  }
-  /*
+  boolean debug = msg.getInt(0);
+
   matrix_scan();
-  
   bilinear_interp(&interpolatedFrame, &rawFrame, &interp);
-  find_blobs(
-    &interpolatedFrame, // image_t uint8_t [NEW_FRAME] - 1D array
-    bitmap,             // char array [NEW_FRAME] - 1D array
-    NEW_ROWS,           // const int
-    NEW_COLS,           // const int
-    THRESHOLD,          // const int
-    MIN_BLOB_PIX,       // const int
-    MAX_BLOB_PIX,       // const int
-    &freeBlobs,         // list_t
-    &blobs,             // list_t
-    &outputBlobs,       // list_t
-    &bundleOut          // OSCBundle
-  );
-  */
   
-  OSCMessage OSCmsg;
-  OSCBundle OSCbundle;
-
-  OSCmsg.add("/blob_0");
-  OSCmsg.add(5).add(15).add(20).add(2505).add(255);
-  OSCbundle.add(OSCmsg);
-  OSCmsg.empty();
-
-  OSCmsg.add("/blob_1");
-  OSCmsg.add(2).add(30).add(1020).add(40).add(60);
-  OSCbundle.add(OSCmsg);
-  OSCmsg.empty();
-  
+  if (debug == 1) {
+    OSCMessage OSCmsg("/blob");
+    OSCmsg.add(28776).add(33).add(-1).add(255).add(255);
+    OSC_bundle.add(OSCmsg);
+    OSCMessage OSCmsg2("/blob");
+    OSCmsg2.add(987).add(-1).add(22).add(33).add(7634);
+    OSC_bundle.add(OSCmsg2);
+  }
+  else {
+    find_blobs(
+      &interpolatedFrame,    // image_t uint8_t [NEW_FRAME] - 1D array
+      bitmap,                // char array [NEW_FRAME] - 1D array // NOT &bitmap !?
+      NEW_ROWS,              // const int
+      NEW_COLS,              // const int
+      threshold,             // uint8_t
+      MIN_BLOB_PIX,          // const int
+      MAX_BLOB_PIX,          // const int
+      &freeBlobs,            // list_t
+      &blobs,                // list_t
+      &outputBlobs,          // list_t
+      &OSC_bundle            // OSCBundle
+    );
+  }
   SLIPSerial.beginPacket();
-  OSCbundle.send(SLIPSerial); // Send the bytes to the SLIP stream
-  SLIPSerial.endPacket();     // Mark the end of the OSC Packet
-  OSCbundle.empty();          // Empty the bundle to free room for a new one
+  OSC_bundle.send(SLIPSerial); // Send the bytes to the SLIP stream
+  SLIPSerial.endPacket();      // Mark the end of the OSC Packet
 }
 
-
-void bootBlink(const uint8_t pin, uint8_t flash) {
+/*
+  void bootBlink(const uint8_t pin, uint8_t flash) {
   for (uint8_t i = 0; i < flash; i++) {
     digitalWrite(pin, HIGH);
     delay(50);
     digitalWrite(pin, LOW);
     delay(50);
   }
-}
+  }
+*/

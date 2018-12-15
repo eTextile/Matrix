@@ -114,7 +114,7 @@ void find_blobs(
   char* bitmap_ptr,
   const int rows,
   const int cols,
-  const int pixelThreshold,
+  uint8_t threshold,
   const unsigned int minBlobPix,
   const unsigned int maxBlobPix,
   llist_t* freeBlob_ptr,
@@ -124,4 +124,3 @@ void find_blobs(
 );
 
 #endif /*__BLOB_H__*/
-
