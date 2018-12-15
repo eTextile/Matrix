@@ -54,7 +54,7 @@ tresholdSlider.addListener(this, &ofApp::setTreshold);
 
 gui.setup("E256 - Parameters");
 gui.add(calirationButton.setup(" Calibrate "));
-gui.add(tresholdSlider.setup(" Threshold ", 12, 0, 100));
+gui.add(tresholdSlider.setup(" Threshold ", 30, 0, 100));
 
 // E256 matrix sensor - Blobs request
 static const int OUTPUT_BUFFER_SIZE = 8192;
@@ -63,24 +63,13 @@ osc::OutboundPacketStream packet(buffer, OUTPUT_BUFFER_SIZE);
 
 ofxOscMessage OSCmsg;
 OSCmsg.setAddress("/blobs");
-//OSCmsg.addInt32Arg(255);	// TO BEBUG
+OSCmsg.addInt32Arg(1);	// Stet it to 1 to BEBUG
 packet << osc::BeginMessage(OSCmsg.getAddress().data());
-//packet << OSCmsg.getArgAsInt32(0);
+packet << OSCmsg.getArgAsInt32(0);
 packet << osc::EndMessage;
 
 serialDevice.send(ofx::IO::ByteBuffer(packet.Data(), packet.Size()));
 if (DEBUG_SERIAL) ofLogNotice("ofApp::setup") << "E256 - Frame requested : " << OSCmsg.getAddress().data();
-
-//packet.Clear();
-
-/*
-// E256 matrix sensor - Row datas request
-packet << osc::BeginMessage("/rowData");
-packet << osc::EndMessage;
-serialDevice.send(ofx::IO::ByteBuffer(packet.Data(), packet.Size()));
-ofLogNotice("ofApp::setup") << "E256 rowData frame requested : " << packet.Data();
-packet.Clear();
-*/
 
 ofBackground(0);
 }
@@ -99,9 +88,9 @@ void ofApp::onSerialBuffer(const SerialBufferEventArgs& args) {
 
   ofxOscMessage OSCmsg;
   OSCmsg.setAddress("/blobs");
-  //OSCmsg.addInt32Arg(255);
+  OSCmsg.addInt32Arg(1);
   packet << osc::BeginMessage(OSCmsg.getAddress().data());
-  //packet << OSCmsg.getArgAsInt32(0);
+  packet << OSCmsg.getArgAsInt32(0);
   packet << osc::EndMessage;
 
   serialDevice.send(ofx::IO::ByteBuffer(packet.Data(), packet.Size()));
@@ -112,70 +101,47 @@ void ofApp::onSerialBuffer(const SerialBufferEventArgs& args) {
 }
 
 void ofApp::onSerialError(const SerialBufferErrorEventArgs& args) {
-    // Errors and their corresponding buffer (if any) will show up here.
-    serialMessage_t message;
-    message.exception = args.exception().displayText();
-    serialMessages.push_back(message);
-    if (DEBUG_SERIAL) ofLogNotice("ofApp::onSerialError") << "E256 - Serial ERROR : " << args.exception().displayText();
+  // Errors and their corresponding buffer (if any) will show up here.
+  serialMessage_t message;
+  message.exception = args.exception().displayText();
+  serialMessages.push_back(message);
+  if (DEBUG_SERIAL) ofLogNotice("ofApp::onSerialError") << "E256 - Serial ERROR : " << args.exception().displayText();
 }
-
 
 /////////////////////// UPDATE ///////////////////////
 void ofApp::update(void) {
-//https://github.com/arturoc/oscpack/blob/master/examples/SimpleReceive.cpp
 
-//auto buffer_ptr = serialBuffer.getPtr();
+  //if (frameRequest == true) {
 
-  /*
-  packetListener.ProcessBundle(
-    osc::ReceivedBundle(
-    osc::ReceivedPacket(serialBuffer.getCharPtr(), serialBuffer.size())
-    )
-  );
-*/
+  auto message = serialMessages.begin();
+  while (message != serialMessages.end()) {
+    // TODO Clean blobs
+    //ofLogNotice("ofApp::update") << "E256 - OSCmessage : " << message->OSCmessage;
+    std::vector<string> splitString = ofSplitString( message->OSCmessage, "$");
+      for (size_t i=1; i<splitString.size(); i++){
+        // TODO https://fr.wikipedia.org/wiki/Complément_à_deux
+        int16_t blobID = (splitString[i][18] << 8) | splitString[i][19];
+        int16_t posX = (splitString[i][22] << 8) | splitString[i][23];
+        int16_t posY = (splitString[i][26] << 8) | splitString[i][27];
+        int16_t posZ = (splitString[i][30] << 8) | splitString[i][31];
+        int16_t pixels = (splitString[i][34] << 8) | splitString[i][35];
+        if (DEBUG_SERIAL) ofLogNotice("ofApp::update") << "E256 - blob : " << blobID << " " << posX << " " << posY << " " << posZ << " " << pixels;
 
-/*
-for (int i = 0; i<serialBuffer.size(); i++){
-  ofLogNotice("ofApp::update") << "E256 - ReadByte : " << i << '_' << (uint8_t) buffer_ptr[i] << '\t' << buffer_ptr[i];
-  //if( std::strcmp((char*)buffer_ptr[i], "/") == 0 ) {
-    //if (DEBUG_SERIAL_OSC) ofLogNotice("ofApp::update") << "E256 - getBlob";
+        /*
+        blob_t blob;
+        blob.blobID = blobID;
+        blob.posX = posX;
+        blob.posY = posY;
+        blob.posZ = posZ;
+        blob.pixels = pixels;
+
+        blobs.push_back(blob);
+        */
+      }
+      message = serialMessages.erase(message);
+    }
+    //frameRequest = false;
   //}
-}
-*/
-
-auto iter = serialMessages.begin();
-while (iter != serialMessages.end()) {
-
-auto m = iter->OSCmessage;
-
-for (int i = 0; i<iter->OSCmessage.size(); i++){
-  ofLogNotice("ofApp::update") << "E256 - ReadByte : " << i << '_' << (uint16_t) m.at(i);
-  if( std::strcmp(&m.at(i), "/") == 0 ) {
-    if (DEBUG_SERIAL_OSC) ofLogNotice("ofApp::update") << "E256 - getBlob";
-  }
-}
-
-  //blob_t blob;
-  //blob.blobID = m.at(43);
-  //blob.posX = m.at(47);
-  //blob.posY = m.at(51);
-  //blob.posZ = m.at(55);
-  //blob.pixels = m.at(59);
-
-  //blobs.push_back(blob);
-
-  if (DEBUG_SERIAL_OSC) ofLogNotice("ofApp::update") << "E256 - SerialMessage : " << m;
-
-
-  //if (DEBUG_SERIAL_OSC) ofLogNotice("ofApp::update") << "E256 - BlobID : " << m.at(43);
-  //if (DEBUG_SERIAL_OSC) ofLogNotice("ofApp::update") << "E256 - posX : " << m.at(47);
-  //if (DEBUG_SERIAL_OSC) ofLogNotice("ofApp::update") << "E256 - posY : " << m.at(51);
-  //if (DEBUG_SERIAL_OSC) ofLogNotice("ofApp::update") << "E256 - posZ : " << m.at(55);
-  //if (DEBUG_SERIAL_OSC) ofLogNotice("ofApp::update") << "E256 - pixels : " << m.at(59);
-
-  iter = serialMessages.erase(iter);
-  frameRequest = false;
-}
 }
 
 //////////////////////////////////////////// DRAW ////////////////////////////////////////////
@@ -189,7 +155,7 @@ void ofApp::draw(void) {
     ss << "     Connected to : " << serialDevice.port() << std::endl;
     ss << "SLIP-OSC-OUT port : " << UDP_OUTPUT_PORT << std::endl;
     ss << " SLIP-OSC-IN port : " << UDP_INPUT_PORT << std::endl;
-    ss << "              FPS : " << (int) ofGetFrameRate() << std::endl;
+    ss << "              FPS : " << (int)ofGetFrameRate() << std::endl;
     ofDrawBitmapString(ss.str(), ofVec2f(20, 200)); // Draw the GUI menu
 
     /*

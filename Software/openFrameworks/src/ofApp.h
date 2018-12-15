@@ -21,7 +21,6 @@
 #define UDP_INPUT_PORT   1234
 
 #define DEBUG_SERIAL     1
-#define DEBUG_SERIAL_OSC 1
 
 typedef struct blob {
   int16_t blobID;
@@ -47,7 +46,6 @@ public:
     void                          exit();
 
     SLIPPacketSerialDevice        serialDevice;
-    ByteBuffer                    serialBuffer;
     std::vector<serialMessage_t>  serialMessages; // SerialMessages is a vector of SerialMessage
     std::vector<blob_t>           blobs;
     void                          onSerialBuffer(const SerialBufferEventArgs& args);
