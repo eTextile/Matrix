@@ -1,109 +1,100 @@
-#N canvas 109 48 660 637 10;
-#X obj 314 278 mrpeach/unpackOSC;
-#X text 18 105 - comport;
-#X text 18 84 - cyclone;
-#X text 18 63 - mrpeach osc slipenc and slipdec;
-#X text 18 16 This patch depends on several third party externals available
-in PD-extended (deprecated?) \, Purr \, or through deken plugin (Help
--> Find externals):;
-#X obj 314 299 mrpeach/routeOSC /sensors;
-#X msg 305 163 devices;
-#X msg 323 205 close;
-#X obj 23 465 vsl 15 128 0 64 0 0 empty 0-posY empty 0 -9 0 10 -262144
+#N canvas 574 105 725 637 10;
+#X text 18 95 - comport;
+#X text 18 74 - cyclone;
+#X msg 267 137 devices;
+#X msg 285 181 close;
+#X obj 45 435 vsl 15 128 0 64 0 0 empty 0-posY empty 0 -9 0 10 -262144
 -1 -1 0 1;
-#X obj 39 598 hsl 128 15 0 64 0 0 empty 0-posX empty -2 -8 0 10 -262144
+#X obj 61 568 hsl 128 15 0 64 0 0 empty 0-posX empty -2 -8 0 10 -262144
 -1 -1 0 1;
-#X obj 314 347 until;
-#X obj 314 370 list append;
-#X obj 403 397 bang;
-#X obj 314 397 list split 5;
-#X obj 314 431 s OSC_Blobs;
-#X obj 54 544 unpack float float float float;
-#X obj 54 523 route 0;
-#X obj 54 501 r OSC_Blobs;
-#X obj 54 565 s 0-posX;
-#X obj 113 565 s 0-posY;
-#X obj 172 565 s 0-posZ;
-#X obj 229 565 s 0-zone;
-#X obj 334 465 vsl 15 128 0 64 0 0 empty 1-posY empty 0 -9 0 10 -262144
+#X obj 277 302 s OSC_Blobs;
+#X obj 76 514 unpack float float float float;
+#X obj 76 493 route 0;
+#X obj 76 471 r OSC_Blobs;
+#X obj 76 535 s 0-posX;
+#X obj 135 535 s 0-posY;
+#X obj 194 535 s 0-posZ;
+#X obj 251 535 s 0-zone;
+#X obj 356 435 vsl 15 128 0 64 0 0 empty 1-posY empty 0 -9 0 10 -262144
 -1 -1 0 1;
-#X obj 350 598 hsl 128 15 0 64 0 0 empty 1-posX empty -2 -8 0 10 -262144
+#X obj 372 568 hsl 128 15 0 64 0 0 empty 1-posX empty -2 -8 0 10 -262144
 -1 -1 0 1;
-#X obj 365 544 unpack float float float float;
-#X obj 365 501 r OSC_Blobs;
-#X obj 365 523 route 1;
-#X obj 365 565 s 1-posX;
-#X obj 424 565 s 1-posY;
-#X obj 542 565 s 1-zone;
-#X obj 2 465 vsl 15 128 0 255 0 0 empty 0-posZ empty 0 -9 0 10 -258113
+#X obj 387 514 unpack float float float float;
+#X obj 387 471 r OSC_Blobs;
+#X obj 387 493 route 1;
+#X obj 387 535 s 1-posX;
+#X obj 446 535 s 1-posY;
+#X obj 564 535 s 1-zone;
+#X obj 24 435 vsl 15 128 0 255 0 0 empty 0-posZ empty 0 -9 0 10 -258113
 -1 -1 0 1;
-#X obj 314 465 vsl 15 128 0 255 0 0 empty 1-posZ empty 0 -9 0 10 -258113
+#X obj 336 435 vsl 15 128 0 255 0 0 empty 1-posZ empty 0 -9 0 10 -258113
 -1 -1 0 1;
-#X obj 482 565 s 1-posZ;
-#X obj 314 257 mrpeach/slipdec 65536;
-#X obj 314 236 comport 0 230400;
-#X msg 314 184 open 0;
-#X msg 485 114 /rowData;
-#X msg 557 123 /blobs;
-#X msg 476 93 /config;
-#X obj 314 321 trigger b l;
-#X obj 557 63 tgl 30 0 empty empty empty 17 7 0 10 -4034 -1 -1 1 1
-;
-#X msg 465 74 /calibrate;
-#X obj 476 183 mrpeach/slipenc;
-#X msg 561 152 /threshold;
-#X obj 557 97 metro 40;
-#X obj 479 -5 key;
-#X obj 479 41 print CALIBRATED;
-#X obj 479 18 sel 99;
-#X obj 235 502 print INPUT;
-#X obj 235 477 spigot;
-#X obj 268 441 tgl 30 0 empty empty empty 17 7 0 10 -204800 -1 -1 1
+#X obj 504 535 s 1-posZ;
+#X msg 276 159 open 0;
+#X obj 485 -5 key;
+#X obj 485 41 print CALIBRATED;
+#X obj 485 18 sel 99;
+#X obj 277 368 spigot;
+#X obj 310 332 tgl 30 0 empty empty empty 17 7 0 10 -204800 -1 -1 0
 1;
-#X obj 344 68 bng 40 250 50 0 empty empty empty 17 7 0 10 -262144 -1
+#X obj 429 34 bng 40 250 50 0 empty empty empty 17 7 0 10 -260097 -1
 -1;
-#X obj 151 267 import mrpeach;
-#X obj 476 159 packOSC;
-#X connect 0 0 5 0;
-#X connect 5 0 39 0;
-#X connect 6 0 34 0;
-#X connect 7 0 34 0;
-#X connect 10 0 11 0;
-#X connect 11 0 13 0;
-#X connect 12 0 10 1;
-#X connect 13 0 14 0;
-#X connect 13 0 49 0;
-#X connect 13 1 11 1;
-#X connect 13 2 12 0;
-#X connect 15 0 18 0;
-#X connect 15 1 19 0;
-#X connect 15 2 20 0;
-#X connect 15 3 21 0;
-#X connect 16 0 15 0;
-#X connect 17 0 16 0;
-#X connect 24 0 27 0;
-#X connect 24 1 28 0;
-#X connect 24 2 32 0;
-#X connect 24 3 29 0;
-#X connect 25 0 26 0;
-#X connect 26 0 24 0;
-#X connect 33 0 0 0;
-#X connect 34 0 33 0;
-#X connect 35 0 34 0;
-#X connect 36 0 53 0;
-#X connect 37 0 53 0;
-#X connect 38 0 53 0;
-#X connect 39 0 10 0;
-#X connect 39 1 11 1;
-#X connect 40 0 44 0;
-#X connect 41 0 53 0;
-#X connect 42 0 34 0;
-#X connect 43 0 53 0;
-#X connect 44 0 37 0;
-#X connect 45 0 47 0;
-#X connect 47 0 41 0;
-#X connect 47 0 46 0;
-#X connect 49 0 48 0;
-#X connect 50 0 49 1;
-#X connect 51 0 41 0;
-#X connect 53 0 42 0;
+#X obj 277 390 print OSC_INPUT;
+#X text 18 16 This patch depends on several third party externals available
+through deken plugin (Help -> Find externals):;
+#X text 18 53 - mrpeach (osc slipenc and slipdec);
+#X msg 505 118 /rowData;
+#X obj 485 169 packOSC;
+#X obj 485 193 slipenc;
+#X obj 277 233 slipdec;
+#X obj 277 255 unpackOSC;
+#X obj 277 277 routeOSC /blob;
+#X obj 415 236 select 1;
+#X obj 415 258 spigot;
+#X obj 485 222 tgl 35 0 empty empty START 3 7 0 10 -4034 -1 -1 1 1
+;
+#X obj 277 211 comport 0 230400;
+#X obj 485 262 t b f;
+#X msg 415 293 /blobs 0;
+#X obj 415 317 print Frame_requested;
+#X msg 485 74 send /calibrate 10;
+#X msg 515 142 send /threshold 35;
+#X connect 2 0 44 0;
+#X connect 3 0 44 0;
+#X connect 7 0 10 0;
+#X connect 7 1 11 0;
+#X connect 7 2 12 0;
+#X connect 7 3 13 0;
+#X connect 8 0 7 0;
+#X connect 9 0 8 0;
+#X connect 16 0 19 0;
+#X connect 16 1 20 0;
+#X connect 16 2 24 0;
+#X connect 16 3 21 0;
+#X connect 17 0 18 0;
+#X connect 18 0 16 0;
+#X connect 25 0 44 0;
+#X connect 26 0 28 0;
+#X connect 28 0 48 0;
+#X connect 28 0 27 0;
+#X connect 29 0 32 0;
+#X connect 30 0 29 1;
+#X connect 31 0 48 0;
+#X connect 35 0 36 0;
+#X connect 36 0 37 0;
+#X connect 37 0 44 0;
+#X connect 38 0 39 0;
+#X connect 38 1 41 0;
+#X connect 39 0 40 0;
+#X connect 40 0 29 0;
+#X connect 40 0 6 0;
+#X connect 41 0 42 0;
+#X connect 42 0 46 0;
+#X connect 43 0 45 0;
+#X connect 44 0 38 0;
+#X connect 45 0 46 0;
+#X connect 45 1 42 1;
+#X connect 46 0 36 0;
+#X connect 46 0 47 0;
+#X connect 48 0 36 0;
+#X connect 49 0 36 0;
