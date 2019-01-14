@@ -37,15 +37,18 @@
     UID (percistant blob ID)
     centroid.X (X coordinate of the blob - from 0 to 64)
     centroid.Y (Y coordinate of the blob - from 0 to 64)
-    centroid.Z (Z the maximum pressur value in all the blob pixels - from 0 to 256)
-    pixels (the number of sensors that are triggered by a touch multiply by the interpolation factor)
+    box.W (bounding box Width)
+    box.H (bounding box Height)
+    box.D (bounding box depth - the maximum pressur value in all the blob pixels - from 0 to 255)
+    //pixels (the number of sensors that are triggered by a touch multiply by the interpolation factor)
 
 ### on_touch_release
     UID (percistant blob ID)
     -1 (centroid.X)
     -1 (centroid.Y)
-    -1 (centroid.Z)
-    -1 (pixels)
+    -1 (box.W)
+    -1 (box.H)
+    -1 (box.D)
 
 ## E256 & Teensy pins
 Control pins to send values to the 8-BITs shift registers used on the E-256 PCB
