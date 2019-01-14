@@ -82,7 +82,7 @@ void find_blobs(
           //if (DEBUG_CCL) Serial.println("DEBUG_CCL / Save this activated pixels line to the bitmap array");
           for (uint8_t x = left; x <= right; x++) {
             bitmap_bit_set(bitmap_ptr, BITMAP_INDEX(row_index, x));
-            blob->rect.D = MAX(blob->rect.D, GET_PIXEL(row_ptr, x));
+            blob->box.D = MAX(blob->box.D, GET_PIXEL(row_ptr, x));
             blob->pixels++;
           }
 
@@ -107,13 +107,13 @@ void find_blobs(
         //if (DEBUG_CCL) Serial.println("DEBUG_CCL / BLOB COMPLEAT!");
 
         if ((blob->pixels > minBlobPix) && (blob->pixels < maxBlobPix)) {
-          blob->rect.W = blob_x2 - blob_x1;
-          blob->rect.H = blob_y2 - blob_y1;
+          blob->box.W = blob_x2 - blob_x1;
+          blob->box.H = blob_y2 - blob_y1;
 
           blob->centroid.X = (uint8_t) (blob_x2 - ((blob_x2 - blob_x1) / 2)); // x centroid position
           blob->centroid.Y = (uint8_t) (blob_y2 - ((blob_y1 - blob_y2) / 2)); // y centroid position
           // uint8_t* row_ptr = ROW_PTR(inFrame_ptr, blob->centroid.Y); // DO NOT WORK!?
-          // blob->rect.Z = GET_PIXEL(row_ptr, blob->centroid.X);   // DO NOT WORK!?
+          // blob->box.Z = GET_PIXEL(row_ptr, blob->centroid.X);   // DO NOT WORK!?
           //if (DEBUG_CENTER) Serial.printf("\n DEBUG_CENTER / blob_cx: %d\tblob_cy: %d\tblob_cz: %d", blob->centroid.X, blob->centroid.Y, blob->centroid.Z);
 
           llist_push_back(blob_ptr, blob);
@@ -204,16 +204,16 @@ void find_blobs(
         blobB->state = FREE;
         // Add the blob values to the OSC bundle
         OSCMessage OSCmsg("/blob");
-        OSCmsg.add(blobA->UID).add(blobA->centroid.X).add(blobA->centroid.Y).add(blobA->rect.W).add(blobA->rect.H).add(blobA->rect.D);
+        OSCmsg.add(blobA->UID).add(blobA->centroid.X).add(blobA->centroid.Y).add(blobA->box.W).add(blobA->box.H).add(blobA->box.D);
         bundleOut_ptr->add(OSCmsg);
 #ifdef DEBUG_BLOBS_OSC
         Serial.printf("\n DEBUG_BLOBS_OSC / Update outputBlobs / UID:%d\tX:%d\tY:%d\tW:%d\tH:%d\tD:%d",
                       blobA->UID,
                       blobA->centroid.X,
                       blobA->centroid.Y,
-                      blobA->rect.W,
-                      blobA->rect.H,
-                      blobA->rect.Z
+                      blobA->box.W,
+                      blobA->box.H,
+                      blobA->box.D
                      );
 #endif /*__DEBUG_BLOBS_OSC__*/
         break;
@@ -258,16 +258,16 @@ void find_blobs(
       //if (DEBUG_BLOBS) Serial.printf("\n DEBUG_BLOBS / Blob: %p added to **outputBlobs** linked list", blob);
       // Add the blob values to the OSC bundle
       OSCMessage OSCmsg("/blob");
-      OSCmsg.add(blob->UID).add(blob->centroid.X).add(blob->centroid.Y).add(blob->rect.W).add(blob->rect.H).add(blob->rect.D);
+      OSCmsg.add(blob->UID).add(blob->centroid.X).add(blob->centroid.Y).add(blob->box.W).add(blob->box.H).add(blob->box.D);
       bundleOut_ptr->add(OSCmsg);
 #ifdef DEBUG_BLOBS_OSC
       Serial.printf("\n DEBUG_BLOBS_OSC / Add the new blob / UID:%d\tX:%d\tY:%d\tW:%d\tH:%d\tD:%d",
                     blob->UID,
                     blob->centroid.X,
                     blob->centroid.Y,
-                    blob->rect.W,
-                    blob->rect.H,
-                    blob->rect.D
+                    blob->box.W,
+                    blob->box.H,
+                    blob->box.D
                    );
 #endif /*__DEBUG_BLOBS_OSC__*/
     }
@@ -295,9 +295,9 @@ inline void blob_copy(blob_t* dst, blob_t* src) {
   dst->UID = src->UID;
   dst->centroid.X = src->centroid.X;
   dst->centroid.Y = src->centroid.Y;
-  dst->rect.W = src->rect.W;
-  dst->rect.H = src->rect.H;
-  dst->rect.D = src->rect.D;
+  dst->box.W = src->box.W;
+  dst->box.H = src->box.H;
+  dst->box.D = src->box.D;
   dst->pixels = src->pixels;
 }
 
@@ -306,8 +306,8 @@ inline void blob_raz(blob_t* node) {
   node->state = FREE;
   node->centroid.X = 0;
   node->centroid.Y = 0;
-  node->rect.W = 0;
-  node->rect.H = 0;
-  node->rect.D = 0;
+  node->box.W = 0;
+  node->box.H = 0;
+  node->box.D = 0;
   node->pixels = 0;
 }

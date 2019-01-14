@@ -91,7 +91,7 @@ typedef struct {
   uint8_t W; // Width
   uint8_t H; // Height
   uint8_t D; // Depth
-} rectangle_t;
+} bbox_t;
 
 // Blob states
 typedef enum {
@@ -105,7 +105,7 @@ typedef struct blob {
   int8_t UID;
   state_t state;
   point_t centroid;
-  rectangle_t rect;
+  bbox_t box;
   uint8_t pixels;
   struct blob* next_ptr;
 } blob_t;
