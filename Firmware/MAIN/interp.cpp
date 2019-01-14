@@ -17,10 +17,11 @@ void bilinear_interp_init(const interp_t* interp) {
 
   for (uint8_t row = 0; row < interp->scale_Y; row++) {
     for (uint8_t col = 0; col < interp->scale_X; col++) {
-      interp->pCoefA[row * interp->scale_X + col] = (interp->scale_X - col) * (interp->scale_Y - row) / sFactor;
-      interp->pCoefB[row * interp->scale_X + col] = col * (interp->scale_Y - row) / sFactor;
-      interp->pCoefC[row * interp->scale_X + col] = (interp->scale_X - col) *  row / sFactor;
-      interp->pCoefD[row * interp->scale_X + col] = row * col / sFactor;
+      int index = row * interp->scale_X + col;
+      interp->pCoefA[ index ] = (interp->scale_X - col) * (interp->scale_Y - row) / sFactor;
+      interp->pCoefB[ index ] = col * (interp->scale_Y - row) / sFactor;
+      interp->pCoefC[ index ] = (interp->scale_X - col) *  row / sFactor;
+      interp->pCoefD[ index ] = row * col / sFactor;
     }
   }
 }

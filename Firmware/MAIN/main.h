@@ -12,7 +12,7 @@
 #include "llist.h"
 #include "blob.h"
 
-SPISettings settings(16000000, MSBFIRST, SPI_MODE0); // LSBFIRST
+SPISettings settings(16000000, MSBFIRST, SPI_MODE0);
 
 ADC *adc = new ADC();     // ADC object
 ADC::Sync_result result;  // ADC_0 & ADC_1
@@ -51,7 +51,7 @@ llist_t   freeBlobs;
 llist_t   blobs;
 llist_t   outputBlobs;
 
-void matrix_scan(void);
+inline void matrix_scan(void);
 
 void matrix_calibration(OSCMessage &msg);
 void matrix_threshold(OSCMessage &msg);

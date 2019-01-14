@@ -85,8 +85,13 @@ void bitmap_clear(char* bitmap_ptr, const uint16_t Size);
 typedef struct {
   uint8_t X;
   uint8_t Y;
-  uint8_t Z;
 } point_t;
+
+typedef struct {
+  uint8_t W; // Width
+  uint8_t H; // Height
+  uint8_t D; // Depth
+} rectangle_t;
 
 // Blob states
 typedef enum {
@@ -100,7 +105,8 @@ typedef struct blob {
   int8_t UID;
   state_t state;
   point_t centroid;
-  uint16_t pixels;
+  rectangle_t rect;
+  uint8_t pixels;
   struct blob* next_ptr;
 } blob_t;
 
@@ -114,7 +120,7 @@ void find_blobs(
   char* bitmap_ptr,
   const int rows,
   const int cols,
-  uint8_t threshold,
+  uint8_t E256_threshold,
   const unsigned int minBlobPix,
   const unsigned int maxBlobPix,
   llist_t* freeBlob_ptr,

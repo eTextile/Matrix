@@ -30,7 +30,7 @@
 #define NEW_FRAME             (NEW_COLS * NEW_ROWS)
 #define MAX_NODES             40    // Set the maximum nodes number
 #define MIN_BLOB_PIX          4     // Set the minimum blob pixels
-#define MAX_BLOB_PIX          1024  // Set the maximum blob pixels
+#define MAX_BLOB_PIX          255   // Set the maximum blob pixels
 
 #define E256_SS_PIN           10    // SPI:SS    E2B56:RCK  // D10 - Hardware SPI no need to specify it
 #define E256_SCK_PIN          13    // SPI:SCK   E2B56:SCK  // D13 - Hardware SPI no need to specify it

@@ -11,7 +11,7 @@
 //  24 FPS with BILINEAR_INTERPOLATION
 //  23 FPS with interpolation & blob tracking
 
-uint8_t threshold = 30; // Set the threshold that determine toutch sensitivity (10 is low 30 is high)
+uint8_t E256_threshold = 35; // Set the threshold that determine toutch sensitivity (10 is low 30 is high)
 
 //////////////////////////////////////////////////// SETUP
 
@@ -42,8 +42,8 @@ void setup() {
   SPI.begin();                           // Start the SPI module
   SPI.beginTransaction(settings);        // (16000000, MSBFIRST, SPI_MODE0);
 
-  pinMode(ADC0_PIN, INPUT);          // Teensy PIN A9
-  pinMode(ADC1_PIN, INPUT);          // Teensy PIN A3
+  pinMode(ADC0_PIN, INPUT);              // Teensy PIN A9
+  pinMode(ADC1_PIN, INPUT);              // Teensy PIN A3
 
 #ifdef E256_ADC_SYNCHRO
   adc->setAveraging(1, ADC_0);                                           // Set number of averages
@@ -68,7 +68,7 @@ void setup() {
   // Raw frame init
   rawFrame.numCols = COLS;
   rawFrame.numRows = ROWS;
-  rawFrame.pData = frameValues; // 16 x 16 // float32_t frameValues[ROW_FRAME];
+  rawFrame.pData = frameValues; // 16 x 16 // uint8_t frameValues[ROW_FRAME];
 
   // Interpolate config init
   interp.scale_X = SCALE_X;
@@ -97,7 +97,7 @@ void setup() {
 
 //////////////////////////////////////////////////// LOOP
 void loop() {
-
+  //OSCBundle OSCmsg;
   OSCMessage OSCmsg;
   int size;
   while (!SLIPSerial.endofPacket()) {
@@ -109,7 +109,7 @@ void loop() {
   if (!OSCmsg.hasError()) {
     OSCmsg.dispatch("/calibrate", matrix_calibration);
     OSCmsg.dispatch("/threshold", matrix_threshold);
-    OSCmsg.dispatch("/rowData", matrix_raw_data);
+    OSCmsg.dispatch("/rowData", matrix_raw_data); // FIXME
     OSCmsg.dispatch("/blobs", matrix_blobs);
   }
 
@@ -146,8 +146,14 @@ void matrix_scan(void) {
 
 #ifdef E256_ADC_SYNCHRO
       result = adc->analogSynchronizedRead(ADC0_PIN, ADC1_PIN);
-      frameValues[rowIndexA] = constrain(result.result_adc0 - minVals[rowIndexA], 0, 255);
-      frameValues[rowIndexB] = constrain(result.result_adc1 - minVals[rowIndexB], 0, 255);
+      //frameValues[rowIndexA] = constrain(result.result_adc0 - minVals[rowIndexA], 0, 255);
+      //frameValues[rowIndexB] = constrain(result.result_adc1 - minVals[rowIndexB], 0, 255);
+
+      int valA = result.result_adc0 - minVals[rowIndexA];
+      valA >= 0 ? frameValues[rowIndexA] = (uint8_t)valA : frameValues[rowIndexA] = 0;
+      int valB = result.result_adc1 - minVals[rowIndexB];
+      valB >= 0 ? frameValues[rowIndexB] = (uint8_t)valB : frameValues[rowIndexB] = 0;
+
 #else
       frameValues[rowIndexA] = constrain(analogRead(ADC0_PIN) - minVals[rowIndexA], 0, 255);
       frameValues[rowIndexB] = constrain(analogRead(ADC1_PIN) - minVals[rowIndexB], 0, 255);
@@ -166,9 +172,10 @@ void matrix_scan(void) {
 #endif /*__DEBUG_ADC__*/
 }
 
-void matrix_calibration(OSCMessage& msg) {
+void matrix_calibration(OSCMessage &msg) {
 
-  uint8_t cycles = (uint8_t)msg.getInt(0);
+  //uint8_t cycles = (uint8_t)msg.getInt(0);
+  uint8_t cycles = 20;
 
   for (uint8_t i = 0; i < cycles; i++) {
     // Columns are digital OUTPUT PINS - We supply one column at a time
@@ -209,55 +216,54 @@ void matrix_calibration(OSCMessage& msg) {
   }
 }
 
-void matrix_threshold(OSCMessage &msg) {
-  threshold = (uint8_t)msg.isInt(0);
+void matrix_threshold(OSCMessage &msg) { // Add threshold_ptr
+  //E256_threshold = (0xFF | msg.isInt(0));
+  E256_threshold = (uint8_t)msg.isInt(0);
 }
 
-/// Send raw frame values in SLIP-OSC formmat
-void matrix_raw_data(OSCMessage & msg) {
-  OSCBundle OSC_bundle;
+/// Send raw frame values in SLIP-OSC formmat // FIXME
+void matrix_raw_data(OSCMessage &msg) {
 
   matrix_scan();
+  OSCMessage OSCmsg("/matrix");
+  OSCData paket(frameValues, ROW_FRAME);
+  OSCmsg.add(paket);
 
-  OSC_bundle.fill(frameValues, ROW_FRAME);
   SLIPSerial.beginPacket();
-  OSC_bundle.send(SLIPSerial); // Send the bytes to the SLIP stream
-  SLIPSerial.endPacket();     // Mark the end of the OSC Packet
+  OSCmsg.send(SLIPSerial);   // Send the bytes to the SLIP stream
+  SLIPSerial.endPacket();    // Mark the end of the OSC Packet
 }
 
 /// Blobs detection
-void matrix_blobs(OSCMessage & msg) {
+void matrix_blobs(OSCMessage &msg) {
+
   OSCBundle OSC_bundle;
 
-  boolean debug = msg.getInt(0);
+  //int32_t debug = msg.getInt(0);
+
+  //while (&outputBlobs.index < 0) { // FIXME - useful to send values only when blobs are detected 
 
   matrix_scan();
+
   bilinear_interp(&interpolatedFrame, &rawFrame, &interp);
-  
-  if (debug == 1) {
-    OSCMessage OSCmsg("/blob");
-    OSCmsg.add(28776).add(33).add(-1).add(255).add(255);
-    OSC_bundle.add(OSCmsg);
-    OSCMessage OSCmsg2("/blob");
-    OSCmsg2.add(987).add(-1).add(22).add(33).add(7634);
-    OSC_bundle.add(OSCmsg2);
-  }
-  else {
-    find_blobs(
-      &interpolatedFrame,    // image_t uint8_t [NEW_FRAME] - 1D array
-      bitmap,                // char array [NEW_FRAME] - 1D array // NOT &bitmap !?
-      NEW_ROWS,              // const int
-      NEW_COLS,              // const int
-      threshold,             // uint8_t
-      MIN_BLOB_PIX,          // const int
-      MAX_BLOB_PIX,          // const int
-      &freeBlobs,            // list_t
-      &blobs,                // list_t
-      &outputBlobs,          // list_t
-      &OSC_bundle            // OSCBundle
-    );
-  }
-  SLIPSerial.beginPacket();
+
+  find_blobs(
+    &interpolatedFrame,    // image_t uint8_t [NEW_FRAME] - 1D array
+    bitmap,                // char array [NEW_FRAME] - 1D array // NOT &bitmap !?
+    NEW_ROWS,              // const int
+    NEW_COLS,              // const int
+    E256_threshold,        // uint8_t
+    MIN_BLOB_PIX,          // const int
+    MAX_BLOB_PIX,          // const int
+    &freeBlobs,            // list_t
+    &blobs,                // list_t
+    &outputBlobs,          // list_t
+    &OSC_bundle            // OSCBundle
+  );
+
+  //}
+
+  SLIPSerial.beginPacket();    //
   OSC_bundle.send(SLIPSerial); // Send the bytes to the SLIP stream
   SLIPSerial.endPacket();      // Mark the end of the OSC Packet
 }
