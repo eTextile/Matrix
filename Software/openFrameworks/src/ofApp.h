@@ -5,7 +5,7 @@
 #include "ofxOsc.h"
 #include "ofxGui.h"
 
-#include "ofx/IO/SLIPEncoding.h"
+// #include "ofx/IO/SLIPEncoding.h"
 
 #define USB_PORT         "/dev/ttyACM0"
 #define BAUD_RATE        230400  // With Teensy, it's always the same native speed. The baud rate setting is ignored.
@@ -15,49 +15,51 @@
 #define X_NEWSIZE        64      // Number of rows after the softwear interpolation
 #define Y_NEWSIZE        64      // Number of colums after the softwear interpolation
 
-#define HOST             "localhost"
-//#define HOST           "10.42.0.255"
+const int OUTPUT_BUFFER_SIZE = 1024;
+
+//#define HOST             "localhost"
+//#define HOST             "10.42.0.255"
 #define UDP_OUTPUT_PORT  7771
 #define UDP_INPUT_PORT   1234
 
-#define DEBUG_SERIAL     1
-#define DEBUG_DRAW       1
-
-typedef struct blob {
+struct blob {
   uint8_t blobID;
   int8_t posX;
   int8_t posY;
   int8_t posZ;
   int16_t pixels;
-} blob_t;
+};
 
-typedef struct serialMessage {
+struct serialMessage {
     std::string OSCmessage;
     std::string exception;
-} serialMessage_t;
+};
 
 using namespace ofxIO;
 
 class ofApp: public ofBaseApp {
 
 public:
-    void                          setup();
-    void                          update();
-    void                          draw();
-    void                          exit();
+    void                          setup(void);
+    void                          update(void);
+    void                          draw(void);
+    void                          exit(void);
+    char                          buffer[OUTPUT_BUFFER_SIZE];
 
-    SLIPPacketSerialDevice        serialDevice;
-    std::vector<serialMessage_t>  serialMessages; // SerialMessages is a vector of SerialMessage
-    std::vector<blob_t>           blobs;
+    ofxIO::SLIPPacketSerialDevice serialDevice;
+    std::vector<serialMessage>    serialMessages; // SerialMessages is a vector of SerialMessage
+    std::vector<ofxOscMessage>    blobs;
     void                          onSerialBuffer(const SerialBufferEventArgs& args);
     void                          onSerialError(const SerialBufferErrorEventArgs& args);
-    char                          threshold;
-    //bool                          frameRequest;
-
+    ofxOscBundle                  OSCbundle;
     ofxPanel                      gui;
     ofxButton                     calirationButton; // Button to calibrate E256
-    ofxIntSlider                  tresholdSlider; // Set E256 threshold value
-    void                          setCaliration(bool & buttonState);
-    void                          setTreshold(int & sliderValue);
+    ofxIntSlider                  tresholdValue; // Set E256 threshold value
+    void                          E256_setCaliration(void);
+    void                          E256_setTreshold(int & sliderValue);
+    void                          E256_blobsRequest(void);
+
+    std::vector<ofConePrimitive>  cones;
+    
     void                          keyPressed(int key);
   };
