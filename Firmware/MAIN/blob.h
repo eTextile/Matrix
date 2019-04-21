@@ -96,17 +96,20 @@ typedef struct {
 // Blob states
 typedef enum {
   FREE,
-  UPDATE,
-  TOADD,
+  TO_UPDATE,
+  TO_ADD,
+  //NOT_FOUND, // TODO?
   DEAD
 } state_t;
 
 typedef struct blob {
-  int8_t UID;
+  uint8_t UID;
   state_t state;
+  //boolean lastState;
+  //unsigned long timeTag; // TODO?
   point_t centroid;
   bbox_t box;
-  uint8_t pixels;
+  uint16_t pixels;
   struct blob* next_ptr;
 } blob_t;
 
@@ -123,10 +126,9 @@ void find_blobs(
   uint8_t E256_threshold,
   const unsigned int minBlobPix,
   const unsigned int maxBlobPix,
-  llist_t* freeBlob_ptr,
-  llist_t* blobs_ptr,
-  llist_t* outputBlobs_ptr,
-  OSCBundle* bundleOut_ptr
+  llist_t* freeBlobs_ptr,
+  llist_t* inputBlobs_ptr,
+  llist_t* outputBlobs_ptr
 );
 
 #endif /*__BLOB_H__*/

@@ -1,4 +1,5 @@
 /*
+  ** E256 Firmware v1.0 **
   This file is part of the eTextile-matrix-sensor project - http://matrix.eTextile.org
   Copyright (c) 2014-2018 Maurin Donneaud <maurin@etextile.org>
   This work is licensed under Creative Commons Attribution-ShareAlike 4.0 International license, see the LICENSE file for details.
@@ -11,8 +12,10 @@
 //  24 FPS with BILINEAR_INTERPOLATION
 //  23 FPS with interpolation & blob tracking
 
-uint8_t E256_threshold = 35; // Set the threshold that determine toutch sensitivity (10 is low 30 is high)
+uint8_t E256_threshold = 36; // Set the threshold that determine toutch sensitivity (10 is low 30 is high)
 
+//OSCMessage slip_osc_out("/b");
+OSCBundle OSCbundle;
 //////////////////////////////////////////////////// SETUP
 
 void setup() {
@@ -93,11 +96,12 @@ void setup() {
   bilinear_interp_init(&interp);
   //bootBlink(LED_BUILTIN, 9); // FIXME - BUILTIN_LED is used for hardware SPI
 
+  //timerFps = 0;
 }
 
 //////////////////////////////////////////////////// LOOP
 void loop() {
-  //OSCBundle OSCmsg;
+
   OSCMessage OSCmsg;
   int size;
   while (!SLIPSerial.endofPacket()) {
@@ -114,10 +118,10 @@ void loop() {
   }
 
 #ifdef E256_FPS
-  if ((millis() - lastFarme) >= 1000) {
-    Serial.printf(F("\nFPS: %d"), fps);
-    lastFarme = millis();
+  if (timerFPS >= 1000) {
+    timerFPS = 0;
     fps = 0;
+    Serial.printf(F("\nFPS: %d"), fps);
   }
   fps++;
 #endif /*__E256_FPS__*/
@@ -216,7 +220,7 @@ void matrix_calibration(OSCMessage &msg) {
   }
 }
 
-void matrix_threshold(OSCMessage &msg) { // Add threshold_ptr
+void matrix_threshold(OSCMessage &msg) { // TODO Add threshold_ptr
   //E256_threshold = (0xFF | msg.isInt(0));
   E256_threshold = (uint8_t)msg.isInt(0);
 }
@@ -225,23 +229,17 @@ void matrix_threshold(OSCMessage &msg) { // Add threshold_ptr
 void matrix_raw_data(OSCMessage &msg) {
 
   matrix_scan();
-  OSCMessage OSCmsg("/matrix");
-  OSCData paket(frameValues, ROW_FRAME);
-  OSCmsg.add(paket);
-
+  OSCMessage m("/m");
+  m.add(frameValues, ROW_FRAME);
   SLIPSerial.beginPacket();
-  OSCmsg.send(SLIPSerial);   // Send the bytes to the SLIP stream
+  m.send(SLIPSerial);   // Send the bytes to the SLIP stream
   SLIPSerial.endPacket();    // Mark the end of the OSC Packet
 }
 
 /// Blobs detection
 void matrix_blobs(OSCMessage &msg) {
 
-  OSCBundle OSC_bundle;
-
   //int32_t debug = msg.getInt(0);
-
-  //while (&outputBlobs.index < 0) { // FIXME - useful to send values only when blobs are detected 
 
   matrix_scan();
 
@@ -257,15 +255,26 @@ void matrix_blobs(OSCMessage &msg) {
     MAX_BLOB_PIX,          // const int
     &freeBlobs,            // list_t
     &blobs,                // list_t
-    &outputBlobs,          // list_t
-    &OSC_bundle            // OSCBundle
+    &outputBlobs           // list_t
   );
 
-  //}
+  for (blob_t* blob = iterator_start_from_head(&outputBlobs); blob != NULL; blob = iterator_next(blob)) {
+    blobPaket[0] = blob->UID;        // uint8_t
+    blobPaket[1] = blob->centroid.X; // uint8_t
+    blobPaket[2] = blob->centroid.Y; // uint8_t
+    blobPaket[3] = blob->box.W;      // uint8_t
+    blobPaket[4] = blob->box.H;      // uint8_t
+    blobPaket[5] = blob->box.D;      // uint8_t
 
-  SLIPSerial.beginPacket();    //
-  OSC_bundle.send(SLIPSerial); // Send the bytes to the SLIP stream
-  SLIPSerial.endPacket();      // Mark the end of the OSC Packet
+    OSCMessage msg("/b");
+    msg.add(blobPaket, OSC_PAKET_SIZE);
+    OSCbundle.add(msg);
+  }
+
+  SLIPSerial.beginPacket();     //
+  OSCbundle.send(SLIPSerial);   // Send the bytes to the SLIP stream
+  SLIPSerial.endPacket();       // Mark the end of the OSC Packet
+  OSCbundle.empty();            // empty the OSCMessage ready to use for new messages
 }
 
 /*

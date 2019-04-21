@@ -19,7 +19,7 @@ ADC::Sync_result result;  // ADC_0 & ADC_1
 
 SLIPEncodedUSBSerial SLIPSerial(thisBoardsSerialUSB);
 
-unsigned long lastFarme = 0;
+//elapsedMillis timerFps = 0;
 uint16_t fps = 0;
 
 // Array to store all parameters used to configure the two 8:1 analog multiplexeurs
@@ -51,12 +51,15 @@ llist_t   freeBlobs;
 llist_t   blobs;
 llist_t   outputBlobs;
 
+uint8_t blobPaket[OSC_PAKET_SIZE] = {0};
+
 inline void matrix_scan(void);
 
 void matrix_calibration(OSCMessage &msg);
 void matrix_threshold(OSCMessage &msg);
 void matrix_raw_data(OSCMessage &msg);
 void matrix_blobs(OSCMessage &msg);
+//void matrix_blobs();
 
 //void bootBlink(const uint8_t pin, uint8_t flash);
 

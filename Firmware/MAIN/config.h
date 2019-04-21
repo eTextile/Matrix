@@ -13,8 +13,10 @@
 #include <OSCBoards.h>              // https://github.com/CNMAT/OSC
 #include <OSCMessage.h>             // https://github.com/CNMAT/OSC
 #include <OSCBundle.h>              // https://github.com/CNMAT/OSC
+//#include <OSCData.h>                // https://github.com/CNMAT/OSC
 
 #include <SLIPEncodedUSBSerial.h>   // https://github.com/CNMAT/OSC
+//#include <elapsedMillis.h>          // 
 
 //#define LED_BUILTIN         13        // FIXME - Hardware SPI conflict
 //#define BUTTON_PIN          32        // FIXME - NO BUTTON_PIN on the E256
@@ -30,7 +32,9 @@
 #define NEW_FRAME             (NEW_COLS * NEW_ROWS)
 #define MAX_NODES             40    // Set the maximum nodes number
 #define MIN_BLOB_PIX          4     // Set the minimum blob pixels
-#define MAX_BLOB_PIX          255   // Set the maximum blob pixels
+#define MAX_BLOB_PIX          1024  // Set the maximum blob pixels
+
+#define OSC_PAKET_SIZE        6     // Blob datum paket
 
 #define E256_SS_PIN           10    // SPI:SS    E2B56:RCK  // D10 - Hardware SPI no need to specify it
 #define E256_SCK_PIN          13    // SPI:SCK   E2B56:SCK  // D13 - Hardware SPI no need to specify it
