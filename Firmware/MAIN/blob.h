@@ -1,7 +1,9 @@
 /*
-  This file is partSLIPSerial of the eTextile-matrix-sensor project - http://matrix.eTextile.org
-  Copyright (c) 2014-2018 Maurin Donneaud <maurin@etextile.org>
-  This work is licensed under Creative Commons Attribution-ShareAlike 4.0 International license, see the LICENSE file for details.
+  FORKED FROM https://github.com/openmv/openmv/tree/master/src/omv/img
+  Added custom blob détection algorithm to keep track of the blobs ID's
+    This patch is part of the eTextile-matrix-sensor project - http://matrix.eTextile.org
+    Copyright (c) 2014-2018 Maurin Donneaud <maurin@etextile.org>
+    This work is licensed under Creative Commons Attribution-ShareAlike 4.0 International license, see the LICENSE file for details.
 */
 
 #ifndef __BLOB_H__
@@ -102,14 +104,17 @@ typedef enum {
   DEAD
 } state_t;
 
+// TODO add an ALIVE message
+// What about the TUIO 1.1 Protocol Specification
+// http://www.tuio.org/?specification
 typedef struct blob {
   uint8_t UID;
   state_t state;
-  //boolean lastState;
+  //boolean lastState; // TODO? used for debouncing
   //unsigned long timeTag; // TODO?
   point_t centroid;
   bbox_t box;
-  uint16_t pixels;
+  //uint16_t pixels; // TODO ?
   struct blob* next_ptr;
 } blob_t;
 

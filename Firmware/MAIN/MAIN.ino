@@ -12,10 +12,8 @@
 //  24 FPS with BILINEAR_INTERPOLATION
 //  23 FPS with interpolation & blob tracking
 
-uint8_t E256_threshold = 36; // Set the threshold that determine toutch sensitivity (10 is low 30 is high)
+uint8_t E256_threshold = 38; // Threshold defaultused to adjust toutch sensitivity (10 is low 40 is high)
 
-//OSCMessage slip_osc_out("/b");
-OSCBundle OSCbundle;
 //////////////////////////////////////////////////// SETUP
 
 void setup() {
@@ -52,18 +50,18 @@ void setup() {
   adc->setAveraging(1, ADC_0);                                           // Set number of averages
   adc->setResolution(8, ADC_0);                                          // Set bits of resolution
   adc->setConversionSpeed(ADC_CONVERSION_SPEED::VERY_HIGH_SPEED, ADC_0); // Change the conversion speed
-  //adc->setConversionSpeed(ADC_CONVERSION_SPEED::HIGH_SPEED, ADC_0);   // Change the conversion speed
+  //adc->setConversionSpeed(ADC_CONVERSION_SPEED::HIGH_SPEED, ADC_0);    // Change the conversion speed
   adc->setSamplingSpeed(ADC_SAMPLING_SPEED::VERY_HIGH_SPEED, ADC_0);     // Change the sampling speed
-  //adc->setSamplingSpeed(ADC_SAMPLING_SPEED::HIGH_SPEED, ADC_0);       // Change the sampling speed
-  //adc->enableCompare(1.0 / 3.3 * adc->getMaxValue(ADC_0), 0, ADC_0);  // Measurement will be ready if value < 1.0V
+  //adc->setSamplingSpeed(ADC_SAMPLING_SPEED::HIGH_SPEED, ADC_0);        // Change the sampling speed
+  //adc->enableCompare(1.0 / 3.3 * adc->getMaxValue(ADC_0), 0, ADC_0);   // Measurement will be ready if value < 1.0V
 
   adc->setAveraging(1, ADC_1);                                           // Set number of averages
   adc->setResolution(8, ADC_1);                                          // Set bits of resolution
   adc->setConversionSpeed(ADC_CONVERSION_SPEED::VERY_HIGH_SPEED, ADC_1); // Change the conversion speed
   // adc->setConversionSpeed(ADC_CONVERSION_SPEED::HIGH_SPEED, ADC_1);   // Change the conversion speed
   adc->setSamplingSpeed(ADC_SAMPLING_SPEED::VERY_HIGH_SPEED, ADC_1);     // Change the sampling speed
-  //adc->setSamplingSpeed(ADC_SAMPLING_SPEED::HIGH_SPEED, ADC_1);       // Change the sampling speed
-  //adc->enableCompare(1.0 / 3.3 * adc->getMaxValue(ADC_1), 0, ADC_1);  // Measurement will be ready if value < 1.0V
+  //adc->setSamplingSpeed(ADC_SAMPLING_SPEED::HIGH_SPEED, ADC_1);        // Change the sampling speed
+  //adc->enableCompare(1.0 / 3.3 * adc->getMaxValue(ADC_1), 0, ADC_1);   // Measurement will be ready if value < 1.0V
 #else
   analogReadRes(8); // Set the ADC converteur resolution to 10 bit
 #endif /*__E256_ADC_SYNCHRO__*/
@@ -102,6 +100,8 @@ void setup() {
 //////////////////////////////////////////////////// LOOP
 void loop() {
 
+
+#ifdef E256_BLOBS_SLIP_OSC
   OSCMessage OSCmsg;
   int size;
   while (!SLIPSerial.endofPacket()) {
@@ -113,9 +113,10 @@ void loop() {
   if (!OSCmsg.hasError()) {
     OSCmsg.dispatch("/calibrate", matrix_calibration);
     OSCmsg.dispatch("/threshold", matrix_threshold);
-    OSCmsg.dispatch("/rowData", matrix_raw_data); // FIXME
+    OSCmsg.dispatch("/rowData", matrix_raw_data); // TODO
     OSCmsg.dispatch("/blobs", matrix_blobs);
   }
+#endif /*__E256_BLOBS_SLIP_OSC__*/
 
 #ifdef E256_FPS
   if (timerFPS >= 1000) {
@@ -178,10 +179,9 @@ void matrix_scan(void) {
 
 void matrix_calibration(OSCMessage &msg) {
 
-  //uint8_t cycles = (uint8_t)msg.getInt(0);
-  uint8_t cycles = 20;
+  uint8_t calibration_cycles = msg.getInt(0) & 0xFF;   // Get the first uint8_t in an int32_t
 
-  for (uint8_t i = 0; i < cycles; i++) {
+  for (uint8_t i = 0; i < calibration_cycles; i++) {
     // Columns are digital OUTPUT PINS - We supply one column at a time
     // Rows are analog INPUT PINS - We sens two rows at a time
     uint16_t setCols = 0x8000;
@@ -220,13 +220,19 @@ void matrix_calibration(OSCMessage &msg) {
   }
 }
 
-void matrix_threshold(OSCMessage &msg) { // TODO Add threshold_ptr
-  //E256_threshold = (0xFF | msg.isInt(0));
-  E256_threshold = (uint8_t)msg.isInt(0);
+// Get threshold from an OSC message
+void matrix_threshold(OSCMessage &msg) {
+
+  // Teensy is Little-endian!
+  // The sequence addresses/sends/stores the least significant byte first (lowest address)
+  // and the most significant byte last (highest address).
+  E256_threshold = msg.getInt(0) & 0xFF; // Get the first int8_t of the int32_t
 }
 
-/// Send raw frame values in SLIP-OSC formmat // FIXME
+/// Send raw frame values in SLIP-OSC formmat
 void matrix_raw_data(OSCMessage &msg) {
+
+  //uint8_t ... = msg.getInt(0) & 0xFF;   // Get the first int8_t of the int32_t
 
   matrix_scan();
   OSCMessage m("/m");
@@ -236,10 +242,11 @@ void matrix_raw_data(OSCMessage &msg) {
   SLIPSerial.endPacket();    // Mark the end of the OSC Packet
 }
 
-/// Blobs detection
+/// Send all blobs values in SLIP-OSC formmat
 void matrix_blobs(OSCMessage &msg) {
 
-  //int32_t debug = msg.getInt(0);
+  OSCBundle OSCbundle;
+  //... = msg.getInt(0) & 0xFF; // Get the first int8_t in an int32_t
 
   matrix_scan();
 
@@ -258,16 +265,20 @@ void matrix_blobs(OSCMessage &msg) {
     &outputBlobs           // list_t
   );
 
+  // TODO? TUIO_SET messages are used to communicate information about an object's state such as position, orientation, and other recognized states.
+  // TODO? TUIO_ALIVE messages indicate the current set of objects present on the surface using a list of unique Session IDs.
+
+  // Hear is an method to minimise the size of the OCS packet.
   for (blob_t* blob = iterator_start_from_head(&outputBlobs); blob != NULL; blob = iterator_next(blob)) {
-    blobPaket[0] = blob->UID;        // uint8_t
-    blobPaket[1] = blob->centroid.X; // uint8_t
-    blobPaket[2] = blob->centroid.Y; // uint8_t
-    blobPaket[3] = blob->box.W;      // uint8_t
-    blobPaket[4] = blob->box.H;      // uint8_t
-    blobPaket[5] = blob->box.D;      // uint8_t
+    blobPacket[0] = blob->UID;        // uint8_t
+    blobPacket[1] = blob->centroid.X; // uint8_t
+    blobPacket[2] = blob->centroid.Y; // uint8_t
+    blobPacket[3] = blob->box.W;      // uint8_t
+    blobPacket[4] = blob->box.H;      // uint8_t
+    blobPacket[5] = blob->box.D;      // uint8_t
 
     OSCMessage msg("/b");
-    msg.add(blobPaket, OSC_PAKET_SIZE);
+    msg.add(blobPacket, BLOB_PACKET_SIZE);
     OSCbundle.add(msg);
   }
 

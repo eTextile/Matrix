@@ -51,7 +51,7 @@ llist_t   freeBlobs;
 llist_t   blobs;
 llist_t   outputBlobs;
 
-uint8_t blobPaket[OSC_PAKET_SIZE] = {0};
+uint8_t blobPacket[BLOB_PACKET_SIZE] = {0};
 
 inline void matrix_scan(void);
 

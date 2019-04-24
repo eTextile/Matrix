@@ -9,7 +9,7 @@
 
 #include "blob.h"
 
-typedef struct blob blob_t; // Forward declaration
+typedef struct blob blob_t; // forward declaration
 
 typedef struct llist {
   blob_t* head_ptr;

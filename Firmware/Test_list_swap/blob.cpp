@@ -8,138 +8,22 @@
 
 #include "blob.h"
 
+#define BLOB_PACKET_SIZE      6     // OSC blob data packet
+
+blob_t    blobArray[MAX_NODES] = {0};       // 40 nodes
+uint8_t   blobPacket[BLOB_PACKET_SIZE] = {0};
+
+llist_t   freeBlobs;
+llist_t   blobs;
+llist_t   outputBlobs;
+
 void find_blobs(
-  image_t*              inFrame_ptr,
-  char*                 bitmap_ptr,
-  const int             rows,
-  const int             cols,
-  uint8_t               E256_threshold,
-  const unsigned int    minBlobPix,
-  const unsigned int    maxBlobPix,
   llist_t*              freeBlobs_ptr,
   llist_t*              inputBlobs_ptr,
   llist_t*              outputBlobs_ptr
 ) {
 
-  /////////////////////////////// Scanline flood fill algorithm
-  /////////////////////////////// Connected-component labeling / CCL
-  ///////////////////////////////
-
-  //if (DEBUG_CCL) Serial.println("\n DEBUG_CCL / START <<<<<<<<<<<<<<<<<<<<<<<<");
-
-  bitmap_clear(bitmap_ptr, NEW_FRAME);
-  //if (DEBUG_CCL) Serial.println("DEBUG_CCL / Bitmap cleared");
-
   llist_raz(inputBlobs_ptr);
-
-  for (uint8_t posY = 0; posY < rows; posY++) {
-    uint8_t* row_ptr_A = ROW_PTR(inFrame_ptr, posY);     // Return inFrame_ptr curent row pointer
-    uint16_t row_index_A = ROW_INDEX(inFrame_ptr, posY); // Return inFrame_ptr curent row index (1D array) 0, 64, 128,... 4032
-    for (uint8_t posX = 0; posX < cols; posX++) {
-      //if (DEBUG_BITMAP) Serial.printf("%d ", bitmap_bit_get(bitmap_ptr, BITMAP_INDEX(row_index_A, posX)));
-      //if (DEBUG_BITMAP) Serial.printf("%d ", GET_PIXEL(row_ptr_A, posX));
-
-      if (!bitmap_bit_get(bitmap_ptr, BITMAP_INDEX(row_index_A, posX)) && PIXEL_THRESHOLD(GET_PIXEL(row_ptr_A, posX), E256_threshold)) {
-        //if (DEBUG_CCL) Serial.printf("\n DEBUG_CCL / Found active pixel in row:%d\tcolumn:%d", posY, posX);
-
-        uint8_t oldX = posX;
-        uint8_t oldY = posY;
-
-        blob_t* blob = llist_pop_front(freeBlobs_ptr);
-        //if (DEBUG_CCL) Serial.printf("\n DEBUG_CCL / Get a blob from **freeBlobs** linked list: %p", blob);
-        blob_raz(blob);
-
-        uint8_t blob_x1 = posX;
-        uint8_t blob_y1 = posY;
-        uint8_t blob_x2 = posX;
-        uint8_t blob_y2 = posY;
-
-        while (1) {
-          uint8_t left = posX;
-          uint8_t right = posX;
-
-          uint8_t* row_ptr = ROW_PTR(inFrame_ptr, posY);     // Return inFrame_ptr curent row pointer
-          uint16_t row_index = ROW_INDEX(inFrame_ptr, posY); // Return inFrame_ptr curent row index (1D array) 0, 64, 128,... 4032
-
-          while ((left > 0) &&
-                 (!bitmap_bit_get(bitmap_ptr, BITMAP_INDEX(row_index, left - 1))) &&
-                 PIXEL_THRESHOLD(GET_PIXEL(row_ptr, left - 1), E256_threshold)) {
-            left--;
-          }
-          //if (DEBUG_CCL) Serial.printf("\n DEBUG_CCL / The minimum activated left pixel ID is: %d", left);
-
-          while (right < (cols - 1) &&
-                 (!bitmap_bit_get(bitmap_ptr, BITMAP_INDEX(row_index, right + 1))) &&
-                 PIXEL_THRESHOLD(GET_PIXEL(row_ptr, right + 1), E256_threshold)) {
-            right++;
-          }
-          //if (DEBUG_CCL) Serial.printf("\n DEBUG_CCL / The maximum activated right pixel ID is: %d", right);
-
-          blob_x1 = MIN(blob_x1, left);
-          blob_y1 = MIN(blob_y1, posY);
-          blob_x2 = MAX(blob_x2, right);
-          blob_y2 = MAX(blob_y2, posY);
-
-          //if (DEBUG_CCL) Serial.println("DEBUG_CCL / Save this activated pixels line to the bitmap array");
-          for (uint8_t x = left; x <= right; x++) {
-            bitmap_bit_set(bitmap_ptr, BITMAP_INDEX(row_index, x));
-            blob->box.D = MAX(blob->box.D, GET_PIXEL(row_ptr, x));
-            //blob->pixels++; // uint16_t overflow !?
-          }
-
-          boolean break_out = true;
-          if (posY < (rows - 1)) {
-            row_ptr = ROW_PTR(inFrame_ptr, posY + 1);     // Return inFrame_ptr curent row pointer
-            row_index = ROW_INDEX(inFrame_ptr, posY + 1); // Return inFrame_ptr curent row index (1D array) 0, 64, 128,... 4032
-            for (uint8_t x = left; x <= right; x++) {
-              if ((!bitmap_bit_get(bitmap_ptr, BITMAP_INDEX(row_index, x))) && PIXEL_THRESHOLD(GET_PIXEL(row_ptr, x), E256_threshold)) {
-                //if (DEBUG_CCL) Serial.printf("\n DEBUG_CCL / Found an active pixel in row: %d", posY + 1);
-                posX = x;
-                posY++;
-                break_out = false;
-                break;
-              }
-            }
-          }
-          if (break_out) {
-            break;
-          }
-        }
-        //if (DEBUG_CCL) Serial.println("DEBUG_CCL / BLOB COMPLEAT!");
-
-        //if ((blob->pixels > minBlobPix) && (blob->pixels < maxBlobPix)) {
-        if (blob->box.D > 0) { // TESTING
-
-          blob->box.W = blob_x2 - blob_x1;
-          blob->box.H = blob_y2 - blob_y1;
-
-          blob->centroid.X = (uint8_t) (blob_x2 - ((blob_x2 - blob_x1) / 2)); // x centroid position
-          blob->centroid.Y = (uint8_t) (blob_y2 - ((blob_y1 - blob_y2) / 2)); // y centroid position
-          // uint8_t* row_ptr = ROW_PTR(inFrame_ptr, blob->centroid.Y); // DO NOT WORK!?
-          // blob->box.Z = GET_PIXEL(row_ptr, blob->centroid.X);   // DO NOT WORK!?
-          //if (DEBUG_CENTER) Serial.printf("\n DEBUG_CENTER / blob_cx: %d\tblob_cy: %d\tblob_cz: %d", blob->centroid.X, blob->centroid.Y, blob->centroid.Z);
-
-          llist_push_back(inputBlobs_ptr, blob);
-          //if (DEBUG_CCL) Serial.printf("\n DEBUG_CCL / Blob: %p added to the **blobs** linked list", blob);
-        } else {
-          llist_push_back(freeBlobs_ptr, blob);
-          //if (DEBUG_CCL) Serial.printf("\n DEBUG_CCL / Blob %p saved to **freeBlobList** linked list", blob);
-        }
-        posX = oldX;
-        posY = oldY;
-      }
-    }
-    //if (DEBUG_BITMAP) Serial.println();
-  }
-  //if (DEBUG_BITMAP) Serial.println();
-
-  //if (DEBUG_CCL) Serial.printf("\n DEBUG_CCL / **blobs** linked list index: %d", inputBlobs_ptr->index);
-  //if (DEBUG_CCL) Serial.printf("\n DEBUG_CCL / **freeBlobs** linked list index: %d", freeBlobs_ptr->index);
-  //if (DEBUG_CCL) Serial.println("DEBUG_CCL / END of scanline flood fill algorithm <<<<<<<<<<<<<<<<<<<<<<<<");
-
-  ///////////////////////////////
-  /////////////////////////////// PERSISTANT BLOB ID
-  ///////////////////////////////
 
   //Serial.printf("\n DEBUG_BLOBS / **blobs** linked list index: %d", inputBlobs_ptr->index);
   //Serial.printf("\n DEBUG_BLOBS / **freeBlobs** linked list index: %d", freeBlobs_ptr->index);
@@ -181,7 +65,7 @@ void find_blobs(
       //Serial.print("\n DEBUG_BLOBS / Found new blob without ID");
 
       // Bubble sort the outputBlobs linked list // FIXME!
-      // llist_bubbleSort(outputBlobs_ptr);
+      llist_bubbleSort(outputBlobs_ptr);
 
       // Find the smallest positive missing UID in the sorted linked list
       uint8_t minID = 1;
