@@ -64,13 +64,15 @@ public:
     std::vector<serialMessage>    serialMessages; // SerialMessages is a vector of SerialMessage
     std::vector<ofxOscMessage>    blobs;
 
-    ofxOscBundle                  OSCbundle;
+    //ofxOscBundle                  OSCbundle;
+    //serialMessage                 message;
     ofxPanel                      gui;
     ofxButton                     calirationButton; // Button to calibrate E256
     ofxIntSlider                  tresholdValue; // Set E256 threshold value
     void                          E256_setCaliration(void);
     void                          E256_setTreshold(int & sliderValue);
     void                          E256_blobsRequest(void);
+    void                          E256_matrix_raw_data(void);
 
     //std::vector<ofboxPrimitive>  boxe;
 
