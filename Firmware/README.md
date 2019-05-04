@@ -42,7 +42,7 @@
     box.D (bounding box depth - the maximum pressur value in all the blob pixels - from 0 to 255)
     //pixels (the number of sensors that are triggered by a touch multiply by the interpolation factor)
 
-### on_touch_release
+### on_touch_release // FIXME or not ?
     UID (percistant blob ID)
     -1 (centroid.X)
     -1 (centroid.Y)

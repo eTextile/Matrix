@@ -100,7 +100,6 @@ void setup() {
 //////////////////////////////////////////////////// LOOP
 void loop() {
 
-
 #ifdef E256_BLOBS_SLIP_OSC
   OSCMessage OSCmsg;
   int size;
@@ -116,6 +115,8 @@ void loop() {
     OSCmsg.dispatch("/rowData", matrix_raw_data); // TODO
     OSCmsg.dispatch("/blobs", matrix_blobs);
   }
+#else
+  blobs_debug();
 #endif /*__E256_BLOBS_SLIP_OSC__*/
 
 #ifdef E256_FPS
@@ -177,7 +178,7 @@ void matrix_scan(void) {
 #endif /*__DEBUG_ADC__*/
 }
 
-void matrix_calibration(OSCMessage &msg) {
+void matrix_calibration(OSCMessage & msg) {
 
   uint8_t calibration_cycles = msg.getInt(0) & 0xFF;   // Get the first uint8_t in an int32_t
 
@@ -221,7 +222,7 @@ void matrix_calibration(OSCMessage &msg) {
 }
 
 // Get threshold from an OSC message
-void matrix_threshold(OSCMessage &msg) {
+void matrix_threshold(OSCMessage & msg) {
 
   // Teensy is Little-endian!
   // The sequence addresses/sends/stores the least significant byte first (lowest address)
@@ -230,7 +231,7 @@ void matrix_threshold(OSCMessage &msg) {
 }
 
 /// Send raw frame values in SLIP-OSC formmat
-void matrix_raw_data(OSCMessage &msg) {
+void matrix_raw_data(OSCMessage & msg) {
 
   //uint8_t ... = msg.getInt(0) & 0xFF;   // Get the first int8_t of the int32_t
 
@@ -243,7 +244,7 @@ void matrix_raw_data(OSCMessage &msg) {
 }
 
 /// Send all blobs values in SLIP-OSC formmat
-void matrix_blobs(OSCMessage &msg) {
+void matrix_blobs(OSCMessage & msg) {
 
   OSCBundle OSCbundle;
   //... = msg.getInt(0) & 0xFF; // Get the first int8_t in an int32_t
@@ -281,12 +282,34 @@ void matrix_blobs(OSCMessage &msg) {
     msg.add(blobPacket, BLOB_PACKET_SIZE);
     OSCbundle.add(msg);
   }
-
   SLIPSerial.beginPacket();     //
   OSCbundle.send(SLIPSerial);   // Send the bytes to the SLIP stream
   SLIPSerial.endPacket();       // Mark the end of the OSC Packet
   OSCbundle.empty();            // empty the OSCMessage ready to use for new messages
 }
+
+void blobs_debug() {
+  Serial.println("TOP");
+
+  matrix_scan();
+
+  bilinear_interp(&interpolatedFrame, &rawFrame, &interp);
+
+  find_blobs(
+    &interpolatedFrame,    // image_t uint8_t [NEW_FRAME] - 1D array
+    bitmap,                // char array [NEW_FRAME] - 1D array // NOT &bitmap !?
+    NEW_ROWS,              // const int
+    NEW_COLS,              // const int
+    E256_threshold,        // uint8_t
+    MIN_BLOB_PIX,          // const int
+    MAX_BLOB_PIX,          // const int
+    &freeBlobs,            // list_t
+    &blobs,                // list_t
+    &outputBlobs           // list_t
+  );
+
+}
+
 
 /*
   void bootBlink(const uint8_t pin, uint8_t flash) {

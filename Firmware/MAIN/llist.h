@@ -26,13 +26,10 @@ blob_t* llist_pop_front(llist_t* src);
 void llist_push_back(llist_t* dst, blob_t* blob);
 void llist_save_blobs(llist_t* dst, llist_t* src);
 void llist_remove_blob(llist_t* src, blob_t* blob);
-int8_t llist_size(llist_t* ptr);
-void llist_bubbleSort(llist_t* ptr);
-void llist_swap(llist_t* src_ptr, blob_t* ptr);
+void llist_sort(llist_t* ptr);
 
 ////////////// Iterators //////////////
 
-int8_t list_size(llist_t* ptr);
 blob_t* iterator_start_from_head(llist_t* src);
 blob_t* iterator_next(blob_t* src);
 

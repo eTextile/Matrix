@@ -15,7 +15,7 @@
 #include <OSCBundle.h>              // https://github.com/CNMAT/OSC
 
 #include <SLIPEncodedUSBSerial.h>   // https://github.com/CNMAT/OSC
-//#include <elapsedMillis.h>          // 
+//#include <elapsedMillis.h>          //
 
 //#define LED_BUILTIN         13        // FIXME - Hardware SPI conflict
 //#define BUTTON_PIN          32        // FIXME - NO BUTTON_PIN on the E256
@@ -48,15 +48,15 @@
 #define E256_ADC_SYNCHRO
 #define E256_BLOBS_SLIP_OSC
 
-#define E256_X0 -1  // TODO to select X-axis origine
-#define E256_Y0 -1  // TODO to select Y-axis origine
+//#define E256_X0 -1  // TODO to select X-axis origine
+//fine E256_Y0 -1  // TODO to select Y-axis origine
 
 //#define DEBUG_ADC
 //#define DEBUG_INTERP
 //#define DEBUG_BLOBS_OSC
-
 //#define DEBUG_BITMAP
 //#define DEBUG_CCL
+//#define DEBUG_BLOB_ID
 //#define DEBUG_CENTER
 //#define DEBUG_LIST
 //#define DEBUG_BLOBS

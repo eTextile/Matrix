@@ -137,64 +137,58 @@ void llist_save_blobs(llist_t* dst, llist_t* src) {
   //if (DEBUG_LIST) Serial.printf(F("\n DEBUG_LIST / list_save_blobs / SRC linked list is umpty!"));
 }
 
-// Bubble sort a given linked list !!IN PROGRESS!!
-void llist_bubbleSort(llist_t* src_ptr) {
+boolean DEBUG_SORT = false;
 
-  // Checking if there is more than one blob in the linked list (-1 is empty)
-  if (src_ptr->index < 1) {
-    return;
-  }
+// Sort a given linked list
+void llist_sort(llist_t* src) {
+
+  blob_t* prev_blob_A = NULL;
+
   while (1) {
+
     boolean isSorted = true;
-    for (blob_t* blob = iterator_start_from_head(src_ptr); blob != NULL; blob = iterator_next(blob)) {
-      if (blob->UID > blob->next_ptr->UID) {
+    
+    for (blob_t* blob_A = iterator_start_from_head(src); blob_A != NULL; blob_A = iterator_next(blob_A)) {
+      if (blob_A->UID > blob_A->next_ptr->UID) {
         isSorted = false;
-        llist_swap(src_ptr, blob);
-        break;
+
+        blob_t* blob_B = blob_A->next_ptr;
+
+        if (DEBUG_SORT) Serial.printf("\n DEBUG_SORT / llist_sort / prev_blob_A: %p", prev_blob_A);
+        if (DEBUG_SORT) Serial.printf("\n DEBUG_SORT / llist_sort / blob_A: %p", blob_A);
+        if (DEBUG_SORT) Serial.printf("\n DEBUG_SORT / llist_sort / blob_B: %p", blob_B);
+
+        if (prev_blob_A != NULL) { // Test if prev_ptr_A is the head of linked list
+          prev_blob_A->next_ptr = blob_B;
+          if (DEBUG_SORT) Serial.printf("\n DEBUG_SORT / llist_sort / prev_blob_A is not the HEAD : %p", prev_blob_A->next_ptr);
+        }
+        else { // Set curr_ptr_B as NEW HEAD
+          src->head_ptr = blob_B;
+          if (DEBUG_SORT) Serial.printf("\n DEBUG_SORT / llist_sort / SET prev_blob_A as HEAD : %p", src->head_ptr);
+        }
+
+        if (blob_B->next_ptr != NULL) { // Test if curr_ptr_B is not the tail of linked list
+          blob_A->next_ptr = blob_B->next_ptr;
+          if (DEBUG_SORT) Serial.printf("\n DEBUG_SORT / llist_sort / blob_B is not the TAIL : %p", blob_A->next_ptr);
+        }
+        else { // Set curr_ptr_A as NEW TAIL
+          src->tail_ptr = blob_A;
+          blob_A->next_ptr = NULL;
+          if (DEBUG_SORT) Serial.printf("\n DEBUG_SORT / llist_sort / blob_B is the TAIL : %p", src->tail_ptr);
+        }
+
+        blob_B->next_ptr = blob_A; // Swap pointers
+        if (DEBUG_SORT) Serial.printf("\n DEBUG_SORT / llist_sort / swaped blob_A: %p", blob_B->next_ptr);
       }
-    }
-    if (isSorted) {
+      prev_blob_A = blob_A;
       break;
     }
+    if (isSorted) {
+      return;
+    } 
   }
 }
 
-// Swap two nodes in a linked list (zero copy)
-void llist_swap(llist_t* src_ptr, blob_t* ptr) {
-
-  // Search for ptr_A (keep track of prev_ptr_A and curr_ptr_A)
-  blob_t* prev_ptr_A = NULL;
-  blob_t* curr_ptr_A = src_ptr->head_ptr;
-
-  while (curr_ptr_A != ptr) {
-    prev_ptr_A = curr_ptr_A;
-    curr_ptr_A = curr_ptr_A->next_ptr;
-  }
-
-  // Set curr_ptr_B
-  blob_t* curr_ptr_B = curr_ptr_A->next_ptr;
-
-  // Test if curr_ptr_A is not the head of linked list
-  if (prev_ptr_A != NULL) {
-    prev_ptr_A->next_ptr = curr_ptr_B;
-  }
-  else { // Else make curr_ptr_B as new head
-    src_ptr->head_ptr = curr_ptr_B;
-  }
-
-  // Test if curr_ptr_B is not the tail of linked list
-  if (curr_ptr_B->next_ptr != NULL) {
-    curr_ptr_A->next_ptr = curr_ptr_B->next_ptr;
-  }
-  else { // Set curr_ptr_A as new tail
-    src_ptr->tail_ptr = curr_ptr_A;
-    curr_ptr_A->next_ptr = NULL;
-  }
-
-  // Swap pointers
-  curr_ptr_B->next_ptr = curr_ptr_A;
-
-}
 
 
 ////////////////////////////// Linked list iterators //////////////////////////////
@@ -205,7 +199,4 @@ blob_t* iterator_start_from_head(llist_t* src) {
 
 blob_t* iterator_next(blob_t* src) {
   return src->next_ptr;
-}
-int8_t llist_size(llist_t* ptr) {
-  return ptr->index;
 }
