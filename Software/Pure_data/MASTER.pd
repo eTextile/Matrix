@@ -1,14 +1,14 @@
-#N canvas 627 179 725 637 10;
+#N canvas 488 300 864 637 10;
 #X text 18 95 - comport;
 #X text 18 74 - cyclone;
 #X msg 267 135 devices;
 #X msg 285 179 close;
 #X obj 46 466 vsl 15 128 0 64 0 0 empty 0-posY empty 0 -9 0 10 -262144
--1 -1 9128 1;
+-1 -1 2778 1;
 #X obj 62 599 hsl 128 15 0 64 0 0 empty 0-posX empty -2 -8 0 10 -262144
--1 -1 5556 1;
+-1 -1 6548 1;
 #X obj 25 466 vsl 15 128 0 255 0 0 empty 0-Depth empty 0 -9 0 10 -258113
--1 -1 2540 1;
+-1 -1 1893 1;
 #X msg 276 157 open 0;
 #X obj 531 5 key;
 #X obj 531 28 sel 99;
@@ -26,7 +26,7 @@ through deken plugin (Help -> Find externals):;
 #X msg 559 313 /blobs;
 #X msg 515 141 send /threshold 30;
 #X obj 531 51 print CALIBRATION_REQUEST;
-#X obj 565 220 tgl 35 0 empty empty START 3 7 0 10 -4034 -1 -1 1 1
+#X obj 565 220 tgl 35 0 empty empty START 3 7 0 10 -4034 -1 -1 0 1
 ;
 #X obj 565 260 t b f;
 #N canvas 293 272 450 300 fps 0;
@@ -53,7 +53,7 @@ through deken plugin (Help -> Find externals):;
 #X connect 9 1 7 0;
 #X restore 458 298 pd fps;
 #X floatatom 458 320 5 0 0 0 - - -, f 5;
-#X obj 508 298 tgl 17 0 empty empty empty 17 7 0 10 -162280 -1 -1 1
+#X obj 508 298 tgl 17 0 empty empty empty 17 7 0 10 -162280 -1 -1 0
 1;
 #X obj 559 347 print FRAME_REQUEST;
 #X obj 458 272 t b b;
@@ -64,22 +64,22 @@ through deken plugin (Help -> Find externals):;
 #X obj 135 516 s 0-Height;
 #X obj 66 475 unpack f f f f f;
 #X obj 257 466 vsl 15 128 0 64 0 0 empty 1-posY empty 0 -9 0 10 -262144
--1 -1 10517 1;
+-1 -1 5556 1;
 #X obj 273 599 hsl 128 15 0 64 0 0 empty 1-posX empty -2 -8 0 10 -262144
--1 -1 2778 1;
+-1 -1 2381 1;
 #X obj 236 466 vsl 15 128 0 255 0 0 empty 1-Depth empty 0 -9 0 10 -258113
--1 -1 3735 1;
+-1 -1 1644 1;
 #X obj 277 475 unpack f f f f f;
 #X obj 346 516 s 1-Height;
 #X obj 323 536 s 1-Width;
 #X obj 300 556 s 1-posY;
 #X obj 277 576 s 1-posX;
 #X obj 467 466 vsl 15 128 0 64 0 0 empty 2-posY empty 0 -9 0 10 -262144
--1 -1 9922 1;
+-1 -1 8731 1;
 #X obj 483 599 hsl 128 15 0 64 0 0 empty 2-posX empty -2 -8 0 10 -262144
--1 -1 7937 1;
+-1 -1 3969 1;
 #X obj 446 466 vsl 15 128 0 255 0 0 empty 2-Depth empty 0 -9 0 10 -258113
--1 -1 5578 1;
+-1 -1 1594 1;
 #X obj 487 475 unpack f f f f f;
 #X obj 556 516 s 2-Height;
 #X obj 533 536 s 2-Width;
@@ -91,7 +91,11 @@ through deken plugin (Help -> Find externals):;
 #X obj 277 209 comport 0 230400;
 #X obj 277 280 unpackOSC;
 #X obj 277 304 routeOSC /b;
-#X obj 277 328 route 0 1 2;
+#X obj 277 328 route 1 2 3 4 5 6 7 8;
+#X obj 686 73 key;
+#X obj 686 119 print THRESHOLD_REQUEST;
+#X obj 686 96 sel 116;
+#X obj 118 321 s OSC_Blobs;
 #X connect 2 0 54 0;
 #X connect 3 0 54 0;
 #X connect 7 0 54 0;
@@ -134,6 +138,10 @@ through deken plugin (Help -> Find externals):;
 #X connect 54 0 15 0;
 #X connect 55 0 56 0;
 #X connect 56 0 57 0;
+#X connect 56 0 61 0;
 #X connect 57 0 34 0;
 #X connect 57 1 38 0;
 #X connect 57 2 46 0;
+#X connect 58 0 60 0;
+#X connect 60 0 59 0;
+#X connect 60 0 20 0;
