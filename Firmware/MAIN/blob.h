@@ -98,10 +98,9 @@ typedef struct {
 // Blob states
 typedef enum {
   FREE,
-  TO_UPDATE,
   TO_ADD,
-  //NOT_FOUND, // TODO?
-  DEAD
+  TO_UPDATE,
+  TO_REMOVE
 } state_t;
 
 // TODO add an ALIVE message
@@ -109,12 +108,11 @@ typedef enum {
 // http://www.tuio.org/?specification
 typedef struct blob {
   uint8_t UID;
+  uint8_t alive;
   state_t state;
-  //boolean lastState; // TODO? used for debouncing
-  //unsigned long timeTag; // TODO?
   point_t centroid;
   bbox_t box;
-  //uint16_t pixels; // TODO ?
+  uint16_t pixels;
   struct blob* next_ptr;
 } blob_t;
 

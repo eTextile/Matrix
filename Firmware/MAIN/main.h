@@ -59,7 +59,7 @@ void matrix_calibration(OSCMessage &msg);
 void matrix_threshold(OSCMessage &msg);
 void matrix_raw_data(OSCMessage &msg);
 //void matrix_blobs(OSCMessage &msg);
-inline void blobs_debug();
+inline void blobs_debug(void);
 
 //void bootBlink(const uint8_t pin, uint8_t flash);
 

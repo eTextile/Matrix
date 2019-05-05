@@ -12,7 +12,7 @@
 //  24 FPS with BILINEAR_INTERPOLATION
 //  23 FPS with interpolation & blob tracking
 
-uint8_t E256_threshold = 38; // Threshold defaultused to adjust toutch sensitivity (10 is low 40 is high)
+uint8_t E256_threshold = 30; // Threshold defaultused to adjust toutch sensitivity (10 is low 40 is high)
 
 //////////////////////////////////////////////////// SETUP
 
@@ -271,12 +271,13 @@ void matrix_blobs(OSCMessage & msg) {
 
   // Hear is an method to minimise the size of the OCS packet.
   for (blob_t* blob = iterator_start_from_head(&outputBlobs); blob != NULL; blob = iterator_next(blob)) {
-    blobPacket[0] = blob->UID;        // uint8_t
-    blobPacket[1] = blob->centroid.X; // uint8_t
-    blobPacket[2] = blob->centroid.Y; // uint8_t
-    blobPacket[3] = blob->box.W;      // uint8_t
-    blobPacket[4] = blob->box.H;      // uint8_t
-    blobPacket[5] = blob->box.D;      // uint8_t
+    blobPacket[0] = blob->UID;        // uint8_t unique session ID
+    blobPacket[1] = blob->alive;      // uint8_t
+    blobPacket[2] = blob->centroid.X; // uint8_t
+    blobPacket[3] = blob->centroid.Y; // uint8_t
+    blobPacket[4] = blob->box.W;      // uint8_t
+    blobPacket[5] = blob->box.H;      // uint8_t
+    blobPacket[6] = blob->box.D;      // uint8_t
 
     OSCMessage msg("/b");
     msg.add(blobPacket, BLOB_PACKET_SIZE);

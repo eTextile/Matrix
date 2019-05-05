@@ -23,7 +23,6 @@ void find_blobs(
 
   /////////////////////////////// Scanline flood fill algorithm
   /////////////////////////////// Connected-component labeling / CCL
-  ///////////////////////////////
 
   //if (DEBUG_CCL) Serial.println("\n DEBUG_CCL / START <<<<<<<<<<<<<<<<<<<<<<<<");
 
@@ -84,7 +83,7 @@ void find_blobs(
           for (uint8_t x = left; x <= right; x++) {
             bitmap_bit_set(bitmap_ptr, BITMAP_INDEX(row_index, x));
             blob->box.D = MAX(blob->box.D, GET_PIXEL(row_ptr, x));
-            //blob->pixels++; // uint16_t overflow !?
+            blob->pixels++; // uint16_t overflow !?
           }
 
           boolean break_out = true;
@@ -107,8 +106,7 @@ void find_blobs(
         }
         //if (DEBUG_CCL) Serial.println("DEBUG_CCL / BLOB COMPLEAT!");
 
-        //if ((blob->pixels > minBlobPix) && (blob->pixels < maxBlobPix)) {
-        if (blob->box.D > 0) { // TESTING
+        if ((blob->pixels > minBlobPix) && (blob->pixels < maxBlobPix)) {
 
           blob->box.W = blob_x2 - blob_x1;
           blob->box.H = blob_y2 - blob_y1;
@@ -140,19 +138,38 @@ void find_blobs(
   /////////////////////////////// PERSISTANT BLOB ID
 
 #ifdef DEBUG_BLOB_ID
-  Serial.printf("\n DEBUG_BLOBS / **blobs** linked list index: %d", inputBlobs_ptr->index);
-  Serial.printf("\n DEBUG_BLOBS / **freeBlobs** linked list index: %d", freeBlobs_ptr->index);
-  Serial.printf("\n DEBUG_BLOBS / **outputBlobs** linked list index: %d", outputBlobs_ptr->index);
+  Serial.printf("\n DEBUG_BLOB_ID / **inputBlobs** linked list index: %d", inputBlobs_ptr->index);
+  Serial.printf("\n DEBUG_BLOB_ID / **freeBlobs** linked list index: %d", freeBlobs_ptr->index);
+  Serial.printf("\n DEBUG_BLOB_ID / **outputBlobs** linked list index: %d", outputBlobs_ptr->index);
 #endif /*__DEBUG_BLOB_ID__*/
 
-  // Look for the nearest blob between curent blob position (blobs linked list) and last blob position (outputBlobs linked list)
-  for (blob_t* blobA = iterator_start_from_head(inputBlobs_ptr); blobA != NULL; blobA = iterator_next(blobA)) {
-
-    float minDist = 255.0f;
-
-    blob_t* nearestBlob = NULL;
+  // Suppress blobs from the outputBlobs linked list
+  while (1) {
+    boolean found = false;
+    for (blob_t* blob = iterator_start_from_head(outputBlobs_ptr); blob != NULL; blob = iterator_next(blob)) {
+      if (blob->state == TO_REMOVE) {
+        found = true;
+        llist_remove_blob(outputBlobs_ptr, blob);
+        llist_push_back(freeBlobs_ptr, blob);
 #ifdef DEBUG_BLOB_ID
-    Serial.printf("\n DEBUG_BLOBS / Is input blob: %p have a coresponding blob in **outputBlobs**", blobA);
+        Serial.printf("\n DEBUG_BLOB_ID / Blob: %p removed from **outputBlobs** linked list", blob);
+        Serial.printf("\n DEBUG_BLOB_ID / Blob: %p saved to **freeBlobList** linked list", blob);
+#endif /*__DEBUG_BLOB_ID__*/
+        break;
+      }
+    }
+    if (!found) {
+      break;
+    }
+  }
+
+  // Look for the nearest blob between curent blob position (inputBlobs linked list) and last blob position (outputBlobs linked list)
+  for (blob_t* blobA = iterator_start_from_head(inputBlobs_ptr); blobA != NULL; blobA = iterator_next(blobA)) {
+    float minDist = 255.0f;
+    blob_t* nearestBlob = NULL;
+
+#ifdef DEBUG_BLOB_ID
+    Serial.printf("\n DEBUG_BLOB_ID / Is input blob: %p have a coresponding blob in **outputBlobs**", blobA);
 #endif /*__DEBUG_BLOB_ID__*/
     for (blob_t* blobB = iterator_start_from_head(outputBlobs_ptr); blobB != NULL; blobB = iterator_next(blobB)) {
       uint8_t xa = blobA->centroid.X;
@@ -161,34 +178,32 @@ void find_blobs(
       uint8_t yb = blobB->centroid.Y;
       float dist = sqrt(pow(xa - xb, 2) + pow(ya - yb, 2)); // fast_sqrt? & fast_pow? // arm_sqrt_f32(); ?
 #ifdef DEBUG_BLOB_ID
-      Serial.printf("\n DEBUG_BLOBS / Distance between input & output blobs positions: %f ", dist);
+      Serial.printf("\n DEBUG_BLOB_ID / Distance between input & output blobs positions: %f ", dist);
 #endif /*__DEBUG_BLOB_ID__*/
       if (dist < minDist) {
         minDist = dist;
         nearestBlob = blobB;
       }
     }
-
     // If the distance between curent blob and last blob position is less than minDist:
     // Copy the ID of the nearestBlob found in outputBlobs linked list and give it to the curent input blob.
     // Set the curent input blob state to TO_UPDATE.
-    if (minDist < 10.0f) { // TODO: set it as global variable
+    if (minDist < 8.0f) { // TODO: set it as global variable
 #ifdef DEBUG_BLOB_ID
-      Serial.printf("\n DEBUG_BLOBS / Found corresponding blob: %p in the **outputBlobs** linked list", nearestBlob);
+      Serial.printf("\n DEBUG_BLOB_ID / Found corresponding blob: %p in the **outputBlobs** linked list", nearestBlob);
 #endif /*__DEBUG_BLOB_ID__*/
       blobA->UID = nearestBlob->UID;
       blobA->state = TO_UPDATE;
     }
-
-    // Found a new blob! we nead to give it an ID.
+    // Found a new blob! We nead to give it an ID
     else {
 #ifdef DEBUG_BLOB_ID
-      Serial.print("\n DEBUG_BLOBS / Found new blob without ID");
+      Serial.print("\n DEBUG_BLOB_ID / Found new blob without ID");
 #endif /*__DEBUG_BLOB_ID__*/
 
-      // Checking if there is more than two blobs in the linked list (-1 is empty)
+      // Test if there is more than two blobs in the linked list (-1 is empty)
       if (outputBlobs_ptr->index > 0) {
-        // Bubble sort the outputBlobs linked list
+        // Sorting outputBlobs linked list
         llist_sort(outputBlobs_ptr);
       }
 
@@ -210,44 +225,28 @@ void find_blobs(
         }
       } // while_end / The blob have a new ID
     }
-  }
-  //Serial.printf(F("\n DEBUG_BLOBS / EXIT <<<<<<<<<<<<<<<<<"));
+  } //
 
-  // Update outputBlobs linked list with new inputs blobs that have ben seted TO_UPDATE.
-  // If a blob in the outputBlobs linked do not have corresponding blob in the input blobs linked list (inputBlobs_ptr), set it state to DEAD.
-  // TODO? : Adding time-tag to alow the reciver to suppress blob in the stream after a certain time / or use blob->lastState to do it in the firmware!
+  // Update outputBlobs linked list with new inputs blobs that have ben flaged TO_UPDATE.
+  // If a blob in the outputBlobs linked do not have corresponding blob in the input blobs linked list (inputBlobs_ptr), flag it to TO_REMOVE.
   for (blob_t* blobA = iterator_start_from_head(outputBlobs_ptr); blobA != NULL; blobA = iterator_next(blobA)) {
     boolean found = false;
+
     for (blob_t* blobB = iterator_start_from_head(inputBlobs_ptr); blobB != NULL; blobB = iterator_next(blobB)) {
-      if (blobB->UID == blobA->UID && blobB->state == TO_UPDATE) {
+      if (blobB->state == TO_UPDATE && blobB->UID == blobA->UID) {
         found = true;
         blob_copy(blobA, blobB);
         blobB->state = FREE;
-        break;
-      }
-    }
-    if (!found) {
-      blobA->state = DEAD;
-    }
-  }
-
-  // Suppress dead blobs from the outputBlobs linked list
-  while (1) {
-    boolean found = false;
-    for (blob_t* blob = iterator_start_from_head(outputBlobs_ptr); blob != NULL; blob = iterator_next(blob)) {
-      if (blob->state == DEAD) {
-        found = true;
-        llist_remove_blob(outputBlobs_ptr, blob);
-        llist_push_back(freeBlobs_ptr, blob);
+        blobA->alive = 1;
 #ifdef DEBUG_BLOB_ID
-        Serial.printf("\n DEBUG_BLOBS / Blob: %p removed from **outputBlobs** linked list", blob);
-        Serial.printf("\n DEBUG_BLOBS / Blob: %p saved to **freeBlobList** linked list", blob);
+        Serial.printf("\n DEBUG_BLOB_ID / Copy blob: %p (inputBlobs linked list) to the blob: %p (outputBlobs linked list)", blobB, blobA);
 #endif /*__DEBUG_BLOB_ID__*/
         break;
       }
     }
     if (!found) {
-      break;
+      blobA->alive = 0;
+      blobA->state = TO_REMOVE;
     }
   }
 
@@ -256,16 +255,17 @@ void find_blobs(
     if (blob->state == TO_ADD) {
       blob_t* newBlob = llist_pop_front(freeBlobs_ptr);
       blob_copy(newBlob, blob);
+      newBlob->alive = 1;
       llist_push_back(outputBlobs_ptr, newBlob);
 #ifdef DEBUG_BLOB_ID
-      Serial.printf("\n DEBUG_BLOBS / Blob: %p added to **outputBlobs** linked list", blob);
+      Serial.printf("\n DEBUG_BLOB_ID / Blob: %p added to **outputBlobs** linked list", blob);
 #endif /*__DEBUG_BLOB_ID__*/
     }
   }
 
   llist_save_blobs(freeBlobs_ptr, inputBlobs_ptr);
 #ifdef DEBUG_BLOB_ID
-  Serial.println("\n DEBUG_BLOBS / END OFF BLOB FONCTION");
+  Serial.println("\n DEBUG_BLOB_ID / END OFF BLOB FONCTION");
 #endif /*__DEBUG_BLOB_ID__*/
 }
 
@@ -286,22 +286,24 @@ void bitmap_clear(char* bitmap_ptr, const uint16_t Size) {
 inline void blob_copy(blob_t* dst, blob_t* src) {
   //dst->timeTag = millis(); // TODO?
   dst->UID = src->UID;
+  dst->alive = src->alive;
   dst->centroid.X = src->centroid.X;
   dst->centroid.Y = src->centroid.Y;
   dst->box.W = src->box.W;
   dst->box.H = src->box.H;
   dst->box.D = src->box.D;
-  //dst->pixels = src->pixels;
+  dst->pixels = src->pixels;
 }
 
 inline void blob_raz(blob_t* node) {
   //node->timeTag = 0; // TODO?
   node->UID = 0;
+  node->alive = 0;
   node->state = FREE;
   node->centroid.X = 0;
   node->centroid.Y = 0;
   node->box.W = 0;
   node->box.H = 0;
   node->box.D = 0;
-  //node->pixels = 0;
+  node->pixels = 0;
 }

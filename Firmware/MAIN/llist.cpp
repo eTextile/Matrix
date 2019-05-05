@@ -160,23 +160,21 @@ void llist_sort(llist_t* src) {
 
         if (prev_blob_A != NULL) { // Test if prev_ptr_A is the head of linked list
           prev_blob_A->next_ptr = blob_B;
-          if (DEBUG_SORT) Serial.printf("\n DEBUG_SORT / llist_sort / prev_blob_A is not the HEAD : %p", prev_blob_A->next_ptr);
+          if (DEBUG_SORT) Serial.printf("\n DEBUG_SORT / llist_sort / previous blob_A is not the HEAD : %p", prev_blob_A->next_ptr);
         }
         else { // Set curr_ptr_B as NEW HEAD
           src->head_ptr = blob_B;
-          if (DEBUG_SORT) Serial.printf("\n DEBUG_SORT / llist_sort / SET prev_blob_A as HEAD : %p", src->head_ptr);
+          if (DEBUG_SORT) Serial.printf("\n DEBUG_SORT / llist_sort / SET previous blob_A as HEAD : %p", src->head_ptr);
         }
-
-        if (blob_B->next_ptr != NULL) { // Test if curr_ptr_B is not the tail of linked list
+        if (blob_B->next_ptr != NULL) { // Test if current blob_B is not the TAIL of linked list
           blob_A->next_ptr = blob_B->next_ptr;
           if (DEBUG_SORT) Serial.printf("\n DEBUG_SORT / llist_sort / blob_B is not the TAIL : %p", blob_A->next_ptr);
         }
-        else { // Set curr_ptr_A as NEW TAIL
+        else { // Set current blob_A as NEW TAIL
           src->tail_ptr = blob_A;
           blob_A->next_ptr = NULL;
           if (DEBUG_SORT) Serial.printf("\n DEBUG_SORT / llist_sort / blob_B is the TAIL : %p", src->tail_ptr);
         }
-
         blob_B->next_ptr = blob_A; // Swap pointers
         if (DEBUG_SORT) Serial.printf("\n DEBUG_SORT / llist_sort / swaped blob_A: %p", blob_B->next_ptr);
       }

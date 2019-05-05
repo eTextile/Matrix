@@ -32,7 +32,7 @@
 #define MAX_NODES             40    // Set the maximum nodes number
 #define MIN_BLOB_PIX          8     // Set the minimum blob pixels
 #define MAX_BLOB_PIX          1024  // Set the maximum blob pixels
-#define BLOB_PACKET_SIZE      6     // Blob data packet (bytes)
+#define BLOB_PACKET_SIZE      7     // Blob data packet (bytes)
 
 #define E256_SS_PIN           10    // SPI:SS    E2B56:RCK  // D10 - Hardware SPI no need to specify it
 #define E256_SCK_PIN          13    // SPI:SCK   E2B56:SCK  // D13 - Hardware SPI no need to specify it
@@ -48,8 +48,8 @@
 #define E256_ADC_SYNCHRO
 #define E256_BLOBS_SLIP_OSC
 
-//#define E256_X0 -1  // TODO to select X-axis origine
-//fine E256_Y0 -1  // TODO to select Y-axis origine
+//#define E256_X0 -1  // TODO: select X-axis origine [-1:1]
+//#define E256_Y0 -1  // TODO: select Y-axis origine [-1:1]
 
 //#define DEBUG_ADC
 //#define DEBUG_INTERP
@@ -59,6 +59,5 @@
 //#define DEBUG_BLOB_ID
 //#define DEBUG_CENTER
 //#define DEBUG_LIST
-//#define DEBUG_BLOBS
 
 #endif /*__CONFIG_H__*/
