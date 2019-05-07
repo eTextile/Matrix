@@ -8,9 +8,10 @@
 #include "main.h"
 
 // FPS with CPU speed to 120 MHz (Overclock)
+// Optimize Fastest with LTO (Link Time Optimizations)
 // 523 FPS ADC input
-//  24 FPS with BILINEAR_INTERPOLATION
-//  23 FPS with interpolation & blob tracking
+//  28 FPS with BILINEAR_INTERPOLATION <- it have to be optimize!
+//  30 FPS with interpolation & blob tracking
 
 uint8_t E256_threshold = 30; // Threshold defaultused to adjust toutch sensitivity (10 is low 40 is high)
 
@@ -63,7 +64,7 @@ void setup() {
   //adc->setSamplingSpeed(ADC_SAMPLING_SPEED::HIGH_SPEED, ADC_1);        // Change the sampling speed
   //adc->enableCompare(1.0 / 3.3 * adc->getMaxValue(ADC_1), 0, ADC_1);   // Measurement will be ready if value < 1.0V
 #else
-  analogReadRes(8); // Set the ADC converteur resolution to 10 bit
+  analogReadRes(8); // Set the ADC converteur resolution to 8 bit
 #endif /*__E256_ADC_SYNCHRO__*/
 
   // Raw frame init

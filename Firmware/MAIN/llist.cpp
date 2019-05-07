@@ -147,7 +147,7 @@ void llist_sort(llist_t* src) {
   while (1) {
 
     boolean isSorted = true;
-    
+
     for (blob_t* blob_A = iterator_start_from_head(src); blob_A != NULL; blob_A = iterator_next(blob_A)) {
       if (blob_A->UID > blob_A->next_ptr->UID) {
         isSorted = false;
@@ -183,18 +183,6 @@ void llist_sort(llist_t* src) {
     }
     if (isSorted) {
       return;
-    } 
+    }
   }
-}
-
-
-
-////////////////////////////// Linked list iterators //////////////////////////////
-
-blob_t* iterator_start_from_head(llist_t* src) {
-  return src->head_ptr;
-}
-
-blob_t* iterator_next(blob_t* src) {
-  return src->next_ptr;
 }

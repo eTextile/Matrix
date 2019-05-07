@@ -9,6 +9,21 @@
 
 #include "blob.h"
 
+////////////// Iterators //////////////
+
+#define iterator_start_from_head(src) \
+  ({ \
+    __typeof__ (src) _src = (src); \
+    (blob_t*)_src->head_ptr; \
+  })
+
+#define iterator_next(src) \
+  ({ \
+    __typeof__ (src) _src = (src); \
+    (blob_t*)_src->next_ptr; \
+  })
+
+
 typedef struct blob blob_t; // Forward declaration
 
 typedef struct llist {
@@ -27,10 +42,5 @@ void llist_push_back(llist_t* dst, blob_t* blob);
 void llist_save_blobs(llist_t* dst, llist_t* src);
 void llist_remove_blob(llist_t* src, blob_t* blob);
 void llist_sort(llist_t* ptr);
-
-////////////// Iterators //////////////
-
-blob_t* iterator_start_from_head(llist_t* src);
-blob_t* iterator_next(blob_t* src);
 
 #endif /*__LLIST_H__*/

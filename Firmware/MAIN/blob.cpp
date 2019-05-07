@@ -188,7 +188,7 @@ void find_blobs(
     // If the distance between curent blob and last blob position is less than minDist:
     // Copy the ID of the nearestBlob found in outputBlobs linked list and give it to the curent input blob.
     // Set the curent input blob state to TO_UPDATE.
-    if (minDist < 8.0f) { // TODO: set it as global variable
+    if (minDist < 10.0f) { // TODO: set it as global variable
 #ifdef DEBUG_BLOB_ID
       Serial.printf("\n DEBUG_BLOB_ID / Found corresponding blob: %p in the **outputBlobs** linked list", nearestBlob);
 #endif /*__DEBUG_BLOB_ID__*/
@@ -208,7 +208,7 @@ void find_blobs(
       }
 
       // Find the smallest missing UID in the sorted linked list
-      uint8_t minID = 1;
+      uint8_t minID = 0;
       while (1) {
         boolean isFree = true;
         for (blob_t* blob = iterator_start_from_head(outputBlobs_ptr); blob != NULL; blob = iterator_next(blob)) {
@@ -236,8 +236,8 @@ void find_blobs(
       if (blobB->state == TO_UPDATE && blobB->UID == blobA->UID) {
         found = true;
         blob_copy(blobA, blobB);
-        blobB->state = FREE;
         blobA->alive = 1;
+        blobB->state = FREE;
 #ifdef DEBUG_BLOB_ID
         Serial.printf("\n DEBUG_BLOB_ID / Copy blob: %p (inputBlobs linked list) to the blob: %p (outputBlobs linked list)", blobB, blobA);
 #endif /*__DEBUG_BLOB_ID__*/
