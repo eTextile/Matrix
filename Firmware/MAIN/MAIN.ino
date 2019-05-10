@@ -47,7 +47,6 @@ void setup() {
   pinMode(ADC0_PIN, INPUT);              // Teensy PIN A9
   pinMode(ADC1_PIN, INPUT);              // Teensy PIN A3
 
-#ifdef E256_ADC_SYNCHRO
   adc->setAveraging(1, ADC_0);                                           // Set number of averages
   adc->setResolution(8, ADC_0);                                          // Set bits of resolution
   adc->setConversionSpeed(ADC_CONVERSION_SPEED::VERY_HIGH_SPEED, ADC_0); // Change the conversion speed
@@ -63,9 +62,6 @@ void setup() {
   adc->setSamplingSpeed(ADC_SAMPLING_SPEED::VERY_HIGH_SPEED, ADC_1);     // Change the sampling speed
   //adc->setSamplingSpeed(ADC_SAMPLING_SPEED::HIGH_SPEED, ADC_1);        // Change the sampling speed
   //adc->enableCompare(1.0 / 3.3 * adc->getMaxValue(ADC_1), 0, ADC_1);   // Measurement will be ready if value < 1.0V
-#else
-  analogReadRes(8); // Set the ADC converteur resolution to 8 bit
-#endif /*__E256_ADC_SYNCHRO__*/
 
   // Raw frame init
   rawFrame.numCols = COLS;
@@ -111,10 +107,10 @@ void loop() {
     }
   }
   if (!OSCmsg.hasError()) {
-    OSCmsg.dispatch("/calibrate", matrix_calibration);
-    OSCmsg.dispatch("/threshold", matrix_threshold);
-    OSCmsg.dispatch("/rowData", matrix_raw_data); // TODO
-    OSCmsg.dispatch("/blobs", matrix_blobs);
+    OSCmsg.dispatch("/c", matrix_calibration);
+    OSCmsg.dispatch("/t", matrix_threshold);
+    OSCmsg.dispatch("/r", matrix_raw_data);
+    OSCmsg.dispatch("/b", matrix_blobs);
   }
 #else
   blobs_debug();
@@ -151,23 +147,16 @@ void matrix_scan(void) {
       uint8_t rowIndexA = row * COLS + col;    // Row IndexA computation
       uint8_t rowIndexB = rowIndexA + 128;     // Row IndexB computation (ROW_FRAME/2 == 128)
 
-#ifdef E256_ADC_SYNCHRO
       result = adc->analogSynchronizedRead(ADC0_PIN, ADC1_PIN);
-      //frameValues[rowIndexA] = constrain(result.result_adc0 - minVals[rowIndexA], 0, 255);
-      //frameValues[rowIndexB] = constrain(result.result_adc1 - minVals[rowIndexB], 0, 255);
-
+      
       int valA = result.result_adc0 - minVals[rowIndexA];
       valA >= 0 ? frameValues[rowIndexA] = (uint8_t)valA : frameValues[rowIndexA] = 0;
       int valB = result.result_adc1 - minVals[rowIndexB];
       valB >= 0 ? frameValues[rowIndexB] = (uint8_t)valB : frameValues[rowIndexB] = 0;
-
-#else
-      frameValues[rowIndexA] = constrain(analogRead(ADC0_PIN) - minVals[rowIndexA], 0, 255);
-      frameValues[rowIndexB] = constrain(analogRead(ADC1_PIN) - minVals[rowIndexB], 0, 255);
-#endif /*__E256_ADC_SYNCHRO__*/
     }
     setCols = setCols >> 1;
   }
+
 #ifdef DEBUG_ADC
   for (uint16_t i = 0; i < NEW_FRAME; i++) {
     if ((i % NEW_COLS) == (NEW_COLS - 1)) Serial.println();
@@ -198,31 +187,20 @@ void matrix_calibration(OSCMessage & msg) {
         digitalWriteFast(E256_SS_PIN, HIGH);  // Set latchPin HIGH
         delayMicroseconds(10);                // See switching time of the 74HC4051BQ multiplexeur
 
-#ifdef E256_ADC_SYNCHRO
         result = adc->analogSynchronizedRead(ADC0_PIN, ADC1_PIN);
-        uint8_t ADC0_val = result.result_adc0;
-        uint8_t ADC1_val = result.result_adc1;
-#else
-        uint8_t ADC0_val = analogRead(ADC0_PIN);
-        uint8_t ADC1_val = analogRead(ADC1_PIN);
-#endif /*__E256_ADC_SYNCHRO__*/
-
+        
         uint8_t rowIndexA = row * COLS + col;    // Row IndexA computation
         uint8_t rowIndexB = rowIndexA + 128;     // Row IndexB computation (ROW_FRAME/2 == 128)
 
-        if (ADC0_val > minVals[rowIndexA]) {
-          minVals[rowIndexA] = ADC0_val;
-        }
-        if (ADC1_val > minVals[rowIndexB]) {
-          minVals[rowIndexB] = ADC1_val;
-        }
+        ADC0_val > minVals[rowIndexA] ? minVals[rowIndexA] = result.result_adc0: NULL;
+        ADC1_val > minVals[rowIndexB] ? minVals[rowIndexB] = result.result_adc1: NULL;
       }
       setCols = setCols >> 1;
     }
   }
 }
 
-// Get threshold from an OSC message
+// Set E256 threshold from an incoming OSC message
 void matrix_threshold(OSCMessage & msg) {
 
   // Teensy is Little-endian!
@@ -287,7 +265,7 @@ void matrix_blobs(OSCMessage & msg) {
   SLIPSerial.beginPacket();     //
   OSCbundle.send(SLIPSerial);   // Send the bytes to the SLIP stream
   SLIPSerial.endPacket();       // Mark the end of the OSC Packet
-  OSCbundle.empty();            // empty the OSCMessage ready to use for new messages
+  //OSCbundle.empty();            // empty the OSCMessage ready to use for new messages
 }
 
 void blobs_debug() {

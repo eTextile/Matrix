@@ -17,6 +17,12 @@
 #include <SLIPEncodedUSBSerial.h>   // https://github.com/CNMAT/OSC
 //#include <elapsedMillis.h>          //
 
+/* __E256 BOARD CONTROL__*/
+#define E256_BLOBS_SLIP_OSC
+//#define E256_FPS
+//#define E256_X0 -1  // TODO: select X-axis origine [-1:1]
+//#define E256_Y0 -1  // TODO: select Y-axis origine [-1:1]
+
 //#define LED_BUILTIN         13        // FIXME - Hardware SPI conflict
 //#define BUTTON_PIN          32        // FIXME - NO BUTTON_PIN on the E256
 #define BAUD_RATE             230400
@@ -40,16 +46,6 @@
 
 #define ADC0_PIN              A9    // The output of multiplexerA (SIG pin) is connected to Analog pin 9
 #define ADC1_PIN              A3    // The output of multiplexerB (SIG pin) is connected to Analog pin 3
-
-// Here is the board control
-
-//#define E256_FPS
-
-#define E256_ADC_SYNCHRO
-#define E256_BLOBS_SLIP_OSC
-
-//#define E256_X0 -1  // TODO: select X-axis origine [-1:1]
-//#define E256_Y0 -1  // TODO: select Y-axis origine [-1:1]
 
 //#define DEBUG_ADC
 //#define DEBUG_INTERP
