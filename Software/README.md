@@ -4,6 +4,10 @@ For an explanation of the E256 communication protocol see the [FIRMWARE_README](
 
 - [Pure_data](http://puredata.info/downloads "puredata.info")
   - SLIP-OSC driver
+    - This patch depends on several third party externals available through deken plugin (Help -> Find externals):
+	- comport : 
+	- mrpeach : OSC slipenc and slipdec
+	- cyclone : 
 - [openFrameworks](https://openframeworks.cc/ "openFrameworks.cc")
   - SLIP-OSC driver
 - [Supercollider](https://supercollider.github.io/ "Supercollider.io") - FIXME
@@ -14,11 +18,16 @@ For an explanation of the E256 communication protocol see the [FIRMWARE_README](
   - SLIP-OSC driver
 - [VVVVV](https://vvvv.org/downloads "vvvv.org") - TODO?
   - SLIP-OSC driver
+ 
 
 # E256 data stream samples (SLIP-OSC)
 
-
+Sample input:
+Code:
+~~~~```
 INPUT (tree blobs) : 35 98 117 110 100 108 101 0 0 0 0 0 0 0 0 0 0 0 0 20 47 98 0 0 44 98 0 0 0 0 0 6 0 40 48 6 11 196 0 0 0 0 0 20 47 98 0 0 44 98 0 0 0 0 0 6 1 31 22 6 8 59 0 0 0 0 0 20 47 98 0 0 44 98 0 0 0 0 0 6 2 21 19 5 7 104 0 0
+
+```
 
 
 ~~~~```
