@@ -7,24 +7,27 @@
 #ifndef __CONFIG_H__
 #define __CONFIG_H__
 
-#include <ADC.h>                    // https://github.com/pedvide/ADC
 #include <SPI.h>                    // https://www.pjrc.com/teensy/td_libs_SPI.html
 
-#include <OSCBoards.h>              // https://github.com/CNMAT/OSC
-#include <OSCMessage.h>             // https://github.com/CNMAT/OSC
-#include <OSCBundle.h>              // https://github.com/CNMAT/OSC
-
-#include <SLIPEncodedUSBSerial.h>   // https://github.com/CNMAT/OSC
-//#include <elapsedMillis.h>          //
-
 /* __E256 BOARD CONTROL__*/
-#define E256_BLOBS_SLIP_OSC
-//#define E256_FPS
-//#define E256_X0 -1  // TODO: select X-axis origine [-1:1]
-//#define E256_Y0 -1  // TODO: select Y-axis origine [-1:1]
+#define BLOBS_OSC
+//#define E256_X0 -1                // TODO: select X-axis origine [-1:1]
+//#define E256_Y0 -1                // TODO: select Y-axis origine [-1:1]
+
+//#define DEBUG_ADC
+//#define DEBUG_INTERP
+//#define DEBUG_BLOBS_OSC
+//#define DEBUG_FPS
+
+//#define DEBUG_BITMAP
+//#define DEBUG_CCL
+//#define DEBUG_BLOB_ID
+//#define DEBUG_CENTER
+//#define DEBUG_LIST
 
 //#define LED_BUILTIN         13        // FIXME - Hardware SPI conflict
 //#define BUTTON_PIN          32        // FIXME - NO BUTTON_PIN on the E256
+
 #define BAUD_RATE             230400
 #define COLS                  16
 #define ROWS                  16
@@ -35,25 +38,16 @@
 #define NEW_COLS              (COLS * SCALE_X)
 #define NEW_ROWS              (ROWS * SCALE_Y)
 #define NEW_FRAME             (NEW_COLS * NEW_ROWS)
-#define MAX_NODES             40    // Set the maximum nodes number
-#define MIN_BLOB_PIX          4     // Set the minimum blob pixels
-#define MAX_BLOB_PIX          1024  // Set the maximum blob pixels
-#define BLOB_PACKET_SIZE      7     // Blob data packet (bytes)
+#define MAX_NODES             40       // Set the maximum nodes number
+#define MIN_BLOB_PIX          4        // Set the minimum blob pixels
+#define MAX_BLOB_PIX          1024     // Set the maximum blob pixels
+#define BLOB_PACKET_SIZE      7        // Blob data packet (bytes)
 
-#define E256_SS_PIN           10    // SPI:SS    E2B56:RCK  // D10 - Hardware SPI no need to specify it
-#define E256_SCK_PIN          13    // SPI:SCK   E2B56:SCK  // D13 - Hardware SPI no need to specify it
-#define E256_MOSI_PIN         11    // SPI:MOSI  E2B56:DS   // D11 - Hardware SPI no need to specify it
+#define E256_SS_PIN           10       // SPI:SS    E2B56:RCK  // D10 - Hardware SPI no need to specify it
+#define E256_SCK_PIN          13       // SPI:SCK   E2B56:SCK  // D13 - Hardware SPI no need to specify it
+#define E256_MOSI_PIN         11       // SPI:MOSI  E2B56:DS   // D11 - Hardware SPI no need to specify it
 
-#define ADC0_PIN              A9    // The output of multiplexerA (SIG pin) is connected to Analog pin 9
-#define ADC1_PIN              A3    // The output of multiplexerB (SIG pin) is connected to Analog pin 3
-
-//#define DEBUG_ADC
-//#define DEBUG_INTERP
-//#define DEBUG_BLOBS_OSC
-//#define DEBUG_BITMAP
-//#define DEBUG_CCL
-//#define DEBUG_BLOB_ID
-//#define DEBUG_CENTER
-//#define DEBUG_LIST
+#define ADC0_PIN              A9       // The output of multiplexerA (SIG pin) is connected to Analog pin 9
+#define ADC1_PIN              A3       // The output of multiplexerB (SIG pin) is connected to Analog pin 3
 
 #endif /*__CONFIG_H__*/

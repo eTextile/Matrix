@@ -7,13 +7,13 @@
 
 #include "main.h"
 
+uint8_t E256_threshold = 30;        // Threshold defaultused to adjust toutch sensitivity (10 is low 40 is high)
+
 // FPS with CPU speed to 120 MHz (Overclock)
 // Optimize Fastest with LTO (Link Time Optimizations)
 // 523 FPS ADC input
 //  28 FPS with BILINEAR_INTERPOLATION <- it have to be optimize!
 //  30 FPS with interpolation & blob tracking
-
-uint8_t E256_threshold = 30; // Threshold defaultused to adjust toutch sensitivity (10 is low 40 is high)
 
 //////////////////////////////////////////////////// SETUP
 
@@ -22,12 +22,18 @@ void setup() {
   //pinMode(LED_BUILTIN, OUTPUT); // FIXME - BUILTIN_LED is used for SPI hardware
   //digitalWrite(LED_BUILTIN, LOW); // FIXME - BUILTIN_LED is used for SPI hardware
 
-#ifdef E256_BLOBS_SLIP_OSC
-  SLIPSerial.begin(BAUD_RATE);   // Arduino serial library ** 230400 ** extended with SLIP encoding
-#else
+#ifdef DEBUG_ADC
+#ifdef DEBUG_INTERP
+#ifdef DEBUG_BLOBS_OSC
+#ifdef DEBUG_FPS
   Serial.begin(BAUD_RATE);       // Arduino serial library ** 230400 **
   while (!Serial.dtr());         // Wait for user to start the serial monitor
-#endif /*__E256_BLOBS_SLIP_OSC__*/
+#else
+  SLIPSerial.begin(BAUD_RATE);   // Arduino serial library ** 230400 ** extended with SLIP encoding
+#endif /*__DEBUG_ADC__*/
+#endif /*__DEBUG_INTERP__*/
+#endif /*__DEBUG_BLOBS_OSC__*/
+#endif /*__DEBUG_FPS__*/
 
   //pinMode(BUTTON_PIN, INPUT_PULLUP);          // Set button pin as input and activate the input pullup resistor // FIXME - NO BUTTON_PIN ON the E256!
   //attachInterrupt(BUTTON_PIN, calib, RISING); // Attach interrrupt on button PIN // FIXME - NO BUTTON_PIN ON the E256
@@ -97,7 +103,6 @@ void setup() {
 //////////////////////////////////////////////////// LOOP
 void loop() {
 
-#ifdef E256_BLOBS_SLIP_OSC
   OSCMessage OSCmsg;
   int size;
   while (!SLIPSerial.endofPacket()) {
@@ -112,18 +117,6 @@ void loop() {
     OSCmsg.dispatch("/r", matrix_raw_data);
     OSCmsg.dispatch("/b", matrix_blobs);
   }
-#else
-  blobs_debug();
-#endif /*__E256_BLOBS_SLIP_OSC__*/
-
-#ifdef E256_FPS
-  if (timerFPS >= 1000) {
-    timerFPS = 0;
-    fps = 0;
-    Serial.printf(F("\nFPS: %d"), fps);
-  }
-  fps++;
-#endif /*__E256_FPS__*/
 }
 
 //////////////////////////////////////////////////// FONCTIONS
@@ -132,40 +125,30 @@ void matrix_scan(void) {
 
   // Columns are digital OUTPUT PINS - We supply one column at a time
   // Rows are analog INPUT PINS - We sens two rows at a time
-  uint16_t setCols = 0x8000;
+  uint32_t setCols = 0x10000;
 
   for (uint8_t col = 0; col < COLS; col++) {        // 0 to 15
+    setCols = setCols >> 1;
     for (uint8_t row = 0; row < DUAL_ROWS; row++) { // 0 to 7
 
-      digitalWriteFast(E256_SS_PIN, LOW);      // Set latchPin LOW
-      SPI.transfer(setCols & 0xff);            // Shift out the LSB byte to set up the OUTPUT shift register
-      SPI.transfer(setCols >> 8);              // Shift out the MSB byte to set up the OUTPUT shift register
-      SPI.transfer(setDualRows[row]);          // Shift out one byte that setup the two 8:1 analog multiplexers
-      digitalWriteFast(E256_SS_PIN, HIGH);     // Set latchPin HIGH
-      delayMicroseconds(5);                    // See switching time of the 74HC4051BQ multiplexeur
+      digitalWriteFast(E256_SS_PIN, LOW);   // Set latchPin LOW
+      SPI.transfer(setCols & 0xFF);         // Shift out the LSB byte to set up the OUTPUT shift register
+      SPI.transfer((setCols >> 8) & 0xFF);  // Shift out the MSB byte to set up the OUTPUT shift register
+      SPI.transfer(setDualRows[row]);       // Shift out one byte that setup the two 8:1 analog multiplexers
+      digitalWriteFast(E256_SS_PIN, HIGH);  // Set latchPin HIGH
+      delayMicroseconds(5);                 // TODO: See switching time of the 74HC4051BQ multiplexeur
 
       uint8_t rowIndexA = row * COLS + col;    // Row IndexA computation
       uint8_t rowIndexB = rowIndexA + 128;     // Row IndexB computation (ROW_FRAME/2 == 128)
 
       result = adc->analogSynchronizedRead(ADC0_PIN, ADC1_PIN);
-      
-      int valA = result.result_adc0 - minVals[rowIndexA];
-      valA >= 0 ? frameValues[rowIndexA] = (uint8_t)valA : frameValues[rowIndexA] = 0;
-      int valB = result.result_adc1 - minVals[rowIndexB];
-      valB >= 0 ? frameValues[rowIndexB] = (uint8_t)valB : frameValues[rowIndexB] = 0;
-    }
-    setCols = setCols >> 1;
-  }
 
-#ifdef DEBUG_ADC
-  for (uint16_t i = 0; i < NEW_FRAME; i++) {
-    if ((i % NEW_COLS) == (NEW_COLS - 1)) Serial.println();
-    Serial.printf(F("\t%d"), frameValues[i]);
-    delay(1);
+      int valA = result.result_adc0 - minVals[rowIndexA];
+      valA > 0 ? frameValues[rowIndexA] = (uint8_t)valA : frameValues[rowIndexA] = 0;
+      int valB = result.result_adc1 - minVals[rowIndexB];
+      valB > 0 ? frameValues[rowIndexB] = (uint8_t)valB : frameValues[rowIndexB] = 0;
+    }
   }
-  Serial.println();
-  delay(500);
-#endif /*__DEBUG_ADC__*/
 }
 
 void matrix_calibration(OSCMessage & msg) {
@@ -175,27 +158,29 @@ void matrix_calibration(OSCMessage & msg) {
   for (uint8_t i = 0; i < calibration_cycles; i++) {
     // Columns are digital OUTPUT PINS - We supply one column at a time
     // Rows are analog INPUT PINS - We sens two rows at a time
-    uint16_t setCols = 0x8000;
+    uint32_t setCols = 0x10000;
 
     for (uint8_t col = 0; col < COLS; col++) {
+      setCols = setCols >> 1;
       for (uint8_t row = 0; row < DUAL_ROWS; row++) {
 
         digitalWriteFast(E256_SS_PIN, LOW);   // Set latchPin LOW
-        SPI.transfer(setCols & 0xff);         // Shift out the LSB byte to set up the OUTPUT shift register
-        SPI.transfer(setCols >> 8);           // Shift out the MSB byte to set up the OUTPUT shift register
+        SPI.transfer(setCols & 0xFF);         // Shift out the LSB byte to set up the OUTPUT shift register
+        SPI.transfer((setCols >> 8) & 0xFF);  // Shift out the MSB byte to set up the OUTPUT shift register
         SPI.transfer(setDualRows[row]);       // Shift out one byte that setup the two 8:1 analog multiplexers
         digitalWriteFast(E256_SS_PIN, HIGH);  // Set latchPin HIGH
-        delayMicroseconds(10);                // See switching time of the 74HC4051BQ multiplexeur
+        delayMicroseconds(5);                 // TODO: See switching time of the 74HC4051BQ multiplexeur
 
         result = adc->analogSynchronizedRead(ADC0_PIN, ADC1_PIN);
-        
+        uint8_t ADC0_val = result.result_adc0;
+        uint8_t ADC1_val = result.result_adc1;
+
         uint8_t rowIndexA = row * COLS + col;    // Row IndexA computation
         uint8_t rowIndexB = rowIndexA + 128;     // Row IndexB computation (ROW_FRAME/2 == 128)
 
-        ADC0_val > minVals[rowIndexA] ? minVals[rowIndexA] = result.result_adc0: NULL;
-        ADC1_val > minVals[rowIndexB] ? minVals[rowIndexB] = result.result_adc1: NULL;
+        if (ADC0_val > minVals[rowIndexA]) minVals[rowIndexA] = ADC0_val;
+        if (ADC1_val > minVals[rowIndexB]) minVals[rowIndexB] = ADC1_val;
       }
-      setCols = setCols >> 1;
     }
   }
 }
@@ -212,8 +197,6 @@ void matrix_threshold(OSCMessage & msg) {
 /// Send raw frame values in SLIP-OSC formmat
 void matrix_raw_data(OSCMessage & msg) {
 
-  //uint8_t ... = msg.getInt(0) & 0xFF;   // Get the first int8_t of the int32_t
-
   matrix_scan();
   OSCMessage m("/m");
   m.add(frameValues, ROW_FRAME);
@@ -225,10 +208,10 @@ void matrix_raw_data(OSCMessage & msg) {
 /// Send all blobs values in SLIP-OSC formmat
 void matrix_blobs(OSCMessage & msg) {
 
-  OSCBundle OSCbundle;
-  //... = msg.getInt(0) & 0xFF; // Get the first int8_t in an int32_t
-
   matrix_scan();
+
+#ifdef BLOBS_OSC
+  OSCBundle OSCbundle;
 
   bilinear_interp(&interpolatedFrame, &rawFrame, &interp);
 
@@ -245,10 +228,7 @@ void matrix_blobs(OSCMessage & msg) {
     &outputBlobs           // list_t
   );
 
-  // TODO? TUIO_SET messages are used to communicate information about an object's state such as position, orientation, and other recognized states.
-  // TODO? TUIO_ALIVE messages indicate the current set of objects present on the surface using a list of unique Session IDs.
-
-  // Hear is an method to minimise the size of the OCS packet.
+  // Send all blobs in OCS bundle
   for (blob_t* blob = iterator_start_from_head(&outputBlobs); blob != NULL; blob = iterator_next(blob)) {
     blobPacket[0] = blob->UID;        // uint8_t unique session ID
     blobPacket[1] = blob->alive;      // uint8_t
@@ -265,31 +245,60 @@ void matrix_blobs(OSCMessage & msg) {
   SLIPSerial.beginPacket();     //
   OSCbundle.send(SLIPSerial);   // Send the bytes to the SLIP stream
   SLIPSerial.endPacket();       // Mark the end of the OSC Packet
-  //OSCbundle.empty();            // empty the OSCMessage ready to use for new messages
+#endif /*__BLOBS_OSC__*/
+
+#ifdef DEBUG_BLOBS_OSC
+  for (blob_t* blob = iterator_start_from_head(&outputBlobs); blob != NULL; blob = iterator_next(blob)) {
+    Serial.print (blob->UID);        // uint8_t unique session ID
+    Serial.print(" ");
+    Serial.print (blob->alive);      // uint8_t
+    Serial.print(" ");
+    Serial.print (blob->centroid.X); // uint8_t
+    Serial.print(" ");
+    Serial.print (blob->centroid.Y); // uint8_t
+    Serial.print(" ");
+    Serial.print (blob->box.W);      // uint8_t
+    Serial.print(" ");
+    Serial.print (blob->box.H);      // uint8_t
+    Serial.print(" ");
+    Serial.print (blob->box.D);      // uint8_t
+    Serial.println();
+  }
+#endif /*__DEBUG_BLOBS_OSC__*/
+
+#ifdef DEBUG_ADC
+  for (uint8_t col = 0; col < COLS; col++) {
+    for (uint8_t row = 0; row < ROWS; row++) {
+      uint8_t index = col * COLS + row;          // Compute 1D array index
+      Serial.print("\t");
+      Serial.print(frameValues[index]);
+    }
+    Serial.println();
+  }
+  Serial.println();
+#endif /*__DEBUG_ADC__*/
+
+#ifdef DEBUG_INTERP
+  for (uint8_t col = 0; col < NEW_COLS; col++) {
+    for (uint8_t row = 0; row < NEW_ROWS; row++) {
+      uint16_t index = col * NEW_COLS + row;          // Compute 1D array index
+      Serial.print(" ");
+      Serial.print(bilinIntOutput[index]);
+    }
+    Serial.println();
+  }
+  Serial.println();
+#endif /*__DEBUG_INTERP__*/
+
+#ifdef DEBUG_FPS
+  if (FPS_timer >= 1000) {
+    Serial.printf(F("\nFPS: %d"), fps);
+    FPS_timer = 0;
+    fps = 0;
+  }
+  fps++;
+#endif /*__E256_FPS__*/
 }
-
-void blobs_debug() {
-  Serial.println("TOP");
-
-  matrix_scan();
-
-  bilinear_interp(&interpolatedFrame, &rawFrame, &interp);
-
-  find_blobs(
-    &interpolatedFrame,    // image_t uint8_t [NEW_FRAME] - 1D array
-    bitmap,                // char array [NEW_FRAME] - 1D array // NOT &bitmap !?
-    NEW_ROWS,              // const int
-    NEW_COLS,              // const int
-    E256_threshold,        // uint8_t
-    MIN_BLOB_PIX,          // const int
-    MAX_BLOB_PIX,          // const int
-    &freeBlobs,            // list_t
-    &blobs,                // list_t
-    &outputBlobs           // list_t
-  );
-
-}
-
 
 /*
   void bootBlink(const uint8_t pin, uint8_t flash) {

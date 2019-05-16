@@ -12,6 +12,14 @@
 #include "llist.h"
 #include "blob.h"
 
+#include <ADC.h>                    // https://github.com/pedvide/ADC
+
+#include <OSCBoards.h>              // https://github.com/CNMAT/OSC
+#include <OSCMessage.h>             // https://github.com/CNMAT/OSC
+#include <OSCBundle.h>              // https://github.com/CNMAT/OSC
+
+#include <SLIPEncodedUSBSerial.h>   // https://github.com/CNMAT/OSC
+
 SPISettings settings(16000000, MSBFIRST, SPI_MODE0);
 
 ADC *adc = new ADC();     // ADC object
@@ -20,11 +28,11 @@ ADC::Sync_result result;  // ADC_0 & ADC_1
 SLIPEncodedUSBSerial SLIPSerial(thisBoardsSerialUSB);
 
 //elapsedMillis timerFps = 0;
-uint16_t fps = 0;
+//uint16_t fps = 0;
 
 // Array to store all parameters used to configure the two 8:1 analog multiplexeurs
 // Eatch byte |ENA|A|B|C|ENA|A|B|C|
-byte setDualRows[ROWS] = {
+const byte setDualRows[ROWS] = {
   0x55, 0x77, 0x66, 0x44, 0x22, 0x11, 0x00, 0x33
 };
 
@@ -51,15 +59,14 @@ llist_t   freeBlobs;
 llist_t   blobs;
 llist_t   outputBlobs;
 
-uint8_t blobPacket[BLOB_PACKET_SIZE] = {0};
+uint8_t   blobPacket[BLOB_PACKET_SIZE] = {0};
 
 inline void matrix_scan(void);
 
 void matrix_calibration(OSCMessage &msg);
 void matrix_threshold(OSCMessage &msg);
-void matrix_raw_data(OSCMessage &msg);
-void matrix_blobs(OSCMessage &msg);
-inline void blobs_debug(void);
+void matrix_raw_data(OSCMessage & msg);
+void matrix_blobs(OSCMessage & msg);
 
 //void bootBlink(const uint8_t pin, uint8_t flash);
 
