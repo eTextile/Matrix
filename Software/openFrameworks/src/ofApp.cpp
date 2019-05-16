@@ -74,7 +74,9 @@ void ofApp::onSerialBuffer(const ofxIO::SerialBufferEventArgs& args) {
     //ofLogNotice("ofApp::onSerialBuffer") << "E256 - Serial message size : "<< message.OSCmessage.size();
     //ofLogNotice("ofApp::onSerialBuffer") << "E256 - Serial message : " << message.OSCmessage;
     // https://en.cppreference.com/w/cpp/regex
-    Poco::RegularExpression regex("/b(.){17}"); // GET X bytes after the "/b"
+    //Poco::RegularExpression regex("/b(.){17}"); // GET X bytes after the "/b"
+    Poco::RegularExpression regex("/b(.){20}"); // GET X bytes after the "/b"
+
     Poco::RegularExpression::Match theMatch;
 
     /*
@@ -94,11 +96,12 @@ void ofApp::onSerialBuffer(const ofxIO::SerialBufferEventArgs& args) {
       ofxOscMessage oscMessage;
       oscMessage.setAddress("/b");
       oscMessage.addInt32Arg((uint8_t)msg[offset]);     // UID
-      oscMessage.addInt32Arg((uint8_t)msg[offset + 1]); // Xcentroide
-      oscMessage.addInt32Arg((uint8_t)msg[offset + 2]); // Ycentroid
-      oscMessage.addInt32Arg((uint8_t)msg[offset + 3]); // boxW
-      oscMessage.addInt32Arg((uint8_t)msg[offset + 4]); // boxH
-      oscMessage.addInt32Arg((uint8_t)msg[offset + 5]); // boxD
+      oscMessage.addInt32Arg((uint8_t)msg[offset + 1]); // alive
+      oscMessage.addInt32Arg((uint8_t)msg[offset + 2]); // Xcentroide
+      oscMessage.addInt32Arg((uint8_t)msg[offset + 3]); // Ycentroid
+      oscMessage.addInt32Arg((uint8_t)msg[offset + 4]); // boxW
+      oscMessage.addInt32Arg((uint8_t)msg[offset + 5]); // boxH
+      oscMessage.addInt32Arg((uint8_t)msg[offset + 6]); // boxD
       blobs.push_back(oscMessage);
     }
     E256_blobsRequest();
@@ -137,13 +140,14 @@ void ofApp::draw(void) {
   for (size_t index = 0; index < blobs.size(); ++index){
 
     uint8_t blobID    = blobs[index].getArgAsInt(0) & 0xFF;;
-    float Xcentroid   = blobs[index].getArgAsInt(1) & 0xFF;;
-    float Ycentroid   = blobs[index].getArgAsInt(2) & 0xFF;;
-    uint8_t boxW      = blobs[index].getArgAsInt(3) & 0xFF;;
-    uint8_t boxH      = blobs[index].getArgAsInt(4) & 0xFF;;
-    uint8_t boxD      = blobs[index].getArgAsInt(5) & 0xFF;;
+    uint8_t alive     = blobs[index].getArgAsInt(1) & 0xFF;;
+    float Xcentroid   = blobs[index].getArgAsInt(2) & 0xFF;;
+    float Ycentroid   = blobs[index].getArgAsInt(3) & 0xFF;;
+    uint8_t boxW      = blobs[index].getArgAsInt(4) & 0xFF;;
+    uint8_t boxH      = blobs[index].getArgAsInt(5) & 0xFF;;
+    uint8_t boxD      = blobs[index].getArgAsInt(6) & 0xFF;;
 
-    ofLog(OF_LOG_VERBOSE,"E256_INPUT: UID:%d CX:%f CY:%f BW:%d BH:%d BD:%d",blobID,Xcentroid,Ycentroid,boxW,boxH,boxD);
+    ofLog(OF_LOG_VERBOSE,"E256_INPUT: UID:%d ALIVE:%d CX:%f CY:%f BW:%d BH:%d BD:%d",blobID, alive, Xcentroid, Ycentroid, boxW, boxH, boxD);
 
     if(blobs[index].getAddress() == "/b"){
       Xcentroid = ((float)Xcentroid / 64) * ofGetWindowWidth();
@@ -152,7 +156,7 @@ void ofApp::draw(void) {
       boxH = boxH * BLOB_SCALE;
       boxD = boxD * BLOB_SCALE;
 
-      if (boxD > 0){
+      if (alive > 0){
 
         ofBoxPrimitive box;
         box.setMode(OF_PRIMITIVE_TRIANGLES);
@@ -196,7 +200,7 @@ void ofApp::draw(void) {
 // E256 matrix sensor - SET CALIBRATION
 void ofApp::E256_setCaliration(void) {
   ofxOscMessage OSCmsg;
-  OSCmsg.setAddress("/calibrate");
+  OSCmsg.setAddress("/c"); // calibrate
   OSCmsg.addInt32Arg(20); // Set calibration cycles
 
   osc::OutboundPacketStream packet(buffer, OUTPUT_BUFFER_SIZE);
@@ -212,7 +216,7 @@ void ofApp::E256_setCaliration(void) {
 void ofApp::E256_setTreshold(int & tresholdValue) {
 
   ofxOscMessage OSCmsg;
-  OSCmsg.setAddress("/threshold");
+  OSCmsg.setAddress("/t"); // threshold
   OSCmsg.addIntArg((int32_t)tresholdValue);
 
   osc::OutboundPacketStream packet(buffer, OUTPUT_BUFFER_SIZE);
@@ -227,7 +231,7 @@ void ofApp::E256_setTreshold(int & tresholdValue) {
 // E256 matrix sensor - BLOBS REQUEST
 void ofApp::E256_blobsRequest(void) {
   ofxOscMessage OSCmsg;
-  OSCmsg.setAddress("/blobs");
+  OSCmsg.setAddress("/b"); // Blobs
   osc::OutboundPacketStream packet(buffer, OUTPUT_BUFFER_SIZE);
   packet.Clear();
   packet << osc::BeginMessage(OSCmsg.getAddress().data());
@@ -240,7 +244,7 @@ void ofApp::E256_blobsRequest(void) {
 // 16*16 matrix row data request
 void ofApp::E256_matrix_raw_data(void) {
   ofxOscMessage OSCmsg;
-  OSCmsg.setAddress("/rowData");
+  OSCmsg.setAddress("/r"); //rowData
   osc::OutboundPacketStream packet(buffer, OUTPUT_BUFFER_SIZE);
   packet.Clear();
   packet << osc::BeginMessage(OSCmsg.getAddress().data());

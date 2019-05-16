@@ -33,6 +33,7 @@ const int OUTPUT_BUFFER_SIZE = 1024;
 
 struct blob {
   uint8_t UID;
+  uint8_t alive;
   int8_t Xcentroid;
   int8_t Ycentroid;
   int8_t boxW;
