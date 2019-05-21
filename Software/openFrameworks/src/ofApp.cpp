@@ -28,9 +28,9 @@ void ofApp::setup(void) {
   using SerialDevice::isRingIndicated;
   using SerialDevice::isCarrierDetected;
   using SerialDevice::isOpen;
-	using SerialDevice::setDataTerminalReady;
+  using SerialDevice::setDataTerminalReady;
   using SerialDevice::getPortName;
- */
+  */
   if (!devicesInfo.empty()) {
     bool success = serialDevice.setup(
       USB_PORT,
@@ -40,86 +40,109 @@ void ofApp::setup(void) {
       //SerialDevice::STOP_ONE,
       //SerialDevice::FLOW_CTRL_HARDWARE
     );
-  if (success) {
-    serialDevice.registerAllEvents(this);
-    ofLogNotice("ofApp::setup") << "Successfully setup: " << USB_PORT;
+    if (success) {
+      serialDevice.registerAllEvents(this);
+      ofLogNotice("ofApp::setup") << "Successfully setup: " << USB_PORT;
+    }
+    else {
+      ofLogNotice("ofApp::setup") << "Unable to setup: " << USB_PORT;
+    }
   }
   else {
-    ofLogNotice("ofApp::setup") << "Unable to setup: " << USB_PORT;
+    ofLogNotice("ofApp::setup") << "No devices connected!";
   }
-}
-else {
-  ofLogNotice("ofApp::setup") << "No devices connected!";
-}
-//sender.setup(HOST, UDP_OUTPUT_PORT); // OSC - UDP config
-//receiver.setup(UDP_INPUT_PORT); // SLIP-OSC via wifi
+  //sender.setup(HOST, UDP_OUTPUT_PORT); // OSC - UDP config
+  //receiver.setup(UDP_INPUT_PORT); // SLIP-OSC via wifi
 
-calirationButton.addListener(this, &ofApp::E256_setCaliration);
-tresholdValue.addListener(this, &ofApp::E256_setTreshold); // FIXME
+  setCalirationButton.addListener(this, &ofApp::E256_setCaliration);
+  setTresholdSlider.addListener(this, &ofApp::E256_setTreshold);
 
-gui.setup("E256 - Parameters");
-gui.add(calirationButton.setup("Calibrate"));
-gui.add(tresholdValue.setup("Threshold", 30, 0, 100));
-ofBackground(0);
-E256_blobsRequest();
+  gui.setup("E256 - Parameters");
+  gui.add(setCalirationButton.setup("Calibrate"));
+  gui.add(setTresholdSlider.setup("Threshold", 30, 0, 100));
+  gui.add(getRawDataToggle.setup("getRawData", false));
+  gui.add(getBlobsToggle.setup("getBlobs", true));
+
+  ofBackground(0);
+  serialBlobs = true;
+  serialRawData = true;
 }
 
 /////////////////////// SERIAL EVENT ///////////////////////
 void ofApp::onSerialBuffer(const ofxIO::SerialBufferEventArgs& args) {
-  serialMessage message;
   message.OSCmessage = args.buffer().toString();
-
-    // GET_BLOBS MODE
-
-    //ofLogNotice("ofApp::onSerialBuffer") << "E256 - Serial message size : "<< message.OSCmessage.size();
-    //ofLogNotice("ofApp::onSerialBuffer") << "E256 - Serial message : " << message.OSCmessage;
-    // https://en.cppreference.com/w/cpp/regex
-    //Poco::RegularExpression regex("/b(.){17}"); // GET X bytes after the "/b"
-    Poco::RegularExpression regex("/b(.){20}"); // GET X bytes after the "/b"
-
-    Poco::RegularExpression::Match theMatch;
-
-    /*
-    for (size_t i=0; i<message.OSCmessage.size(); i++){
-      ofLogNotice("ofApp::onSerialBuffer") << "INDEX_" << i << " val_" << ofToString(message.OSCmessage[i]);
-    }
-    */
-
-    int offset = 12;
-    size_t stringOffset = 0;
-
-    // Expand SLIP-OSC serial message to OSC messages
-    while (regex.match(message.OSCmessage, stringOffset, theMatch)){
-      stringOffset = theMatch.offset + theMatch.length;
-      std::string msg = std::string(message.OSCmessage, theMatch.offset, theMatch.length);
-
-      ofxOscMessage oscMessage;
-      oscMessage.setAddress("/b");
-      oscMessage.addInt32Arg((uint8_t)msg[offset]);     // UID
-      oscMessage.addInt32Arg((uint8_t)msg[offset + 1]); // alive
-      oscMessage.addInt32Arg((uint8_t)msg[offset + 2]); // Xcentroide
-      oscMessage.addInt32Arg((uint8_t)msg[offset + 3]); // Ycentroid
-      oscMessage.addInt32Arg((uint8_t)msg[offset + 4]); // boxW
-      oscMessage.addInt32Arg((uint8_t)msg[offset + 5]); // boxH
-      oscMessage.addInt32Arg((uint8_t)msg[offset + 6]); // boxD
-      blobs.push_back(oscMessage);
-    }
-    E256_blobsRequest();
-
-    // GET_MATRIX_RAW_DATA MODE
-    // TODO!
-
+  if (getRawDataToggle) serialRawData = true;
+  if (getBlobsToggle) serialBlobs = true;
 }
 
 void ofApp::onSerialError(const ofxIO::SerialBufferErrorEventArgs& args) {
-  serialMessage message;
   message.exception = args.exception().displayText();
   ofLogNotice("ofApp::onSerialError") << "E256 - Serial ERROR : " << args.exception().displayText();
+  if (getRawDataToggle) serialRawData = true;
+  if (getBlobsToggle) serialBlobs = true;
 }
 
 /////////////////////// UPDATE ///////////////////////
 void ofApp::update(void) {
 
+  // GET_BLOBS MODE
+
+  //ofLogNotice("ofApp::onSerialBuffer") << "E256 - Serial message size : "<< message.OSCmessage.size();
+  //ofLogNotice("ofApp::onSerialBuffer") << "E256 - Serial message : " << message.OSCmessage;
+  // https://en.cppreference.com/w/cpp/regex
+  int offset = 12;
+  int stringOffset = 0;
+
+  if (getRawDataToggle && serialRawData){
+    Poco::RegularExpression regex("/r(.){256}"); // GET X bytes after the "/b"
+    Poco::RegularExpression::Match theMatch;
+    for (size_t i=0; i<message.OSCmessage.size(); i++){
+      ofLogNotice("ofApp::onSerialBuffer") << "INDEX_" << i << " val_" << ofToString(message.OSCmessage[i]);
+    }
+    E256_getRawData();
+    serialRawData = false;
+  }
+
+  if (getBlobsToggle && serialBlobs){
+    Poco::RegularExpression regex("/b(.){20}"); // GET X bytes after the "/b"
+    Poco::RegularExpression::Match theMatch;
+
+    /*
+    for (size_t i=0; i<message.OSCmessage.size(); i++){
+    ofLogNotice("ofApp::onSerialBuffer") << "INDEX_" << i << " val_" << ofToString(message.OSCmessage[i]);
+    }
+    */
+
+    // Expand SLIP-OSC serial message to OSC messages
+    while (regex.match(message.OSCmessage, stringOffset, theMatch)){
+      std::string msg = std::string(message.OSCmessage, theMatch.offset, theMatch.length);
+
+      ofLog(OF_LOG_VERBOSE,"E256_INPUT: UID:%d ALIVE:%d CX:%d CY:%d BW:%d BH:%d BD:%d",
+      msg[offset],
+      msg[offset + 1],
+      msg[offset + 2],
+      msg[offset + 3],
+      msg[offset + 4],
+      msg[offset + 5],
+      msg[offset + 6]
+    );
+
+    ofxOscMessage oscMessage;
+    oscMessage.setAddress("/b");
+    oscMessage.addInt32Arg(msg[offset]);     // UID
+    oscMessage.addInt32Arg(msg[offset + 1]); // alive
+    oscMessage.addInt32Arg(msg[offset + 2]); // Xcentroide
+    oscMessage.addInt32Arg(msg[offset + 3]); // Ycentroid
+    oscMessage.addInt32Arg(msg[offset + 4]); // boxW
+    oscMessage.addInt32Arg(msg[offset + 5]); // boxH
+    oscMessage.addInt32Arg(msg[offset + 6]); // boxD
+    blobs.push_back(oscMessage);
+
+    stringOffset = theMatch.offset + theMatch.length;
+  }
+  E256_getBlobs();
+  serialBlobs = false;
+  }
 }
 
 //////////////////////// DRAW ////////////////////////
@@ -139,19 +162,23 @@ void ofApp::draw(void) {
   const int BLOB_SCALE = 10;
   for (size_t index = 0; index < blobs.size(); ++index){
 
-    uint8_t blobID    = blobs[index].getArgAsInt(0) & 0xFF;;
-    uint8_t alive     = blobs[index].getArgAsInt(1) & 0xFF;;
-    float Xcentroid   = blobs[index].getArgAsInt(2) & 0xFF;;
-    float Ycentroid   = blobs[index].getArgAsInt(3) & 0xFF;;
-    uint8_t boxW      = blobs[index].getArgAsInt(4) & 0xFF;;
-    uint8_t boxH      = blobs[index].getArgAsInt(5) & 0xFF;;
-    uint8_t boxD      = blobs[index].getArgAsInt(6) & 0xFF;;
+    uint8_t blobID    = blobs[index].getArgAsInt(0) & 0xFF;
+    uint8_t alive     = blobs[index].getArgAsInt(1) & 0xFF;
+    float Xcentroid   = blobs[index].getArgAsInt(2) & 0xFF;
+    float Ycentroid   = blobs[index].getArgAsInt(3) & 0xFF;
+    uint8_t boxW      = blobs[index].getArgAsInt(4) & 0xFF;
+    uint8_t boxH      = blobs[index].getArgAsInt(5) & 0xFF;
+    uint8_t boxD      = blobs[index].getArgAsInt(6) & 0xFF;
 
-    ofLog(OF_LOG_VERBOSE,"E256_INPUT: UID:%d ALIVE:%d CX:%f CY:%f BW:%d BH:%d BD:%d",blobID, alive, Xcentroid, Ycentroid, boxW, boxH, boxD);
+    //ofLog(OF_LOG_VERBOSE,"E256_INPUT: UID:%d ALIVE:%d CX:%f CY:%f BW:%d BH:%d BD:%d",blobID, alive, Xcentroid, Ycentroid, boxW, boxH, boxD);
+
+    if(blobs[index].getAddress() == "/r"){
+      //TODO
+    }
 
     if(blobs[index].getAddress() == "/b"){
-      Xcentroid = ((float)Xcentroid / 64) * ofGetWindowWidth();
-      Ycentroid = ((float)Ycentroid / 64) * ofGetWindowHeight();
+      Xcentroid = (Xcentroid / 64) * ofGetWindowWidth();
+      Ycentroid = (Ycentroid / 64) * ofGetWindowHeight();
       boxW = boxW * BLOB_SCALE;
       boxH = boxH * BLOB_SCALE;
       boxD = boxD * BLOB_SCALE;
@@ -190,18 +217,13 @@ void ofApp::draw(void) {
   //ofRotateDeg(4, 80, 0, 0);
   //ofPopMatrix();
   //E256_blobsRequest();
-
-
-  // GET_MATRIX_RAW_DATA MODE
-
-
 }
 
 // E256 matrix sensor - SET CALIBRATION
 void ofApp::E256_setCaliration(void) {
   ofxOscMessage OSCmsg;
   OSCmsg.setAddress("/c"); // calibrate
-  OSCmsg.addInt32Arg(20); // Set calibration cycles
+  OSCmsg.addInt32Arg(10); // Set calibration cycles
 
   osc::OutboundPacketStream packet(buffer, OUTPUT_BUFFER_SIZE);
   packet.Clear();
@@ -214,7 +236,6 @@ void ofApp::E256_setCaliration(void) {
 
 // E256 matrix sensor - SET THRESHOLD
 void ofApp::E256_setTreshold(int & tresholdValue) {
-
   ofxOscMessage OSCmsg;
   OSCmsg.setAddress("/t"); // threshold
   OSCmsg.addIntArg((int32_t)tresholdValue);
@@ -229,7 +250,7 @@ void ofApp::E256_setTreshold(int & tresholdValue) {
 }
 
 // E256 matrix sensor - BLOBS REQUEST
-void ofApp::E256_blobsRequest(void) {
+void ofApp::E256_getBlobs(void) {
   ofxOscMessage OSCmsg;
   OSCmsg.setAddress("/b"); // Blobs
   osc::OutboundPacketStream packet(buffer, OUTPUT_BUFFER_SIZE);
@@ -242,7 +263,7 @@ void ofApp::E256_blobsRequest(void) {
 
 // E256 matrix sensor - MATRIX DATA REQUEST
 // 16*16 matrix row data request
-void ofApp::E256_matrix_raw_data(void) {
+void ofApp::E256_getRawData(void) {
   ofxOscMessage OSCmsg;
   OSCmsg.setAddress("/r"); //rowData
   osc::OutboundPacketStream packet(buffer, OUTPUT_BUFFER_SIZE);
@@ -250,22 +271,22 @@ void ofApp::E256_matrix_raw_data(void) {
   packet << osc::BeginMessage(OSCmsg.getAddress().data());
   packet << osc::EndMessage;
   serialDevice.send(ByteBuffer(packet.Data(), packet.Size()));
-  //ofLogNotice("ofApp::E256") << "E256 - MATRIX DATA REQUEST: " << packet.Data();
+  //ofLogNotice("ofApp::E256") << "E256 - RAW DATA REQUEST: " << packet.Data();
 }
 
 // E256 matrix sensor - Toggle full screen mode
 void ofApp::keyPressed(int key) {
-    switch(key) {
-        case 'f':
-            ofToggleFullscreen();
-            break;
-        default:
-            break;
-    }
+  switch(key) {
+    case 'f':
+    ofToggleFullscreen();
+    break;
+    default:
+    break;
+  }
 }
 
 void ofApp::exit(void) {
-    calirationButton.removeListener(this, &ofApp::E256_setCaliration);
-    tresholdValue.removeListener(this, &ofApp::E256_setTreshold);
-    serialDevice.unregisterAllEvents(this);
+  setCalirationButton.removeListener(this, &ofApp::E256_setCaliration);
+  setTresholdSlider.removeListener(this, &ofApp::E256_setTreshold);
+  serialDevice.unregisterAllEvents(this);
 }

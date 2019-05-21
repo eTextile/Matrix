@@ -23,23 +23,14 @@ const int OUTPUT_BUFFER_SIZE = 1024;
 #define UDP_OUTPUT_PORT  7771
 #define UDP_INPUT_PORT   1234
 
-// E256 Firmware v1.0
-//blobPaket[0] = blob->UID;        // uint8_t
-//blobPaket[1] = blob->centroid.X; // uint8_t
-//blobPaket[2] = blob->centroid.Y; // uint8_t
-//blobPaket[3] = blob->box.W;      // uint8_t
-//blobPaket[4] = blob->box.H;      // uint8_t
-//blobPaket[5] = blob->box.D;      // uint8_t
-
 struct blob {
   uint8_t UID;
   uint8_t alive;
-  int8_t Xcentroid;
-  int8_t Ycentroid;
-  int8_t boxW;
-  int8_t boxH;
-  int8_t boxD;
-  //int16_t pixels; // TODO in the Firmware 1.0
+  uint8_t Xcentroid;
+  uint8_t Ycentroid;
+  uint8_t boxW;
+  uint8_t boxH;
+  uint8_t boxD;
 };
 
 struct serialMessage {
@@ -66,16 +57,20 @@ public:
     std::vector<ofxOscMessage>    blobs;
 
     //ofxOscBundle                  OSCbundle;
-    //serialMessage                 message;
+    serialMessage                 message;
+    bool                          serialRawData;
+    bool                          serialBlobs;
     ofxPanel                      gui;
-    ofxButton                     calirationButton; // Button to calibrate E256
-    ofxIntSlider                  tresholdValue; // Set E256 threshold value
+    ofxButton                     setCalirationButton; // Button to calibrate E256
+    ofxIntSlider                  setTresholdSlider; // Set E256 threshold value
+    ofxToggle                     getBlobsToggle;
+    ofxToggle                     getRawDataToggle;
+
     void                          E256_setCaliration(void);
     void                          E256_setTreshold(int & sliderValue);
-    void                          E256_blobsRequest(void);
-    void                          E256_matrix_raw_data(void);
-
-    //std::vector<ofboxPrimitive>  boxe;
+    void                          E256_getBlobs(void);
+    void                          E256_getRawData(void);
 
     void                          keyPressed(int key);
+    //std::vector<ofboxPrimitive>  boxe;
   };
