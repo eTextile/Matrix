@@ -40,7 +40,7 @@
 #X obj 532 58 / 64;
 #X obj 618 58 / 64;
 #X obj 493 246 change;
-#X obj 262 16 r \$1-alive;
+#X obj 262 16 r \$1-raw_alive;
 #X connect 0 0 7 0;
 #X connect 1 0 3 0;
 #X connect 2 0 13 0;

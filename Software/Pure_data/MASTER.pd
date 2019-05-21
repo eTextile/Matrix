@@ -2,11 +2,11 @@
 #X msg 32 191 devices;
 #X msg 50 235 close;
 #X obj 42 455 vsl 30 100 0 1 0 0 empty 0-posY empty 0 -9 0 10 -262144
--1 -1 4486 1;
+-1 -1 6806 1;
 #X obj 77 560 hsl 95 30 0 1 0 0 empty 0-posX empty -2 -8 0 10 -262144
--1 -1 3672 1;
+-1 -1 2203 1;
 #X obj 74 455 vsl 100 100 0 1 0 0 empty 0-depth empty 0 -9 0 10 -258113
--1 -1 172 1;
+-1 -1 0 1;
 #X msg 41 213 open 0;
 #X obj 250 20 key;
 #X obj 250 43 sel 99;
@@ -45,7 +45,7 @@
 #X connect 9 1 7 0;
 #X restore 221 355 pd fps;
 #X floatatom 221 377 5 0 0 0 - - -;
-#X obj 272 356 tgl 17 0 empty empty empty 17 7 0 10 -162280 -1 -1 1
+#X obj 272 356 tgl 17 0 empty empty empty 17 7 0 10 -162280 -1 -1 0
 1;
 #X obj 221 329 t b b;
 #X obj 42 265 comport 0 230400;
@@ -56,7 +56,7 @@
 #X obj 484 183 s THRESHOLD;
 #X obj 42 560 tgl 30 0 empty 0-alive empty 3 7 0 10 -260097 -1 -1 0
 1;
-#X msg 476 155 11;
+#X msg 476 155 14;
 #X obj 42 388 s raw_blobs;
 #X obj 57 859 t b f;
 #X obj 109 881 t b f;
@@ -85,33 +85,33 @@
 #X obj 42 791 change;
 #X obj 42 1079 s SUMM;
 #X obj 192 455 vsl 30 100 0 1 0 0 empty 1-posY empty 0 -9 0 10 -262144
--1 -1 8972 1;
+-1 -1 1702 1;
 #X obj 227 560 hsl 95 30 0 1 0 0 empty 1-posX empty -2 -8 0 10 -262144
--1 -1 1616 1;
+-1 -1 4700 1;
 #X obj 224 455 vsl 100 100 0 1 0 0 empty 1-depth empty 0 -9 0 10 -258113
 -1 -1 0 1;
 #X obj 192 560 tgl 30 0 empty 1-alive empty 3 7 0 10 -260097 -1 -1
 0 1;
 #X obj 342 455 vsl 30 100 0 1 0 0 empty 2-posY empty 0 -9 0 10 -262144
--1 -1 6342 1;
+-1 -1 3867 1;
 #X obj 377 560 hsl 95 30 0 1 0 0 empty 2-posX empty -2 -8 0 10 -262144
--1 -1 3378 1;
+-1 -1 4847 1;
 #X obj 374 455 vsl 100 100 0 1 0 0 empty 2-depth empty 0 -9 0 10 -258113
 -1 -1 0 1;
 #X obj 342 560 tgl 30 0 empty 2-alive empty 3 7 0 10 -260097 -1 -1
 0 1;
 #X obj 492 455 vsl 30 100 0 1 0 0 empty 3-posY empty 0 -9 0 10 -262144
--1 -1 9900 1;
+-1 -1 1547 1;
 #X obj 527 560 hsl 95 30 0 1 0 0 empty 3-posX empty -2 -8 0 10 -262144
--1 -1 3231 1;
+-1 -1 4259 1;
 #X obj 524 455 vsl 100 100 0 1 0 0 empty 3-depth empty 0 -9 0 10 -258113
--1 -1 2049 1;
+-1 -1 0 1;
 #X obj 492 560 tgl 30 0 empty 3-alive empty 3 7 0 10 -260097 -1 -1
-1 1;
+0 1;
 #X obj 42 605 vsl 30 100 0 1 0 0 empty 4-posY empty 0 -9 0 10 -262144
--1 -1 3094 1;
+-1 -1 3867 1;
 #X obj 77 710 hsl 95 30 0 1 0 0 empty 4-posX empty -2 -8 0 10 -262144
--1 -1 3672 1;
+-1 -1 6462 1;
 #X obj 74 605 vsl 100 100 0 1 0 0 empty 4-depth empty 0 -9 0 10 -258113
 -1 -1 0 1;
 #X obj 42 710 tgl 30 0 empty 4-alive empty 3 7 0 10 -260097 -1 -1 0
@@ -141,7 +141,7 @@
 #X obj 492 710 tgl 30 0 empty 7-alive empty 3 7 0 10 -260097 -1 -1
 0 1;
 #X obj 539 2 vsl 100 100 0 100 0 1 empty empty empty 0 -9 0 10 -262144
--1 -1 1100 1;
+-1 -1 1400 1;
 #X msg 487 128 set \$1;
 #X obj 487 103 i;
 #X msg 270 170 send /r;
@@ -150,8 +150,8 @@
 #X text 329 169 <- Get row data;
 #X text 329 146 <- Calibrate E256;
 #X text 506 155 <- Set the Threshold;
-#X obj 42 415 clone E256_filters 8;
 #X msg 362 370 /b;
+#X obj 42 415 clone E256_filters 8;
 #X connect 0 0 21 0;
 #X connect 1 0 21 0;
 #X connect 5 0 21 0;
@@ -164,7 +164,7 @@
 #X connect 11 0 22 0;
 #X connect 11 1 12 0;
 #X connect 12 0 20 0;
-#X connect 13 0 94 0;
+#X connect 13 0 93 0;
 #X connect 15 0 16 0;
 #X connect 16 0 13 0;
 #X connect 16 1 13 1;
@@ -217,4 +217,4 @@
 #X connect 87 0 9 0;
 #X connect 88 0 9 0;
 #X connect 89 0 9 0;
-#X connect 94 0 9 0;
+#X connect 93 0 9 0;
