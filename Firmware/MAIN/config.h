@@ -39,7 +39,7 @@
 #define NEW_ROWS              (ROWS * SCALE_Y)
 #define NEW_FRAME             (NEW_COLS * NEW_ROWS)
 #define MAX_NODES             40       // Set the maximum nodes number
-#define MIN_BLOB_PIX          4        // Set the minimum blob pixels
+#define MIN_BLOB_PIX          25       // Set the minimum blob pixels
 #define MAX_BLOB_PIX          1024     // Set the maximum blob pixels
 #define BLOB_PACKET_SIZE      7        // Blob data packet (bytes)
 

@@ -52,7 +52,9 @@ interp_t  interp;                           // Instance of struct interp_t
 uint8_t   bilinIntOutput[NEW_FRAME] = {0};  // Bilinear interpolation output buffer
 image_t   interpolatedFrame;                // Instance of struct image_t
 
-char      bitmap[NEW_FRAME] = {0};          // 64 x 64
+//char      bitmap[ROW_FRAME] = {0};          // 16*16 
+char      bitmap[NEW_FRAME] = {0};          // 64*64
+
 blob_t    blobArray[MAX_NODES] = {0};       // 40 nodes
 
 llist_t   freeBlobs;

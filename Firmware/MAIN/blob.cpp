@@ -11,8 +11,6 @@
 void find_blobs(
   image_t*              inFrame_ptr,
   char*                 bitmap_ptr,
-  const int             rows,
-  const int             cols,
   uint8_t               E256_threshold,
   const unsigned int    minBlobPix,
   const unsigned int    maxBlobPix,
@@ -26,15 +24,16 @@ void find_blobs(
 
   //if (DEBUG_CCL) Serial.println("\n DEBUG_CCL / START <<<<<<<<<<<<<<<<<<<<<<<<");
 
-  bitmap_clear(bitmap_ptr, NEW_FRAME);
+  bitmap_clear(bitmap_ptr, inFrame_ptr->numCols * inFrame_ptr->numRows);
+
   //if (DEBUG_CCL) Serial.println("DEBUG_CCL / Bitmap cleared");
 
   llist_raz(inputBlobs_ptr);
-
-  for (uint8_t posY = 0; posY < rows; posY++) {
+    
+  for (uint8_t posY = 0; posY < inFrame_ptr->numRows; posY++) {
     uint8_t* row_ptr_A = ROW_PTR(inFrame_ptr, posY);     // Return inFrame_ptr curent row pointer
     uint16_t row_index_A = ROW_INDEX(inFrame_ptr, posY); // Return inFrame_ptr curent row index (1D array) 0, 64, 128,... 4032
-    for (uint8_t posX = 0; posX < cols; posX++) {
+    for (uint8_t posX = 0; posX < inFrame_ptr->numCols; posX++) {
       //if (DEBUG_BITMAP) Serial.printf("%d ", bitmap_bit_get(bitmap_ptr, BITMAP_INDEX(row_index_A, posX)));
       //if (DEBUG_BITMAP) Serial.printf("%d ", GET_PIXEL(row_ptr_A, posX));
 
@@ -67,7 +66,7 @@ void find_blobs(
           }
           //if (DEBUG_CCL) Serial.printf("\n DEBUG_CCL / The minimum activated left pixel ID is: %d", left);
 
-          while (right < (cols - 1) &&
+          while (right < (inFrame_ptr->numCols - 1) &&
                  (!bitmap_bit_get(bitmap_ptr, BITMAP_INDEX(row_index, right + 1))) &&
                  PIXEL_THRESHOLD(GET_PIXEL(row_ptr, right + 1), E256_threshold)) {
             right++;
@@ -87,7 +86,7 @@ void find_blobs(
           }
 
           boolean break_out = true;
-          if (posY < (rows - 1)) {
+          if (posY < (inFrame_ptr->numRows - 1)) {
             row_ptr = ROW_PTR(inFrame_ptr, posY + 1);     // Return inFrame_ptr curent row pointer
             row_index = ROW_INDEX(inFrame_ptr, posY + 1); // Return inFrame_ptr curent row index (1D array) 0, 64, 128,... 4032
             for (uint8_t x = left; x <= right; x++) {

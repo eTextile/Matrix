@@ -124,8 +124,6 @@ typedef struct llist llist_t; // forward declaration
 void find_blobs(
   image_t* interpolatedFrame_ptr,
   char* bitmap_ptr,
-  const int rows,
-  const int cols,
   uint8_t E256_threshold,
   const unsigned int minBlobPix,
   const unsigned int maxBlobPix,

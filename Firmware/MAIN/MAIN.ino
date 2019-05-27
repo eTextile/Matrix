@@ -117,6 +117,7 @@ void loop() {
     OSCmsg.dispatch("/r", matrix_raw_data);
     OSCmsg.dispatch("/b", matrix_blobs);
   }
+
 }
 
 //////////////////////////////////////////////////// FONCTIONS
@@ -136,7 +137,7 @@ void matrix_scan(void) {
       SPI.transfer((setCols >> 8) & 0xFF);  // Shift out the MSB byte to set up the OUTPUT shift register
       SPI.transfer(setDualRows[row]);       // Shift out one byte that setup the two 8:1 analog multiplexers
       digitalWriteFast(E256_SS_PIN, HIGH);  // Set latchPin HIGH
-      delayMicroseconds(5);                 // TODO: See switching time of the 74HC4051BQ multiplexeur
+      //delayMicroseconds(5);                 // TODO: See switching time of the 74HC4051BQ multiplexeur
 
       uint8_t rowIndexA = row * COLS + col;    // Row IndexA computation
       uint8_t rowIndexB = rowIndexA + 128;     // Row IndexB computation (ROW_FRAME/2 == 128)
@@ -169,7 +170,7 @@ void matrix_calibration(OSCMessage & msg) {
         SPI.transfer((setCols >> 8) & 0xFF);  // Shift out the MSB byte to set up the OUTPUT shift register
         SPI.transfer(setDualRows[row]);       // Shift out one byte that setup the two 8:1 analog multiplexers
         digitalWriteFast(E256_SS_PIN, HIGH);  // Set latchPin HIGH
-        delayMicroseconds(5);                 // TODO: See switching time of the 74HC4051BQ multiplexeur
+        //delayMicroseconds(5);                 // TODO: See switching time of the 74HC4051BQ multiplexeur
 
         result = adc->analogSynchronizedRead(ADC0_PIN, ADC1_PIN);
         uint8_t ADC0_val = result.result_adc0;
@@ -191,14 +192,14 @@ void matrix_threshold(OSCMessage & msg) {
   // Teensy is Little-endian!
   // The sequence addresses/sends/stores the least significant byte first (lowest address)
   // and the most significant byte last (highest address).
-  E256_threshold = msg.getInt(0) & 0xFF; // Get the first int8_t of the int32_t
+  E256_threshold = msg.getInt(0) & 0xFF; // Get the first uint8_t of the int32_t
 }
 
 /// Send raw frame values in SLIP-OSC formmat
 void matrix_raw_data(OSCMessage & msg) {
 
   matrix_scan();
-  OSCMessage m("/m");
+  OSCMessage m("/r");
   m.add(frameValues, ROW_FRAME);
   SLIPSerial.beginPacket();
   m.send(SLIPSerial);   // Send the bytes to the SLIP stream
@@ -210,16 +211,12 @@ void matrix_blobs(OSCMessage & msg) {
 
   matrix_scan();
 
-#ifdef BLOBS_OSC
-  OSCBundle OSCbundle;
-
   bilinear_interp(&interpolatedFrame, &rawFrame, &interp);
 
   find_blobs(
+    //&rawFrame,             // image_t uint8_t [RAW_FRAME] - 1D array
     &interpolatedFrame,    // image_t uint8_t [NEW_FRAME] - 1D array
     bitmap,                // char array [NEW_FRAME] - 1D array // NOT &bitmap !?
-    NEW_ROWS,              // const int
-    NEW_COLS,              // const int
     E256_threshold,        // uint8_t
     MIN_BLOB_PIX,          // const int
     MAX_BLOB_PIX,          // const int
@@ -227,6 +224,9 @@ void matrix_blobs(OSCMessage & msg) {
     &blobs,                // list_t
     &outputBlobs           // list_t
   );
+
+#ifdef BLOBS_OSC
+  OSCBundle OSCbundle;
 
   // Send all blobs in OCS bundle
   for (blob_t* blob = iterator_start_from_head(&outputBlobs); blob != NULL; blob = iterator_next(blob)) {
