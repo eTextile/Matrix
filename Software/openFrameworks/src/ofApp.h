@@ -65,12 +65,18 @@ public:
     ofxIntSlider                  setTresholdSlider; // Set E256 threshold value
     ofxToggle                     getBlobsToggle;
     ofxToggle                     getRawDataToggle;
-
+    uint8_t                       frameBuffer[OUTPUT_BUFFER_SIZE];
+    uint8_t                       storedValueRast[DATAS]; // 1D array
     void                          E256_setCaliration(void);
     void                          E256_setTreshold(int & sliderValue);
-    void                          E256_getBlobs(void);
-    void                          E256_getRawData(void);
 
+    bool                          getRawDataVal;
+    bool                          getBlobsVal;
+    void                          E256_getBlobsState(bool & val);
+    void                          E256_getRawDataState(bool & val);
+    void                          E256_getBlobs();
+    void                          E256_getRawData();
+    ofMesh                        mesh;
     void                          keyPressed(int key);
     //std::vector<ofboxPrimitive>  boxe;
   };
