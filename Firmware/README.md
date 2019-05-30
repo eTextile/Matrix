@@ -34,21 +34,22 @@
 
 ## SLIP-OSC data paket
 ### on_touch_pressed
-    UID (percistant blob ID)
-    centroid.X (X coordinate of the blob - from 0 to 64)
-    centroid.Y (Y coordinate of the blob - from 0 to 64)
-    box.W (bounding box Width)
-    box.H (bounding box Height)
-    box.D (bounding box depth - the maximum pressur value in all the blob pixels - from 0 to 255)
-    //pixels (the number of sensors that are triggered by a touch multiply by the interpolation factor)
+    [0:255]	: UID (percistant blob ID)
+	[1] 	: alive
+    [0:64]  : centroid.X (X blob coordinate)
+    [0:64]  : centroid.Y (Y blob coordinate)
+    [0:255] : box.W (blob bounding box Width)
+    [0:255] : box.H (blob bounding box Height)
+    [0:255] : box.D (blob bounding box depth - the maximum pressur value in all the blob pixels)
 
 ### on_touch_release // FIXME or not ?
-    UID (percistant blob ID)
-    -1 (centroid.X)
-    -1 (centroid.Y)
-    -1 (box.W)
-    -1 (box.H)
-    -1 (box.D)
+    [0:255]	: UID (percistant blob ID)
+	[0] 	: alive
+    [0:64] : centroid.X
+    [0:64] : centroid.Y
+    [0:255] : box.W
+    [0:255] : box.H
+    [0:255] : box.D
 
 ## E256 & Teensy pins
 Control pins to send values to the 8-BITs shift registers used on the E-256 PCB

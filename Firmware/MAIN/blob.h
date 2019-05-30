@@ -2,7 +2,7 @@
   FORKED FROM https://github.com/openmv/openmv/tree/master/src/omv/img
   Added custom blob détection algorithm to keep track of the blobs ID's
     This patch is part of the eTextile-matrix-sensor project - http://matrix.eTextile.org
-    Copyright (c) 2014-2018 Maurin Donneaud <maurin@etextile.org>
+    Copyright (c) 2014-2019 Maurin Donneaud <maurin@etextile.org>
     This work is licensed under Creative Commons Attribution-ShareAlike 4.0 International license, see the LICENSE file for details.
 */
 
@@ -11,6 +11,8 @@
 
 #include "config.h"
 #include "llist.h"
+
+extern uint8_t E256_threshold;        // Threshold defaultused to adjust toutch sensitivity (10 is low 40 is high)
 
 #define IM_LOG2_2(x)    (((x) &                0x2ULL) ? ( 2                        ) :             1) // NO ({ ... }) !
 #define IM_LOG2_4(x)    (((x) &                0xCULL) ? ( 2 +  IM_LOG2_2((x) >>  2)) :  IM_LOG2_2(x)) // NO ({ ... }) !
@@ -27,14 +29,7 @@
   ({ \
     __typeof__ (pImage) _pImage = (pImage); \
     __typeof__ (y) _y = (y); \
-    ((uint8_t*)_pImage->pData) + (_pImage->numCols * _y); \
-  })
-
-#define GET_PIXEL(pRow, x) \
-  ({ \
-    __typeof__ (pRow) _pRow = (pRow); \
-    __typeof__ (x) _x = (x); \
-    _pRow[_x]; \
+    ((uint8_t *)_pImage->pData) + (_pImage->numCols * _y); \
   })
 
 #define ROW_INDEX(pImage, y) \
@@ -56,6 +51,27 @@
     __typeof__ (pixel) _pixel = (pixel); \
     __typeof__ (pThreshold) _pThreshold = (pThreshold); \
     _pixel >= _pThreshold; \
+  })
+
+#define GET_PIXEL(pRow, x) \
+  ({ \
+    __typeof__ (pRow) _pRow = (pRow); \
+    __typeof__ (x) _x = (x); \
+    _pRow[_x]; \
+  })
+
+#define IMAGE_GET_BINARY_PIXEL_FAST(row_ptr, x) \
+  ({ \
+    __typeof__ (row_ptr) _row_ptr = (row_ptr); \
+    __typeof__ (x) _x = (x); \
+    (_row_ptr[_x >> CHAR_SHIFT] >> (_x & CHAR_MASK)) & 1; \
+  })
+
+#define IMAGE_SET_BINARY_PIXEL_FAST(row_ptr, x) \
+  ({ \
+    __typeof__ (row_ptr) _row_ptr = (row_ptr); \
+    __typeof__ (x) _x = (x); \
+    _row_ptr[_x >> CHAR_SHIFT] |= 1 << (_x & CHAR_MASK); \
   })
 
 #define MAX(a, b) \
@@ -80,8 +96,6 @@ typedef struct image {
   uint8_t* pData;
 } image_t;
 
-void bitmap_bit_set(char* bitmap_ptr, uint16_t index);
-char bitmap_bit_get(char* bitmap_ptr, uint16_t index);
 void bitmap_clear(char* bitmap_ptr, const uint16_t Size);
 
 typedef struct {
@@ -107,12 +121,12 @@ typedef enum {
 // What about the TUIO 1.1 Protocol Specification
 // http://www.tuio.org/?specification
 typedef struct blob {
+  uint16_t pixels;
   uint8_t UID;
   uint8_t alive;
   state_t state;
   point_t centroid;
   bbox_t box;
-  uint16_t pixels;
   struct blob* next_ptr;
 } blob_t;
 
@@ -124,9 +138,6 @@ typedef struct llist llist_t; // forward declaration
 void find_blobs(
   image_t* interpolatedFrame_ptr,
   char* bitmap_ptr,
-  uint8_t E256_threshold,
-  const unsigned int minBlobPix,
-  const unsigned int maxBlobPix,
   llist_t* freeBlobs_ptr,
   llist_t* inputBlobs_ptr,
   llist_t* outputBlobs_ptr

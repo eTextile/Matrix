@@ -1,6 +1,6 @@
 /*
   This file is part of the eTextile-matrix-sensor project - http://matrix.eTextile.org
-  Copyright (c) 2014-2018 Maurin Donneaud <maurin@etextile.org>
+  Copyright (c) 2014-2019 Maurin Donneaud <maurin@etextile.org>
   This work is licensed under Creative Commons Attribution-ShareAlike 4.0 International license, see the LICENSE file for details.
 */
 
@@ -66,7 +66,7 @@ void llist_remove_blob(llist_t* src, blob_t* blobSuppr) {
   blob_t* prevBlob = NULL;
   //if (DEBUG_LIST) Serial.printf(F("\n DEBUG_LIST / list_remove_blob / Blob to remove: %p"), blobSuppr);
 
-  for (blob_t* blob = iterator_start_from_head(src); blob != NULL; blob = iterator_next(blob)) {
+  for (blob_t* blob = ITERATOR_START_FROM_HEAD(src); blob != NULL; blob = ITERATOR_NEXT(blob)) {
 
     if (blob == blobSuppr) {
       //if (DEBUG_LIST) Serial.printf(F("\n DEBUG_LIST / list_remove_blob / Blob: %p is found"), blob);
@@ -148,7 +148,7 @@ void llist_sort(llist_t* src) {
 
     boolean isSorted = true;
 
-    for (blob_t* blob_A = iterator_start_from_head(src); blob_A != NULL; blob_A = iterator_next(blob_A)) {
+    for (blob_t* blob_A = ITERATOR_START_FROM_HEAD(src); blob_A != NULL; blob_A = ITERATOR_NEXT(blob_A)) {
       if (blob_A->UID > blob_A->next_ptr->UID) {
         isSorted = false;
 

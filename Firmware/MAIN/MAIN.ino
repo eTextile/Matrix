@@ -1,19 +1,21 @@
 /*
   ** E256 Firmware v1.0 **
   This file is part of the eTextile-matrix-sensor project - http://matrix.eTextile.org
-  Copyright (c) 2014-2018 Maurin Donneaud <maurin@etextile.org>
+  Copyright (c) 2014-2019 Maurin Donneaud <maurin@etextile.org>
   This work is licensed under Creative Commons Attribution-ShareAlike 4.0 International license, see the LICENSE file for details.
 */
 
 #include "main.h"
 
-uint8_t E256_threshold = 30;        // Threshold defaultused to adjust toutch sensitivity (10 is low 40 is high)
+uint8_t E256_threshold = 15;        // Threshold defaultused to adjust toutch sensitivity (10 is low 40 is high)
 
 // FPS with CPU speed to 120 MHz (Overclock)
 // Optimize Fastest with LTO (Link Time Optimizations)
-// 523 FPS ADC input
-//  28 FPS with BILINEAR_INTERPOLATION <- it have to be optimize!
-//  30 FPS with interpolation & blob tracking
+
+// 523 FPS : ADC_INPUT
+//  99 FPS : ADC_INPUT / BLOB_TRACKING
+//  34 FPS : ADC_INPUT / BILINEAR_INTERPOLATION // FIXME: It have to be optimize!
+//  32 FPS : ADC_INPUT / BILINEAR_INTERPOLATION / BLOB_TRACKING
 
 //////////////////////////////////////////////////// SETUP
 
@@ -115,6 +117,7 @@ void loop() {
     OSCmsg.dispatch("/c", matrix_calibration);
     OSCmsg.dispatch("/t", matrix_threshold);
     OSCmsg.dispatch("/r", matrix_raw_data);
+    OSCmsg.dispatch("/i", matrix_interp_data);
     OSCmsg.dispatch("/b", matrix_blobs);
   }
 
@@ -195,18 +198,42 @@ void matrix_threshold(OSCMessage & msg) {
   E256_threshold = msg.getInt(0) & 0xFF; // Get the first uint8_t of the int32_t
 }
 
-/// Send raw frame values in SLIP-OSC formmat
+// Send raw frame values in SLIP-OSC formmat
 void matrix_raw_data(OSCMessage & msg) {
 
   matrix_scan();
   OSCMessage m("/r");
   m.add(frameValues, ROW_FRAME);
   SLIPSerial.beginPacket();
-  m.send(SLIPSerial);   // Send the bytes to the SLIP stream
+  m.send(SLIPSerial);        // Send the bytes to the SLIP stream
   SLIPSerial.endPacket();    // Mark the end of the OSC Packet
 }
 
-/// Send all blobs values in SLIP-OSC formmat
+// Send bitmap frame values in SLIP-OSC formmat
+void matrix_bitmap_data(OSCMessage & msg) {
+
+  matrix_scan();
+  OSCMessage m("/x");
+  //m.add(&bitmap, NEW_FRAME); // bitmap must be uint8_t // FIXME
+  SLIPSerial.beginPacket();
+  m.send(SLIPSerial);          // Send the bytes to the SLIP stream
+  SLIPSerial.endPacket();      // Mark the end of the OSC Packet
+}
+
+// Send interpolated frame values in SLIP-OSC formmat
+void matrix_interp_data(OSCMessage & msg) {
+
+  matrix_scan();
+  bilinear_interp(&interpolatedFrame, &rawFrame, &interp);
+  OSCMessage m("/i");
+  m.add(bilinIntOutput, NEW_FRAME);
+  SLIPSerial.beginPacket();
+  m.send(SLIPSerial);        // Send the bytes to the SLIP stream
+  SLIPSerial.endPacket();    // Mark the end of the OSC Packet
+}
+
+
+// Send all blobs values in SLIP-OSC formmat
 void matrix_blobs(OSCMessage & msg) {
 
   matrix_scan();
@@ -214,12 +241,9 @@ void matrix_blobs(OSCMessage & msg) {
   bilinear_interp(&interpolatedFrame, &rawFrame, &interp);
 
   find_blobs(
-    //&rawFrame,             // image_t uint8_t [RAW_FRAME] - 1D array
+    //&rawFrame,           // image_t uint8_t [RAW_FRAME] - 1D array
     &interpolatedFrame,    // image_t uint8_t [NEW_FRAME] - 1D array
     bitmap,                // char array [NEW_FRAME] - 1D array // NOT &bitmap !?
-    E256_threshold,        // uint8_t
-    MIN_BLOB_PIX,          // const int
-    MAX_BLOB_PIX,          // const int
     &freeBlobs,            // list_t
     &blobs,                // list_t
     &outputBlobs           // list_t
@@ -229,7 +253,7 @@ void matrix_blobs(OSCMessage & msg) {
   OSCBundle OSCbundle;
 
   // Send all blobs in OCS bundle
-  for (blob_t* blob = iterator_start_from_head(&outputBlobs); blob != NULL; blob = iterator_next(blob)) {
+  for (blob_t* blob = ITERATOR_START_FROM_HEAD(&outputBlobs); blob != NULL; blob = ITERATOR_NEXT(blob)) {
     blobPacket[0] = blob->UID;        // uint8_t unique session ID
     blobPacket[1] = blob->alive;      // uint8_t
     blobPacket[2] = blob->centroid.X; // uint8_t

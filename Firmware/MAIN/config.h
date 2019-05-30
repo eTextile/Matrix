@@ -8,6 +8,11 @@
 #define __CONFIG_H__
 
 #include <SPI.h>                    // https://www.pjrc.com/teensy/td_libs_SPI.html
+/*
+  This file is part of the eTextile-matrix-sensor project - http://matrix.eTextile.org
+  Copyright (c) 2014-2019 Maurin Donneaud <maurin@etextile.org>
+  This work is licensed under Creative Commons Attribution-ShareAlike 4.0 International license, see the LICENSE file for details.
+*/
 
 /* __E256 BOARD CONTROL__*/
 #define BLOBS_OSC
@@ -39,8 +44,8 @@
 #define NEW_ROWS              (ROWS * SCALE_Y)
 #define NEW_FRAME             (NEW_COLS * NEW_ROWS)
 #define MAX_NODES             40       // Set the maximum nodes number
-#define MIN_BLOB_PIX          25       // Set the minimum blob pixels
-#define MAX_BLOB_PIX          1024     // Set the maximum blob pixels
+#define MIN_BLOB_PIX          9       // Set the minimum blob pixels
+#define MAX_BLOB_PIX          4095     // Set the maximum blob pixels
 #define BLOB_PACKET_SIZE      7        // Blob data packet (bytes)
 
 #define E256_SS_PIN           10       // SPI:SS    E2B56:RCK  // D10 - Hardware SPI no need to specify it
