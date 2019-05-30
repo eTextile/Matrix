@@ -5,23 +5,24 @@
 #include "ofxOsc.h"
 #include "ofxGui.h"
 
-// #include "ofx/IO/SLIPEncoding.h"
+#define USB_PORT              "/dev/ttyACM0"
+#define BAUD_RATE             230400  // With Teensy, it's always the same native speed. The baud rate setting is ignored.
+#define COLS                  16
+#define ROWS                  16
+#define DUAL_ROWS             (ROWS / 2)
+#define SCALE_X               4
+#define SCALE_Y               4
+#define ROW_FRAME             (COLS * ROWS)
+#define NEW_COLS              (COLS * SCALE_X)
+#define NEW_ROWS              (ROWS * SCALE_Y)
+#define NEW_FRAME             (NEW_COLS * NEW_ROWS)
 
-#define USB_PORT         "/dev/ttyACM0"
-#define BAUD_RATE        230400  // With Teensy, it's always the same native speed. The baud rate setting is ignored.
-//#define BAUD_RATE        115200  // With Teensy, it's always the same native speed. The baud rate setting is ignored.
-#define DATAS            256     // Numbur of bytes received from the teensy
-#define ROWS             16      // Number of rows in the hardwear sensor matrix
-#define COLS             16      // Number of colums in the hardwear sensor matrix
-#define X_NEWSIZE        64      // Number of rows after the softwear interpolation
-#define Y_NEWSIZE        64      // Number of colums after the softwear interpolation
+#define OUT_BUFFER_SIZE       1024
+#define IN_BUFFER_SIZE        65535
 
-const int OUTPUT_BUFFER_SIZE = 1024;
-
-//#define HOST             "localhost"
-//#define HOST             "10.42.0.255"
-#define UDP_OUTPUT_PORT  7771
-#define UDP_INPUT_PORT   1234
+//#define HOST                "10.42.0.255"
+//#define UDP_OUTPUT_PORT     7771
+//#define UDP_INPUT_PORT      1234
 
 struct blob {
   uint8_t UID;
@@ -47,7 +48,7 @@ public:
     void                          update(void);
     void                          draw(void);
     void                          exit(void);
-    char                          buffer[OUTPUT_BUFFER_SIZE];
+    char                          requestBuffer[OUT_BUFFER_SIZE];
 
     void                          onSerialBuffer(const ofxIO::SerialBufferEventArgs& args);
     void                          onSerialError(const ofxIO::SerialBufferErrorEventArgs& args);
@@ -65,18 +66,31 @@ public:
     ofxIntSlider                  setTresholdSlider; // Set E256 threshold value
     ofxToggle                     getBlobsToggle;
     ofxToggle                     getRawDataToggle;
-    uint8_t                       frameBuffer[OUTPUT_BUFFER_SIZE];
-    uint8_t                       storedValueRast[DATAS]; // 1D array
+    ofxToggle                     getInterpDataToggle;
+
+    uint8_t                       inputFrameBuffer[IN_BUFFER_SIZE];
+
+    uint8_t                       rawValues[ROW_FRAME]; // 1D array
+    uint8_t                       interpValues[NEW_FRAME]; // 1D array
+
     void                          E256_setCaliration(void);
     void                          E256_setTreshold(int & sliderValue);
 
-    bool                          getRawDataVal;
-    bool                          getBlobsVal;
-    void                          E256_getBlobsState(bool & val);
-    void                          E256_getRawDataState(bool & val);
-    void                          E256_getBlobs();
+    bool                          getRawData;
+    bool                          getInterpData;
+    bool                          getBlobs;
+
+    void                          E256_getRawDataStart(bool & val);
+    void                          E256_getInterpDataStart(bool & val);
+    void                          E256_getBlobsStart(bool & val);
+
     void                          E256_getRawData();
-    ofMesh                        mesh;
+    void                          E256_getInterpData();
+    void                          E256_getBlobs();
+
+    ofMesh                        rawDataMesh;
+    ofMesh                        interpDataMesh;
+
     void                          keyPressed(int key);
     //std::vector<ofboxPrimitive>  boxe;
   };
