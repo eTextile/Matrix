@@ -8,25 +8,26 @@
 
 ////////////////////////////// linked list  //////////////////////////////
 
-void llist_raz(llist_t* ptr) {
-  ptr->tail_ptr = ptr->head_ptr = NULL;
-  ptr->index = -1;
+void llist_raz(llist_t* src) {
+  src->max_nodes = 0;
+  src->tail_ptr = src->head_ptr = NULL;
+  src->index = -1;
 }
 
-void llist_init(llist_t* dst, blob_t* nodesArray, const uint8_t max_nodes) {
-
-  dst->max_nodes = max_nodes;
+void llist_init(llist_t* dst, blob_t* nodesArray, uint8_t max_nodes) {
 
   dst->head_ptr = dst->tail_ptr = &nodesArray[0];
   //if (DEBUG_LIST || DEBUG_CCL) Serial.printf(F("\n DEBUG_LIST / llist_init: %d: %p"), 0, &nodesArray[0]);
   dst->index++;
+  dst->max_nodes++;
 
-  for (int i = 1; i < dst->max_nodes; i++) {
+  for (int i = 1; i < max_nodes; i++) {
     nodesArray[i - 1].next_ptr = &nodesArray[i];
     nodesArray[i].next_ptr = NULL;
     dst->tail_ptr = &nodesArray[i];
     //if (DEBUG_LIST || DEBUG_CCL) Serial.printf(F("\n DEBUG_LIST / llist_init: %d: %p"), i, &nodesArray[i]);
     dst->index++;
+    dst->max_nodes++;
   }
 }
 
