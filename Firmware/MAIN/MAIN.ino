@@ -291,7 +291,7 @@ void matrix_scan(uint8_t* outputFrame) {
 }
 
 void matrix_calibration_set(OSCMessage & msg) {
-  uint8_t calibration_cycles = msg.getInt(0) & 0xFF;   // Get the first uint8_t in an int32_t
+  calibration_cycles = msg.getInt(0) & 0xFF;   // Get the first uint8_t in an int32_t
   calibrate = true;
 }
 
