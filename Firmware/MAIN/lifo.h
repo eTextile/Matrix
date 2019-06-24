@@ -7,25 +7,28 @@
 #ifndef __LIFO_H__
 #define __LIFO_H__
 
-// node <- node <- node
+#include "config.h"
 
-typedef struct lifo {
-  xylf_t* head_ptr;
-  xylf_t* prev_ptr;
-  uint8_t max_nodes;
-  int8_t index; // If no element in the linked list, index is -1
-} lifo_t;
-
-typedef struct xylf {
+typedef struct xylr {
   uint8_t x;
   uint8_t y;
   uint8_t l;
   uint8_t r;
-} xylf_t;
+  uint8_t t_l;
+  uint8_t b_l;
+  struct xylr* prev_ptr;
+} xylr_t;
 
-void lifo_raz(llist_t* ptr);
-void lifo_init(llist_t* dst, blob_t* nodesArray, const uint8_t max_nodes);
-blob_t* lifo_enqueue(lifo_t* dst);
-blob_t* lifo_dequeue(lifo_t* src, xylf_t node);
+typedef struct lifo {
+  xylr* head_ptr;
+  uint8_t max_nodes; 
+  int16_t index;     // If no element in the lifo, index is -1
+} lifo_t;
+
+void lifo_raz(lifo_t* src);
+void lifo_init(lifo_t* dst, xylr_t* nodesArray, uint8_t max_nodes);
+xylr_t* lifo_dequeue(lifo_t* src);
+void lifo_enqueue(lifo_t* dst, xylr_t* src);
+void lifo_save(lifo_t* dst, lifo_t* src);
 
 #endif /*__LIFO_H__*/
