@@ -1,9 +1,13 @@
 /*
   FORKED FROM https://github.com/openmv/openmv/tree/master/src/omv/img
+    - This file is part of the OpenMV project.
+    - Copyright (c) 2013-2019 Ibrahim Abdelkader <iabdalkader@openmv.io> & Kwabena W. Agyeman <kwagyeman@openmv.io>
+    - This work is licensed under the MIT license, see the file LICENSE for details.
+
   Added custom blob détection algorithm to keep track of the blobs ID's
-    This patch is part of the eTextile-matrix-sensor project - http://matrix.eTextile.org
-    Copyright (c) 2014-2019 Maurin Donneaud <maurin@etextile.org>
-    This work is licensed under Creative Commons Attribution-ShareAlike 4.0 International license, see the LICENSE file for details.
+    - This patch is part of the eTextile-matrix-sensor project - http://matrix.eTextile.org
+    - Copyright (c) 2014-2019 Maurin Donneaud <maurin@etextile.org>
+    - This work is licensed under Creative Commons Attribution-ShareAlike 4.0 International license, see the LICENSE file for details.
 */
 
 #ifndef __BLOB_H__
@@ -11,8 +15,11 @@
 
 #include "config.h"
 #include "llist.h"
+#include "lifo.h"
 
-extern uint8_t E256_threshold;        // Threshold defaultused to adjust toutch sensitivity (10 is low 40 is high)
+typedef struct llist llist_t; // Forward declaration
+typedef struct lifo lifo_t;   // Forward declaration
+typedef struct xylr xylr_t;   // Forward declaration
 
 #define IM_LOG2_2(x)    (((x) &                0x2ULL) ? ( 2                        ) :             1) // NO ({ ... }) !
 #define IM_LOG2_4(x)    (((x) &                0xCULL) ? ( 2 +  IM_LOG2_2((x) >>  2)) :  IM_LOG2_2(x)) // NO ({ ... }) !
@@ -21,57 +28,51 @@ extern uint8_t E256_threshold;        // Threshold defaultused to adjust toutch 
 #define IM_LOG2_32(x)   (((x) &         0xFFFF0000ULL) ? (16 + IM_LOG2_16((x) >> 16)) : IM_LOG2_16(x)) // NO ({ ... }) !
 #define IM_LOG2(x)      (((x) & 0xFFFFFFFF00000000ULL) ? (32 + IM_LOG2_32((x) >> 32)) : IM_LOG2_32(x)) // NO ({ ... }) !
 
-#define CHAR_BITS (sizeof(char) * 8)
-#define CHAR_MASK (CHAR_BITS - 1)
-#define CHAR_SHIFT IM_LOG2(CHAR_MASK)
+#define UINT8_T_BITS    (sizeof(uint8_t) * 8)
+#define UINT8_T_MASK    (UINT8_T_BITS - 1)
+#define UINT8_T_SHIFT   IM_LOG2(UINT8_T_MASK)
 
-#define ROW_PTR(pImage, y) \
+#define COMPUTE_IMAGE_ROW_PTR(pImage, y) \
   ({ \
     __typeof__ (pImage) _pImage = (pImage); \
     __typeof__ (y) _y = (y); \
-    ((uint8_t *)_pImage->pData) + (_pImage->numCols * _y); \
+    ((uint8_t*)_pImage->pData) + (_pImage->numCols * _y); \
   })
 
-#define ROW_INDEX(pImage, y) \
+#define COMPUTE_BINARY_IMAGE_ROW_PTR(pBitmap, y) \
   ({ \
-    __typeof__ (pImage) _pImage = (pImage); \
+    __typeof__ (pBitmap) _pBitmap = (pBitmap); \
     __typeof__ (y) _y = (y); \
-    _pImage->numCols * _y; \
+    ((uint8_t*)_pBitmap->pData) + (((_pBitmap->numCols + UINT8_T_MASK) >> UINT8_T_SHIFT) * _y); \
   })
 
-#define BITMAP_INDEX(rowIndex, x) \
+#define IMAGE_GET_PIXEL_FAST(row_ptr, x) \
   ({ \
-    __typeof__ (rowIndex) _rowIndex = (rowIndex); \
+    __typeof__ (row_ptr) _row_ptr = (row_ptr); \
     __typeof__ (x) _x = (x); \
-    _rowIndex + _x; \
+    _row_ptr[_x]; \
   })
 
-#define PIXEL_THRESHOLD(pixel, pThreshold) \
-  ({ \
-    __typeof__ (pixel) _pixel = (pixel); \
-    __typeof__ (pThreshold) _pThreshold = (pThreshold); \
-    _pixel >= _pThreshold; \
-  })
 
-#define GET_PIXEL(pRow, x) \
+#define IMAGE_SET_BINARY_PIXEL_FAST(row_ptr, x) \
   ({ \
-    __typeof__ (pRow) _pRow = (pRow); \
+    __typeof__ (row_ptr) _row_ptr = (row_ptr); \
     __typeof__ (x) _x = (x); \
-    _pRow[_x]; \
+    _row_ptr[_x >> UINT8_T_SHIFT] |= 1 << (_x & UINT8_T_MASK); \
   })
 
 #define IMAGE_GET_BINARY_PIXEL_FAST(row_ptr, x) \
   ({ \
     __typeof__ (row_ptr) _row_ptr = (row_ptr); \
     __typeof__ (x) _x = (x); \
-    (_row_ptr[_x >> CHAR_SHIFT] >> (_x & CHAR_MASK)) & 1; \
+    (_row_ptr[_x >> UINT8_T_SHIFT] >> (_x & UINT8_T_MASK)) & 1; \
   })
 
-#define IMAGE_SET_BINARY_PIXEL_FAST(row_ptr, x) \
+#define PIXEL_THRESHOLD(pixel, Threshold) \
   ({ \
-    __typeof__ (row_ptr) _row_ptr = (row_ptr); \
-    __typeof__ (x) _x = (x); \
-    _row_ptr[_x >> CHAR_SHIFT] |= 1 << (_x & CHAR_MASK); \
+    __typeof__ (pixel) _pixel = (pixel); \
+    __typeof__ (Threshold) _Threshold = (Threshold); \
+    _pixel > _Threshold; \
   })
 
 #define MAX(a, b) \
@@ -96,7 +97,7 @@ typedef struct image {
   uint8_t* pData;
 } image_t;
 
-void bitmap_clear(char* bitmap_ptr, const uint16_t Size);
+void bitmap_clear(image_t* bitmap_ptr);
 
 typedef struct {
   uint8_t X;
@@ -117,7 +118,6 @@ typedef enum {
   TO_REMOVE
 } state_t;
 
-// TODO add an ALIVE message
 // What about the TUIO 1.1 Protocol Specification
 // http://www.tuio.org/?specification
 typedef struct blob {
@@ -130,17 +130,33 @@ typedef struct blob {
   struct blob* next_ptr;
 } blob_t;
 
-inline void blob_raz(blob_t* node);
-inline void blob_copy(blob_t* dst, blob_t* src);
+void blob_raz(blob_t* node);
+void blob_copy(blob_t* dst, blob_t* src);
 
-typedef struct llist llist_t; // forward declaration
+static int sum_m_to_n(int m, int n);
+
+void BLOB_SETUP(
+  image_t* inputFrame_ptr,
+  image_t* bitmap_ptr,
+  uint8_t* bitmapArray_ptr,
+  lifo_t*  lifo_ptr,
+  lifo_t*  lifo_stack_ptr,
+  xylr_t*  lifoArray_ptr,
+  llist_t* blobs_ptr,
+  llist_t* blobs_stack_ptr,
+  blob_t*  blobArray_ptr,
+  llist_t* outputBlobs_ptr
+);
 
 void find_blobs(
-  image_t* interpolatedFrame_ptr,
-  char* bitmap_ptr,
-  llist_t* freeBlobs_ptr,
-  llist_t* inputBlobs_ptr,
-  llist_t* outputBlobs_ptr
+  uint8_t   Threshold,
+  image_t*  inputFrame_ptr,
+  image_t*  bitmap_ptr,
+  lifo_t*   lifo_stack_ptr,
+  lifo_t*   lifo_ptr,
+  llist_t*  blobs_stack_ptr,
+  llist_t*  inputBlobs_ptr,
+  llist_t*  outputBlobs_ptr
 );
 
 #endif /*__BLOB_H__*/

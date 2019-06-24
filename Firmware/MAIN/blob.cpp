@@ -1,146 +1,258 @@
 /*
   FORKED FROM https://github.com/openmv/openmv/tree/master/src/omv/img
+    - This file is part of the OpenMV project.
+    - Copyright (c) 2013-2019 Ibrahim Abdelkader <iabdalkader@openmv.io> & Kwabena W. Agyeman <kwagyeman@openmv.io>
+    - This work is licensed under the MIT license, see the file LICENSE for details.
+
   Added custom blob détection algorithm to keep track of the blobs ID's
-    This patch is part of the eTextile-matrix-sensor project - http://matrix.eTextile.org
-    Copyright (c) 2014-2019 Maurin Donneaud <maurin@etextile.org>
-    This work is licensed under Creative Commons Attribution-ShareAlike 4.0 International license, see the LICENSE file for details.
+    - This patch is part of the eTextile-matrix-sensor project - http://matrix.eTextile.org
+    - Copyright (c) 2014-2019 Maurin Donneaud <maurin@etextile.org>
+    - This work is licensed under Creative Commons Attribution-ShareAlike 4.0 International license, see the LICENSE file for details.
 */
 
 #include "blob.h"
 
-#include <stdint.h>
-void find_blobs(
-  image_t*              inFrame_ptr,
-  char*                 bitmap_ptr,
-  llist_t*              freeBlobs_ptr,
-  llist_t*              inputBlobs_ptr,
-  llist_t*              outputBlobs_ptr
+static int sum_m_to_n(int m, int n) {
+  return ((n * (n + 1)) - (m * (m - 1))) / 2;
+}
+
+void BLOB_SETUP(
+  image_t* inputFrame_ptr,
+  image_t* bitmap_ptr,
+  uint8_t* bitmapArray_ptr,
+  lifo_t*  lifo_ptr,
+  lifo_t*  lifo_stack_ptr,
+  xylr_t*  lifoArray_ptr,
+  llist_t* blobs_ptr,
+  llist_t* blobs_stack_ptr,
+  blob_t*  blobArray_ptr,
+  llist_t* outputBlobs_ptr
 ) {
 
-  /////////////////////////////// Scanline flood fill algorithm
+  // bitmap init config (struct image_t)
+  bitmap_ptr->numCols = NEW_COLS;           //
+  bitmap_ptr->numRows = NEW_ROWS;           //
+  bitmap_ptr->pData = &bitmapArray_ptr[0];  // uint8_t bitmapArray[RAW_FRAME];(16x16) array containing (64x64) values
+
+  // Lifo init
+  lifo_raz(lifo_stack_ptr);
+  lifo_init(lifo_stack_ptr, &lifoArray_ptr[0], (uint8_t)LIFO_MAX_NODES); // Add X nodes in the lifo_stack
+  lifo_raz(lifo_ptr);
+
+  // Linked list init
+  llist_raz(blobs_stack_ptr);
+  llist_init(blobs_stack_ptr, &blobArray_ptr[0], (uint8_t)MAX_NODES); // Add X nodes in the blobs_stack linked list
+  llist_raz(blobs_ptr);
+  llist_raz(outputBlobs_ptr);
+}
+
+void find_blobs(
+  uint8_t   Threshold,
+  image_t*  inputFrame_ptr,
+  image_t*  bitmap_ptr,
+  lifo_t*   lifo_stack_ptr,
+  lifo_t*   lifo_ptr,
+  llist_t*  blobs_stack_ptr,
+  llist_t*  inputBlobs_ptr,
+  llist_t*  outputBlobs_ptr
+) {
+
+  /////////////////////////////// Scanline flood fill algorithm / SFF
   /////////////////////////////// Connected-component labeling / CCL
+  bitmap_clear(bitmap_ptr);
+  //llist_raz(inputBlobs_ptr);
 
-  //if (DEBUG_CCL) Serial.println("\n DEBUG_CCL / START <<<<<<<<<<<<<<<<<<<<<<<<");
+  for (uint8_t posY = 0, yy = inputFrame_ptr->numRows, y_max = yy - 1; posY < yy; posY += Y_STRIDE) {
 
-  bitmap_clear(bitmap_ptr, inFrame_ptr->numCols * inFrame_ptr->numRows);
+    uint8_t* row_ptr = COMPUTE_IMAGE_ROW_PTR (inputFrame_ptr, posY);
+    uint8_t* bmp_row_ptr = COMPUTE_BINARY_IMAGE_ROW_PTR (bitmap_ptr, posY);
 
-  //if (DEBUG_CCL) Serial.println("DEBUG_CCL / Bitmap cleared");
-
-  llist_raz(inputBlobs_ptr);
-
-  for (uint8_t posY = 0; posY < inFrame_ptr->numRows; posY++) {
-    
-    uint8_t* row_ptr_A = ROW_PTR(inFrame_ptr, posY);     // Return inFrame_ptr curent row pointer
-    uint16_t row_index_A = ROW_INDEX(inFrame_ptr, posY); // Return inFrame_ptr curent row index (1D array) 0, 64, 128,... 4032
-
-    for (uint8_t posX = 0; posX < inFrame_ptr->numCols; posX++) {
-      //if (DEBUG_BITMAP) Serial.printf("%d ", bitmap_bit_get(bitmap_ptr, BITMAP_INDEX(row_index_A, posX)));
-      //if (DEBUG_BITMAP) Serial.printf("%d ", GET_PIXEL(row_ptr_A, posX));
-
-      if (!IMAGE_GET_BINARY_PIXEL_FAST(bitmap_ptr, BITMAP_INDEX(row_index_A, posX)) && PIXEL_THRESHOLD(GET_PIXEL(row_ptr_A, posX), E256_threshold)) {
-        //if (DEBUG_CCL) Serial.printf("\n DEBUG_CCL / Found active pixel in row:%d\tcolumn:%d", posY, posX);
+    for (uint8_t posX = (posY % X_STRIDE), xx = inputFrame_ptr->numCols, x_max = xx - 1; posX < xx; posX += X_STRIDE) {
+      if (!IMAGE_GET_BINARY_PIXEL_FAST(bmp_row_ptr, posX)
+          && PIXEL_THRESHOLD(IMAGE_GET_PIXEL_FAST(row_ptr, posX), Threshold)) {
 
         uint8_t oldX = posX;
         uint8_t oldY = posY;
-
-        blob_t* blob = llist_pop_front(freeBlobs_ptr);
-        //if (DEBUG_CCL) Serial.printf("\n DEBUG_CCL / Get a blob from **freeBlobs** linked list: %p", blob);
-        blob_raz(blob);
 
         uint8_t blob_x1 = posX;
         uint8_t blob_y1 = posY;
         uint8_t blob_x2 = posX;
         uint8_t blob_y2 = posY;
+        uint16_t blob_pixels = 0;
+        uint16_t blob_cx = 0;
+        uint16_t blob_cy = 0;
+        uint8_t blob_depth = 0;
 
-        while (1) {
+        while (1) { // while_A
           uint8_t left = posX;
           uint8_t right = posX;
 
-          uint8_t* row_ptr = ROW_PTR(inFrame_ptr, posY);     // Return inFrame_ptr curent row pointer
-          uint16_t row_index = ROW_INDEX(inFrame_ptr, posY); // Return inFrame_ptr curent row index (1D array) 0, 64, 128,... 4032
+          uint8_t* row = COMPUTE_IMAGE_ROW_PTR (inputFrame_ptr, posY);
+          uint8_t* bmp_row = COMPUTE_BINARY_IMAGE_ROW_PTR (bitmap_ptr, posY);
 
-          while ((left > 0) &&
-                 (!IMAGE_GET_BINARY_PIXEL_FAST(bitmap_ptr, BITMAP_INDEX(row_index, left - 1))) &&
-                 PIXEL_THRESHOLD(GET_PIXEL(row_ptr, left - 1), E256_threshold)) {
+          while ((left > 0)
+                 && (!IMAGE_GET_BINARY_PIXEL_FAST(bmp_row, left - 1))
+                 && PIXEL_THRESHOLD(IMAGE_GET_PIXEL_FAST(row, left - 1), Threshold)) {
             left--;
           }
-          //if (DEBUG_CCL) Serial.printf("\n DEBUG_CCL / The minimum activated left pixel ID is: %d", left);
 
-          while (right < (inFrame_ptr->numCols - 1) &&
-                 (!IMAGE_GET_BINARY_PIXEL_FAST(bitmap_ptr, BITMAP_INDEX(row_index, right + 1))) &&
-                 PIXEL_THRESHOLD(GET_PIXEL(row_ptr, right + 1), E256_threshold)) {
+          while (right < (inputFrame_ptr->numCols - 1)
+                 && (!IMAGE_GET_BINARY_PIXEL_FAST(bmp_row, right + 1))
+                 && PIXEL_THRESHOLD(IMAGE_GET_PIXEL_FAST(row, right + 1), Threshold)) {
             right++;
           }
-          //if (DEBUG_CCL) Serial.printf("\n DEBUG_CCL / The maximum activated right pixel ID is: %d", right);
 
           blob_x1 = MIN(blob_x1, left);
           blob_y1 = MIN(blob_y1, posY);
           blob_x2 = MAX(blob_x2, right);
           blob_y2 = MAX(blob_y2, posY);
 
-          //if (DEBUG_CCL) Serial.println("DEBUG_CCL / Save this activated pixels line to the bitmap array");
-          for (uint8_t x = left; x <= right; x++) {
-            IMAGE_SET_BINARY_PIXEL_FAST(bitmap_ptr, BITMAP_INDEX(row_index, x));
-            blob->box.D = MAX(blob->box.D, GET_PIXEL(row_ptr, x));
-            blob->pixels++; // uint16_t
+          for (uint8_t i = left; i <= right; i++) {
+            IMAGE_SET_BINARY_PIXEL_FAST(bmp_row, i);
+            blob_depth = MAX(blob_depth, IMAGE_GET_PIXEL_FAST(row, i));
           }
 
-          boolean break_out = true;
-          if (posY < (inFrame_ptr->numRows - 1)) {
-            row_ptr = ROW_PTR(inFrame_ptr, posY + 1);     // Return inFrame_ptr curent row pointer
-            row_index = ROW_INDEX(inFrame_ptr, posY + 1); // Return inFrame_ptr curent row index (1D array) 0, 64, 128,... 4032
-            for (uint8_t x = left; x <= right; x++) {
-              if ((!IMAGE_GET_BINARY_PIXEL_FAST(bitmap_ptr, BITMAP_INDEX(row_index, x))) && PIXEL_THRESHOLD(GET_PIXEL(row_ptr, x), E256_threshold)) {
-                //if (DEBUG_CCL) Serial.printf("\n DEBUG_CCL / Found an active pixel in row: %d", posY + 1);
-                posX = x;
-                posY++;
-                break_out = false;
-                break;
+          int sum = sum_m_to_n(left, right);
+          uint8_t cnt = right - left + 1;
+          blob_pixels += cnt;
+          //blob_perimeter += 2;
+          blob_cx += sum;
+          blob_cy += posY * cnt;
+
+          uint8_t top_left = left;
+          uint8_t bot_left = left;
+
+          boolean break_out = false;
+          while (1) { // while_B
+
+            if (lifo_ptr->index < lifo_stack_ptr->max_nodes - 1) {
+
+              if (posY > 0) {
+
+                row = COMPUTE_IMAGE_ROW_PTR (inputFrame_ptr, posY - 1);
+                bmp_row = COMPUTE_BINARY_IMAGE_ROW_PTR (bitmap_ptr, posY - 1);
+
+                boolean recurse = false;
+                for (uint8_t i = top_left; i <= right; i++) {
+
+                  if ((!IMAGE_GET_BINARY_PIXEL_FAST(bmp_row, i))
+                      && (PIXEL_THRESHOLD(IMAGE_GET_PIXEL_FAST(row, i), Threshold))) {
+
+                    xylr_t* context = lifo_dequeue(lifo_stack_ptr);
+                    //Serial.printf("\n DEBUG_LIFO / A / lifo_stack_ptr / Dequeue_node: %p", context);
+
+                    context->x = posX;
+                    context->y = posY;
+                    context->l = left;
+                    context->r = right;
+                    context->t_l = i++; // Don't test the same pixel again...
+                    context->b_l = bot_left;
+                    lifo_enqueue(lifo_ptr, context);
+                    //Serial.printf("\n DEBUG_LIFO / A / lifo_ptr / Enqueue_node: %p", context);
+
+                    posX = i;
+                    posY--;
+                    recurse = true;
+                    break;
+                  }
+                }
+                if (recurse) {
+                  break;
+                }
+              }
+
+              if (posY < (inputFrame_ptr->numRows - 1)) {
+
+                row = COMPUTE_IMAGE_ROW_PTR (inputFrame_ptr, posY + 1);
+                bmp_row = COMPUTE_BINARY_IMAGE_ROW_PTR (bitmap_ptr, posY + 1);
+
+                boolean recurse = false;
+                for (uint8_t i = bot_left; i <= right; i++) {
+
+                  if (!IMAGE_GET_BINARY_PIXEL_FAST(bmp_row, i)
+                      && PIXEL_THRESHOLD(IMAGE_GET_PIXEL_FAST(row, i), Threshold)) {
+
+                    xylr_t* context = lifo_dequeue(lifo_stack_ptr);
+                    //Serial.printf("\n DEBUG_LIFO / B / lifo_stack_ptr / Dequeue_node: %p", context);
+                    context->x = posX;
+                    context->y = posY;
+                    context->l = left;
+                    context->r = right;
+                    context->t_l = top_left;
+                    context->b_l = i++; // Don't test the same pixel again...
+                    lifo_enqueue(lifo_ptr, context);
+                    //Serial.printf("\n DEBUG_LIFO / B / lifo_ptr / Enqueue_node: %p", context);
+
+                    posX = i;
+                    posY++;
+                    recurse = true;
+                    break;
+                  }
+                }
+                if (recurse) {
+                  break;
+                }
               }
             }
-          }
+            if (lifo_ptr->index < 0) {
+              break_out = true;
+              break;
+            }
+
+            xylr_t* context = lifo_dequeue(lifo_ptr);
+            //Serial.printf("\n DEBUG_LIFO / C / lifo_ptr / Dequeue_node: %p", context);
+
+            posX = context->x;
+            posY = context->y;
+            left = context->l;
+            right = context->r;
+            top_left = context->t_l;
+            bot_left = context->b_l;
+            lifo_enqueue(lifo_stack_ptr, context); // Save the node to the lifo_stack
+            //Serial.printf("\n DEBUG_LIFO / C / lifo_stack_ptr / Enqueue_node: %p", context);
+          } // END while_B
+
+
           if (break_out) {
             break;
           }
-        }
-        //if (DEBUG_CCL) Serial.println("DEBUG_CCL / BLOB COMPLEAT!");
+        } // END while_A
 
-        if (blob->pixels > MIN_BLOB_PIX && blob->pixels < MAX_BLOB_PIX) {
+        if (blob_pixels > MIN_BLOB_PIX && blob_pixels < MAX_BLOB_PIX) {
+
+          blob_t* blob = llist_pop_front(blobs_stack_ptr);
 
           blob->box.W = blob_x2 - blob_x1;
           blob->box.H = blob_y2 - blob_y1;
 
-          blob->centroid.X = (uint8_t)round(blob_x2 - ((blob_x2 - blob_x1) / 2)); // x centroid position
-          blob->centroid.Y = (uint8_t)round(blob_y2 - ((blob_y1 - blob_y2) / 2)); // y centroid position
-          
-          //uint8_t* row_ptr = ROW_PTR(inFrame_ptr, blob->centroid.Y);
-          //blob->box.D = GET_PIXEL(row_ptr, blob->centroid.X);
+          //blob->centroid.X = (uint8_t)round(blob_x2 - ((float)blob->box.W / 2)); // x centroid position
+          //blob->centroid.Y = (uint8_t)round(blob_y2 - ((float)blob->box.H / 2)); // y centroid position
 
-          //if (DEBUG_CENTER) Serial.printf("\n DEBUG_CENTER / blob_cx: %d\tblob_cy: %d\tblob_cz: %d", blob->centroid.X, blob->centroid.Y, blob->centroid.Z);
+          blob->centroid.X = (uint8_t)round(blob_cx / ((float) blob_pixels));
+          blob->centroid.Y = (uint8_t)round(blob_cy / ((float) blob_pixels));
+          //int mx = fast_roundf(b_mx); // x centroid
+          //int my = fast_roundf(b_my); // y centroid
+          //blob->centroid.X = (uint8_t)round(b_mx); // x centroid position
+          //blob->centroid.Y = (uint8_t)round(b_my); // y centroid position
+
+          blob->box.D = blob_depth;
+
+          //Serial.printf("\n DEBUG_SFF / blob_cx: %d\tblob_cy: %d\tblob_cz: %d", blob->centroid.X, blob->centroid.Y, blob->centroid.Z);
 
           llist_push_back(inputBlobs_ptr, blob);
-          //if (DEBUG_CCL) Serial.printf("\n DEBUG_CCL / Blob: %p added to the **blobs** linked list", blob);
-        } else {
-          llist_push_back(freeBlobs_ptr, blob);
-          //if (DEBUG_CCL) Serial.printf("\n DEBUG_CCL / Blob %p saved to **freeBlobList** linked list", blob);
+          //Serial.printf("\n DEBUG_SFF / Blob: %p added to the **blobs** linked list", blob);
+
         }
         posX = oldX;
         posY = oldY;
       }
     }
-    //if (DEBUG_BITMAP) Serial.println();
   }
-  //if (DEBUG_BITMAP) Serial.println();
-
-  //if (DEBUG_CCL) Serial.printf("\n DEBUG_CCL / **blobs** linked list index: %d", inputBlobs_ptr->index);
-  //if (DEBUG_CCL) Serial.printf("\n DEBUG_CCL / **freeBlobs** linked list index: %d", freeBlobs_ptr->index);
-  //if (DEBUG_CCL) Serial.println("DEBUG_CCL / END of scanline flood fill algorithm <<<<<<<<<<<<<<<<<<<<<<<<");
-
   /////////////////////////////// PERSISTANT BLOB ID
 
 #ifdef DEBUG_BLOB_ID
   Serial.printf("\n DEBUG_BLOB_ID / **inputBlobs** linked list index: %d", inputBlobs_ptr->index);
-  Serial.printf("\n DEBUG_BLOB_ID / **freeBlobs** linked list index: %d", freeBlobs_ptr->index);
+  Serial.printf("\n DEBUG_BLOB_ID / **blobs_stack** linked list index: %d", blobs_stack_ptr->index);
   Serial.printf("\n DEBUG_BLOB_ID / **outputBlobs** linked list index: %d", outputBlobs_ptr->index);
 #endif /*__DEBUG_BLOB_ID__*/
 
@@ -151,7 +263,7 @@ void find_blobs(
       if (blob->state == TO_REMOVE) {
         found = true;
         llist_remove_blob(outputBlobs_ptr, blob);
-        llist_push_back(freeBlobs_ptr, blob);
+        llist_push_back(blobs_stack_ptr, blob);
 #ifdef DEBUG_BLOB_ID
         Serial.printf("\n DEBUG_BLOB_ID / Blob: %p removed from **outputBlobs** linked list", blob);
         Serial.printf("\n DEBUG_BLOB_ID / Blob: %p saved to **freeBlobList** linked list", blob);
@@ -254,7 +366,7 @@ void find_blobs(
   // Add the new blobs to the outputBlobs linked list
   for (blob_t* blob = ITERATOR_START_FROM_HEAD(inputBlobs_ptr); blob != NULL; blob = ITERATOR_NEXT(blob)) {
     if (blob->state == TO_ADD) {
-      blob_t* newBlob = llist_pop_front(freeBlobs_ptr);
+      blob_t* newBlob = llist_pop_front(blobs_stack_ptr);
       blob_copy(newBlob, blob);
       newBlob->alive = 1;
       llist_push_back(outputBlobs_ptr, newBlob);
@@ -264,18 +376,24 @@ void find_blobs(
     }
   }
 
-  llist_save_blobs(freeBlobs_ptr, inputBlobs_ptr);
+  llist_save_blobs(blobs_stack_ptr, inputBlobs_ptr);
 #ifdef DEBUG_BLOB_ID
   Serial.println("\n DEBUG_BLOB_ID / END OFF BLOB FONCTION");
 #endif /*__DEBUG_BLOB_ID__*/
 }
 
-
-void bitmap_clear(char* bitmap_ptr, const uint16_t Size) {
-  memset(bitmap_ptr, 0, Size * sizeof(char)); // FIXME: can be optimized
+void bitmap_clear(image_t* bitmap_ptr) {
+  memset(bitmap_ptr->pData, 0, (bitmap_ptr->numCols * bitmap_ptr->numRows) * sizeof(uint8_t));
 }
 
-inline void blob_copy(blob_t* dst, blob_t* src) {
+/*
+  void bitmap_clear(bitmap_t *ptr){
+    memset(ptr->data, 0, ((ptr->size + CHAR_MASK) >> CHAR_SHIFT) * sizeof(char));
+  }
+*/
+
+// FIXME: can be optimized
+void blob_copy(blob_t* dst, blob_t* src) {
   //dst->timeTag = millis(); // TODO?
   dst->UID = src->UID;
   dst->alive = src->alive;
@@ -287,7 +405,8 @@ inline void blob_copy(blob_t* dst, blob_t* src) {
   dst->pixels = src->pixels;
 }
 
-inline void blob_raz(blob_t* node) {
+// FIXME: can be optimized
+void blob_raz(blob_t* node) {
   //node->timeTag = 0; // TODO?
   node->UID = 0;
   node->alive = 0;
