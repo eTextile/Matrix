@@ -74,8 +74,6 @@ void setup() {
 #ifdef DEBUG_FPS
   Serial.begin(BAUD_RATE);       // Arduino serial library ** 230400 **
   while (!Serial.dtr());         // Wait for user to start the serial monitor
-  //Serial.println("SERIAL_SETUP");
-  //delay(100);
 #else
   SLIPSerial.begin(BAUD_RATE);   // Arduino serial library ** 230400 ** extended with SLIP encoding
 #endif /*__DEBUG_ADC__*/
@@ -88,11 +86,9 @@ void setup() {
   //attachInterrupt(BUTTON_PIN, calib, RISING); // Attach interrrupt on button PIN // FIXME - NO BUTTON_PIN ON the E256
 
   SPI_SETUP();
-  //Serial.println("SPI_SETUP");
-  //delay(100);
+  
   ADC_SETUP();
-  //Serial.println("ADC_SETUP");
-  //delay(100);
+  
   INTERP_SETUP(
     &inputFrame,          // image_t*
     &frameArray[0],       // uint8_t*
@@ -100,8 +96,7 @@ void setup() {
     &interpFrameArray[0], // uint8_t*
     &interp               // interp_t*
   );
-  //Serial.println("INTERP_SETUP");
-  //delay(100);
+
   BLOB_SETUP(
     &inputFrame,          // image_t*
     &bitmap,              // image_t*
@@ -114,8 +109,6 @@ void setup() {
     &blobArray[0],        // blob_t*
     &outputBlobs          // list_t*
   );
-  //Serial.println("BLOB_SETUP");
-  //delay(100);
 }
 
 //////////////////// LOOP
@@ -139,7 +132,6 @@ void loop() {
   if (calibrate) matrix_calibrate(&minValsArray[0]);
   matrix_scan(&frameArray[0]);
   matrix_interp(&interpolatedFrame, &inputFrame, &interp);
-
   for (uint8_t col = 0; col < NEW_COLS; col++) {
     for (uint8_t row = 0; row < NEW_ROWS; row++) {
       uint16_t index = col * NEW_COLS + row;          // Compute 1D array index
@@ -156,7 +148,6 @@ void loop() {
   matrix_scan(&frameArray[0]);
   matrix_interp(&interpolatedFrame, &inputFrame, &interp);
   matrix_scan_blobs();
-
   for (uint8_t posY = 0; posY < NEW_COLS; posY++) {
     uint8_t* bmp_row = COMPUTE_BINARY_IMAGE_ROW_PTR (&bitmap, posY);
     for (uint8_t posX = 0; posX < NEW_ROWS; posX++) {
@@ -173,9 +164,7 @@ void loop() {
   matrix_scan(&frameArray[0]);
   matrix_interp(&interpolatedFrame, &inputFrame, &interp);
   matrix_scan_blobs();
-
-  /*
-    for (blob_t* blob = ITERATOR_START_FROM_HEAD(&outputBlobs); blob != NULL; blob = ITERATOR_NEXT(blob)) {
+  for (blob_t* blob = ITERATOR_START_FROM_HEAD(&outputBlobs); blob != NULL; blob = ITERATOR_NEXT(blob)) {
     Serial.print (blob->UID);        // uint8_t unique session ID
     Serial.print(" ");
     Serial.print (blob->alive);      // uint8_t
@@ -190,8 +179,7 @@ void loop() {
     Serial.print(" ");
     Serial.print (blob->box.D);      // uint8_t
     Serial.println();
-    }
-  */
+  }
 #endif /*__DEBUG_BLOBS_OSC__*/
 
 #ifdef BLOBS_OSC
@@ -212,7 +200,6 @@ void loop() {
     OSCmsg.dispatch("/x", matrix_interp_data_bin_get);
     OSCmsg.dispatch("/b", matrix_blobs_get);
   }
-
   if (calibrate) matrix_calibrate(&minValsArray[0]);
   if (scanning) {
     matrix_scan(&frameArray[0]);
@@ -231,7 +218,6 @@ void SPI_SETUP(void) {
   //SPI.setSCK(E256_SS_PIN);        // D10 - Hardware SPI no need to specify it!
   //SPI.setSCK(E256_SCK_PIN);       // D13 - Hardware SPI no need to specify it!
   //SPI.setMOSI(E256_MOSI_PIN);     // D11 - Hardware SPI no need to specify it!
-
   pinMode(E256_SS_PIN, OUTPUT);
   pinMode(E256_SCK_PIN, OUTPUT);
   pinMode(E256_MOSI_PIN, OUTPUT);
@@ -281,7 +267,7 @@ void matrix_scan(uint8_t* outputFrame) {
       //delayMicroseconds(5);               // TODO: see switching time of the 74HC4051BQ multiplexeur
 
       uint8_t rowIndexA = row * RAW_COLS + col; // Row IndexA computation
-      uint8_t rowIndexB = rowIndexA + 128;  // Row IndexB computation (ROW_FRAME/2 == 128)
+      uint8_t rowIndexB = rowIndexA + 128;      // Row IndexB computation (ROW_FRAME/2 == 128)
 
       result = adc->analogSynchronizedRead(ADC0_PIN, ADC1_PIN);
 
@@ -321,8 +307,8 @@ void matrix_calibrate(uint8_t* outputFrame) {
         uint8_t ADC0_val = result.result_adc0;
         uint8_t ADC1_val = result.result_adc1;
 
-        uint8_t rowIndexA = row * RAW_COLS + col;    // Row IndexA computation
-        uint8_t rowIndexB = rowIndexA + 128;     // Row IndexB computation (ROW_FRAME/2 == 128)
+        uint8_t rowIndexA = row * RAW_COLS + col; // Row IndexA computation
+        uint8_t rowIndexB = rowIndexA + 128;      // Row IndexB computation (ROW_FRAME/2 == 128)
 
         if (ADC0_val > outputFrame[rowIndexA]) outputFrame[rowIndexA] = ADC0_val;
         if (ADC1_val > outputFrame[rowIndexB]) outputFrame[rowIndexB] = ADC1_val;
@@ -353,7 +339,6 @@ void matrix_threshold_set(OSCMessage & msg) {
 
 // Send raw frame values in SLIP-OSC formmat
 void matrix_raw_data_get(OSCMessage & msg) {
-
   matrix_scan(&frameArray[0]);
   OSCMessage m("/r");
   m.add(frameArray, RAW_FRAME);
@@ -364,7 +349,6 @@ void matrix_raw_data_get(OSCMessage & msg) {
 
 // Send interpolated frame values in SLIP-OSC formmat
 void matrix_interp_data_get(OSCMessage & msg) {
-
   matrix_scan(&frameArray[0]);
   matrix_interp(&interpolatedFrame, &inputFrame, &interp);
   OSCMessage m("/i");
@@ -376,10 +360,10 @@ void matrix_interp_data_get(OSCMessage & msg) {
 
 // Send interpolated frame values in SLIP-OSC formmat
 void matrix_interp_data_bin_get(OSCMessage & msg) {
-
   matrix_scan(&frameArray[0]);
   matrix_interp(&interpolatedFrame, &inputFrame, &interp);
-  OSCMessage m("/i");
+  matrix_scan_blobs();
+  OSCMessage m("/x");
   m.add(&bitmapArray[0], RAW_FRAME);
   SLIPSerial.beginPacket();
   m.send(SLIPSerial);        // Send the bytes to the SLIP stream
