@@ -7,14 +7,14 @@
 
 #define USB_PORT              "/dev/ttyACM0"
 #define BAUD_RATE             230400  // With Teensy, it's always the same native speed. The baud rate setting is ignored.
-#define COLS                  16
-#define ROWS                  16
-#define DUAL_ROWS             (ROWS / 2)
+#define RAW_COLS              16
+#define RAW_ROWS              16
+#define DUAL_ROWS             (RAW_ROWS / 2)
 #define SCALE_X               4
 #define SCALE_Y               4
-#define ROW_FRAME             (COLS * ROWS)
-#define NEW_COLS              (COLS * SCALE_X)
-#define NEW_ROWS              (ROWS * SCALE_Y)
+#define RAW_FRAME             (RAW_COLS * RAW_ROWS)
+#define NEW_COLS              (RAW_COLS * SCALE_X)
+#define NEW_ROWS              (RAW_ROWS * SCALE_Y)
 #define NEW_FRAME             (NEW_COLS * NEW_ROWS)
 
 #define OUT_BUFFER_SIZE       1024
@@ -67,30 +67,35 @@ public:
     ofxToggle                     getBlobsToggle;
     ofxToggle                     getRawDataToggle;
     ofxToggle                     getInterpDataToggle;
+    ofxToggle                     getBinDataToggle;
 
     uint8_t                       inputFrameBuffer[IN_BUFFER_SIZE];
-
-    uint8_t                       rawValues[ROW_FRAME]; // 1D array
+    uint8_t                       rawValues[RAW_FRAME];    // 1D array
     uint8_t                       interpValues[NEW_FRAME]; // 1D array
+    uint8_t                       binValues[NEW_FRAME];    // 1D array
 
     void                          E256_setCaliration(void);
     void                          E256_setTreshold(int & sliderValue);
 
     bool                          getRawData;
     bool                          getInterpData;
+    bool                          getBinData;
     bool                          getBlobs;
 
     void                          E256_getRawDataStart(bool & val);
     void                          E256_getInterpDataStart(bool & val);
+    void                          E256_getBinDataStart(bool & val);
     void                          E256_getBlobsStart(bool & val);
 
-    void                          E256_getRawData();
-    void                          E256_getInterpData();
-    void                          E256_getBlobs();
+    void                          E256_getRawData(void);
+    void                          E256_getInterpData(void);
+    void                          E256_getBinData(void);
+    void                          E256_getBlobs(void);
 
     ofMesh                        rawDataMesh;
     ofMesh                        interpDataMesh;
 
+		ofTrueTypeFont	              FreeSansBold;
     void                          keyPressed(int key);
     //std::vector<ofboxPrimitive>  boxe;
   };
