@@ -12,10 +12,6 @@
 
 #include "blob.h"
 
-static int sum_m_to_n(int m, int n) {
-  return ((n * (n + 1)) - (m * (m - 1))) / 2;
-}
-
 void BLOB_SETUP(
   image_t* inputFrame_ptr,
   image_t* bitmap_ptr,
@@ -44,6 +40,10 @@ void BLOB_SETUP(
   llist_init(blobs_stack_ptr, &blobArray_ptr[0], (uint8_t)MAX_NODES); // Add X nodes in the blobs_stack linked list
   llist_raz(blobs_ptr);
   llist_raz(outputBlobs_ptr);
+}
+
+static int sum_m_to_n(int m, int n) {
+  return ((n * (n + 1)) - (m * (m - 1))) / 2;
 }
 
 void find_blobs(
@@ -75,13 +75,15 @@ void find_blobs(
         uint8_t oldY = posY;
 
         uint8_t blob_x1 = posX;
-        uint8_t blob_y1 = posY;
         uint8_t blob_x2 = posX;
-        uint8_t blob_y2 = posY;
+
+        uint8_t blob_height = 0;
+        uint8_t blob_depth = 0;
+
         uint16_t blob_pixels = 0;
         uint16_t blob_cx = 0;
         uint16_t blob_cy = 0;
-        uint8_t blob_depth = 0;
+
 
         while (1) { // while_A
           uint8_t left = posX;
@@ -103,9 +105,7 @@ void find_blobs(
           }
 
           blob_x1 = MIN(blob_x1, left);
-          blob_y1 = MIN(blob_y1, posY);
           blob_x2 = MAX(blob_x2, right);
-          blob_y2 = MAX(blob_y2, posY);
 
           for (uint8_t i = left; i <= right; i++) {
             IMAGE_SET_BINARY_PIXEL_FAST(bmp_row, i);
@@ -113,11 +113,10 @@ void find_blobs(
           }
 
           int sum = sum_m_to_n(left, right);
-          uint8_t cnt = right - left + 1;
-          blob_pixels += cnt;
-          //blob_perimeter += 2;
+          uint8_t pixels = right - left + 1;
+          blob_pixels += pixels;
           blob_cx += sum;
-          blob_cy += posY * cnt;
+          blob_cy += posY * pixels;
 
           uint8_t top_left = left;
           uint8_t bot_left = left;
@@ -140,12 +139,11 @@ void find_blobs(
 
                     xylr_t* context = lifo_dequeue(lifo_stack_ptr);
                     //Serial.printf("\n DEBUG_LIFO / A / lifo_stack_ptr / Dequeue_node: %p", context);
-
                     context->x = posX;
                     context->y = posY;
                     context->l = left;
                     context->r = right;
-                    context->t_l = i++; // Don't test the same pixel again...
+                    context->t_l = i++; // Don't test the same pixel again
                     context->b_l = bot_left;
                     lifo_enqueue(lifo_ptr, context);
                     //Serial.printf("\n DEBUG_LIFO / A / lifo_ptr / Enqueue_node: %p", context);
@@ -179,7 +177,7 @@ void find_blobs(
                     context->l = left;
                     context->r = right;
                     context->t_l = top_left;
-                    context->b_l = i++; // Don't test the same pixel again...
+                    context->b_l = i++; // Don't test the same pixel again
                     lifo_enqueue(lifo_ptr, context);
                     //Serial.printf("\n DEBUG_LIFO / B / lifo_ptr / Enqueue_node: %p", context);
 
@@ -201,7 +199,6 @@ void find_blobs(
 
             xylr_t* context = lifo_dequeue(lifo_ptr);
             //Serial.printf("\n DEBUG_LIFO / C / lifo_ptr / Dequeue_node: %p", context);
-
             posX = context->x;
             posY = context->y;
             left = context->l;
@@ -210,8 +207,10 @@ void find_blobs(
             bot_left = context->b_l;
             lifo_enqueue(lifo_stack_ptr, context); // Save the node to the lifo_stack
             //Serial.printf("\n DEBUG_LIFO / C / lifo_stack_ptr / Enqueue_node: %p", context);
-          } // END while_B
 
+            blob_height++;
+
+          } // END while_B
 
           if (break_out) {
             break;
@@ -221,27 +220,24 @@ void find_blobs(
         if (blob_pixels > MIN_BLOB_PIX && blob_pixels < MAX_BLOB_PIX) {
 
           blob_t* blob = llist_pop_front(blobs_stack_ptr);
-
-          blob->box.W = blob_x2 - blob_x1;
-          blob->box.H = blob_y2 - blob_y1;
-
-          //blob->centroid.X = (uint8_t)round(blob_x2 - ((float)blob->box.W / 2)); // x centroid position
-          //blob->centroid.Y = (uint8_t)round(blob_y2 - ((float)blob->box.H / 2)); // y centroid position
+          blob_raz(blob);
 
           blob->centroid.X = (uint8_t)round(blob_cx / ((float) blob_pixels));
           blob->centroid.Y = (uint8_t)round(blob_cy / ((float) blob_pixels));
-          //int mx = fast_roundf(b_mx); // x centroid
-          //int my = fast_roundf(b_my); // y centroid
-          //blob->centroid.X = (uint8_t)round(b_mx); // x centroid position
-          //blob->centroid.Y = (uint8_t)round(b_my); // y centroid position
-
+          blob->box.W = (blob_x2 - blob_x1);
+          blob->box.H = blob_height;
           blob->box.D = blob_depth;
-
-          //Serial.printf("\n DEBUG_SFF / blob_cx: %d\tblob_cy: %d\tblob_cz: %d", blob->centroid.X, blob->centroid.Y, blob->centroid.Z);
-
+          /*
+            Serial.printf("\n DEBUG_SFF / blob_cx:%d \tblob_cy:%d \tblob_W:%d \tblob_H:%d \tblob_D:%d",
+                        blob->centroid.X,
+                        blob->centroid.Y,
+                        blob->box.W,
+                        blob->box.H,
+                        blob->box.D
+                       );
+          */
           llist_push_back(inputBlobs_ptr, blob);
           //Serial.printf("\n DEBUG_SFF / Blob: %p added to the **blobs** linked list", blob);
-
         }
         posX = oldX;
         posY = oldY;
@@ -250,11 +246,11 @@ void find_blobs(
   }
   /////////////////////////////// PERSISTANT BLOB ID
 
-#ifdef DEBUG_BLOB_ID
-  Serial.printf("\n DEBUG_BLOB_ID / **inputBlobs** linked list index: %d", inputBlobs_ptr->index);
-  Serial.printf("\n DEBUG_BLOB_ID / **blobs_stack** linked list index: %d", blobs_stack_ptr->index);
-  Serial.printf("\n DEBUG_BLOB_ID / **outputBlobs** linked list index: %d", outputBlobs_ptr->index);
-#endif /*__DEBUG_BLOB_ID__*/
+#ifdef DEBUG_BLOBS_ID
+  Serial.printf("\n DEBUG_BLOBS_ID / **inputBlobs** linked list index: %d", inputBlobs_ptr->index);
+  Serial.printf("\n DEBUG_BLOBS_ID / **blobs_stack** linked list index: %d", blobs_stack_ptr->index);
+  Serial.printf("\n DEBUG_BLOBS_ID / **outputBlobs** linked list index: %d", outputBlobs_ptr->index);
+#endif /*__DEBUG_BLOBS_ID__*/
 
   // Suppress blobs from the outputBlobs linked list
   while (1) {
@@ -264,10 +260,10 @@ void find_blobs(
         found = true;
         llist_remove_blob(outputBlobs_ptr, blob);
         llist_push_back(blobs_stack_ptr, blob);
-#ifdef DEBUG_BLOB_ID
-        Serial.printf("\n DEBUG_BLOB_ID / Blob: %p removed from **outputBlobs** linked list", blob);
-        Serial.printf("\n DEBUG_BLOB_ID / Blob: %p saved to **freeBlobList** linked list", blob);
-#endif /*__DEBUG_BLOB_ID__*/
+#ifdef DEBUG_BLOBS_ID
+        Serial.printf("\n DEBUG_BLOBS_ID / Blob: %p removed from **outputBlobs** linked list", blob);
+        Serial.printf("\n DEBUG_BLOBS_ID / Blob: %p saved to **freeBlobList** linked list", blob);
+#endif /*__DEBUG_BLOBS_ID__*/
         break;
       }
     }
@@ -281,18 +277,16 @@ void find_blobs(
     float minDist = 255.0f;
     blob_t* nearestBlob = NULL;
 
-#ifdef DEBUG_BLOB_ID
-    Serial.printf("\n DEBUG_BLOB_ID / Is input blob: %p have a coresponding blob in **outputBlobs**", blobA);
-#endif /*__DEBUG_BLOB_ID__*/
+#ifdef DEBUG_BLOBS_ID
+    Serial.printf("\n DEBUG_BLOBS_ID / Is input blob: %p have a coresponding blob in **outputBlobs**", blobA);
+#endif /*__DEBUG_BLOBS_ID__*/
     for (blob_t* blobB = ITERATOR_START_FROM_HEAD(outputBlobs_ptr); blobB != NULL; blobB = ITERATOR_NEXT(blobB)) {
-      uint8_t xa = blobA->centroid.X;
-      uint8_t ya = blobA->centroid.Y;
-      uint8_t xb = blobB->centroid.X;
-      uint8_t yb = blobB->centroid.Y;
-      float dist = sqrt(pow(xa - xb, 2) + pow(ya - yb, 2)); // fast_sqrt? & fast_pow? // arm_sqrt_f32(); ?
-#ifdef DEBUG_BLOB_ID
-      Serial.printf("\n DEBUG_BLOB_ID / Distance between input & output blobs positions: %f ", dist);
-#endif /*__DEBUG_BLOB_ID__*/
+
+      float dist = point_distance(blobA, blobB);
+
+#ifdef DEBUG_BLOBS_ID
+      Serial.printf("\n DEBUG_BLOBS_ID / Distance between input & output blobs positions: %f ", dist);
+#endif /*__DEBUG_BLOBS_ID__*/
       if (dist < minDist) {
         minDist = dist;
         nearestBlob = blobB;
@@ -301,24 +295,26 @@ void find_blobs(
     // If the distance between curent blob and last blob position is less than minDist:
     // Copy the ID of the nearestBlob found in outputBlobs linked list and give it to the curent input blob.
     // Set the curent input blob state to TO_UPDATE.
-    if (minDist < 10.0f) { // TODO: set it as global variable
-#ifdef DEBUG_BLOB_ID
-      Serial.printf("\n DEBUG_BLOB_ID / Found corresponding blob: %p in the **outputBlobs** linked list", nearestBlob);
-#endif /*__DEBUG_BLOB_ID__*/
+    if (minDist < 5.0f) { // TODO: set it as global variable
+#ifdef DEBUG_BLOBS_ID
+      Serial.printf("\n DEBUG_BLOBS_ID / Found corresponding blob: %p in the **outputBlobs** linked list", nearestBlob);
+#endif /*__DEBUG_BLOBS_ID__*/
       blobA->UID = nearestBlob->UID;
       blobA->state = TO_UPDATE;
     }
     // Found a new blob! We nead to give it an ID
     else {
-#ifdef DEBUG_BLOB_ID
-      Serial.print("\n DEBUG_BLOB_ID / Found new blob without ID");
-#endif /*__DEBUG_BLOB_ID__*/
+#ifdef DEBUG_BLOBS_ID
+      Serial.print("\n DEBUG_BLOBS_ID / Found new blob without ID");
+#endif /*__DEBUG_BLOBS_ID__*/
 
-      // Test if there is more than two blobs in the linked list (-1 is empty)
-      if (outputBlobs_ptr->index > 0) {
+      /*
+        // Test if there is more than two blobs in the linked list (-1 is empty)
+        if (outputBlobs_ptr->index > 0) {
         // Sorting outputBlobs linked list
         llist_sort(outputBlobs_ptr);
-      }
+        }
+      */
 
       // Find the smallest missing UID in the sorted linked list
       uint8_t minID = 0;
@@ -350,16 +346,15 @@ void find_blobs(
         found = true;
         blob_copy(blobA, blobB);
         blobA->alive = 1;
-        blobB->state = FREE;
-#ifdef DEBUG_BLOB_ID
-        Serial.printf("\n DEBUG_BLOB_ID / Copy blob: %p (inputBlobs linked list) to the blob: %p (outputBlobs linked list)", blobB, blobA);
-#endif /*__DEBUG_BLOB_ID__*/
+#ifdef DEBUG_BLOBS_ID
+        Serial.printf("\n DEBUG_BLOBS_ID / Copy blob: %p (inputBlobs linked list) to the blob: %p (outputBlobs linked list)", blobB, blobA);
+#endif /*__DEBUG_BLOBS_ID__*/
         break;
       }
     }
     if (!found) {
-      blobA->alive = 0;
       blobA->state = TO_REMOVE;
+      blobA->alive = 0;
     }
   }
 
@@ -370,27 +365,38 @@ void find_blobs(
       blob_copy(newBlob, blob);
       newBlob->alive = 1;
       llist_push_back(outputBlobs_ptr, newBlob);
-#ifdef DEBUG_BLOB_ID
-      Serial.printf("\n DEBUG_BLOB_ID / Blob: %p added to **outputBlobs** linked list", blob);
-#endif /*__DEBUG_BLOB_ID__*/
+#ifdef DEBUG_BLOBS_ID
+      Serial.printf("\n DEBUG_BLOBS_ID / Blob: %p added to **outputBlobs** linked list", blob);
+#endif /*__DEBUG_BLOBS_ID__*/
     }
   }
 
-  llist_save_blobs(blobs_stack_ptr, inputBlobs_ptr);
-#ifdef DEBUG_BLOB_ID
-  Serial.println("\n DEBUG_BLOB_ID / END OFF BLOB FONCTION");
-#endif /*__DEBUG_BLOB_ID__*/
+  // Clear the input blobs Linked list
+  llist_save_blobs(blobs_stack_ptr, inputBlobs_ptr); // TODO : can we live without it ?
+
+#ifdef DEBUG_BLOBS_ID
+  Serial.println("\n DEBUG_BLOBS_ID / END OFF BLOB FONCTION");
+#endif /*__DEBUG_BLOBS_ID__*/
 }
 
+////////////////////////////////
+
 void bitmap_clear(image_t* bitmap_ptr) {
-  memset(bitmap_ptr->pData, 0, (bitmap_ptr->numCols * bitmap_ptr->numRows) * sizeof(uint8_t));
+  memset(bitmap_ptr->pData, 0, NEW_FRAME * sizeof(uint8_t));
 }
 
 /*
-  void bitmap_clear(bitmap_t *ptr){
-    memset(ptr->data, 0, ((ptr->size + CHAR_MASK) >> CHAR_SHIFT) * sizeof(char));
+  void bitmap_clear(image_t* bitmap_ptr){
+    memset(bitmap_ptr->pData, 0, ((NEW_FRAME + CHAR_MASK) >> CHAR_SHIFT) * sizeof(uint8_t));
   }
 */
+
+float point_distance(blob_t* blobA, blob_t* blobB) {
+  float sum = 0.0f;
+  sum += (blobA->centroid.X - blobB->centroid.X) * (blobA->centroid.X - blobB->centroid.X);
+  sum += (blobA->centroid.Y - blobB->centroid.Y) * (blobA->centroid.Y - blobB->centroid.Y);
+  return sqrtf(sum);;
+}
 
 // FIXME: can be optimized
 void blob_copy(blob_t* dst, blob_t* src) {
@@ -404,6 +410,12 @@ void blob_copy(blob_t* dst, blob_t* src) {
   dst->box.D = src->box.D;
   dst->pixels = src->pixels;
 }
+
+/* DO NOT WORK!
+  void blob_copy(blob_t* dst, blob_t* src) {
+  memcpy(dst, src, sizeof(blob_t));
+  }
+*/
 
 // FIXME: can be optimized
 void blob_raz(blob_t* node) {

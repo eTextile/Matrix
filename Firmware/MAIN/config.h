@@ -20,6 +20,7 @@
 //#define DEBUG_ADC
 //#define DEBUG_INTERP
 //#define DEBUG_BITMAP
+//#define DEBUG_BLOBS_ID
 //#define DEBUG_BLOBS_OSC
 //#define DEBUG_FPS
 
@@ -39,9 +40,9 @@
 #define NEW_FRAME             (NEW_COLS * NEW_ROWS)
 #define MAX_NODES             40       // Set the maximum nodes number
 #define LIFO_MAX_NODES        255      // Set the maximum nodes number
-#define X_STRIDE              1
+#define X_STRIDE              4
 #define Y_STRIDE              1
-#define MIN_BLOB_PIX          25       // Set the minimum blob pixels
+#define MIN_BLOB_PIX          16       // Set the minimum blob pixels
 #define MAX_BLOB_PIX          4095     // Set the maximum blob pixels
 #define BLOB_PACKET_SIZE      7        // Blob data packet (bytes)
 

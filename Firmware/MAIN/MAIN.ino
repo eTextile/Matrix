@@ -60,7 +60,7 @@ SLIPEncodedUSBSerial SLIPSerial(thisBoardsSerialUSB);
 uint8_t threshold = 25;
 uint8_t calibration_cycles = 20;
 boolean calibrate = true;
-boolean scan = true;
+boolean scanning = true;
 
 void setup() {
 
@@ -174,7 +174,8 @@ void loop() {
   matrix_interp(&interpolatedFrame, &inputFrame, &interp);
   matrix_scan_blobs();
 
-  for (blob_t* blob = ITERATOR_START_FROM_HEAD(&outputBlobs); blob != NULL; blob = ITERATOR_NEXT(blob)) {
+  /*
+    for (blob_t* blob = ITERATOR_START_FROM_HEAD(&outputBlobs); blob != NULL; blob = ITERATOR_NEXT(blob)) {
     Serial.print (blob->UID);        // uint8_t unique session ID
     Serial.print(" ");
     Serial.print (blob->alive);      // uint8_t
@@ -189,18 +190,11 @@ void loop() {
     Serial.print(" ");
     Serial.print (blob->box.D);      // uint8_t
     Serial.println();
-  }
-
+    }
+  */
 #endif /*__DEBUG_BLOBS_OSC__*/
 
 #ifdef BLOBS_OSC
-  if (calibrate) matrix_calibrate(&minValsArray[0]);
-  if (scan) {
-    matrix_scan(&frameArray[0]);
-    matrix_interp(&interpolatedFrame, &inputFrame, &interp);
-    matrix_scan_blobs();
-    scan = false;
-  }
 
   OSCMessage OSCmsg;
   int size;
@@ -210,7 +204,7 @@ void loop() {
         OSCmsg.fill(SLIPSerial.read());
     }
   }
-  if (!OSCmsg.hasError()) {
+  if (!OSCmsg.hasError()  && !scanning) {
     OSCmsg.dispatch("/c", matrix_calibration_set);
     OSCmsg.dispatch("/t", matrix_threshold_set);
     OSCmsg.dispatch("/r", matrix_raw_data_get);
@@ -218,6 +212,15 @@ void loop() {
     OSCmsg.dispatch("/x", matrix_interp_data_bin_get);
     OSCmsg.dispatch("/b", matrix_blobs_get);
   }
+
+  if (calibrate) matrix_calibrate(&minValsArray[0]);
+  if (scanning) {
+    matrix_scan(&frameArray[0]);
+    matrix_interp(&interpolatedFrame, &inputFrame, &interp);
+    matrix_scan_blobs();
+    scanning = false;
+  }
+
 #endif /*__BLOBS_OSC__*/
 }
 
@@ -329,7 +332,7 @@ void matrix_calibrate(uint8_t* outputFrame) {
   calibrate = false;
 }
 
-boolean matrix_scan_blobs() {
+void matrix_scan_blobs(void) {
 
   find_blobs(
     threshold,          // uint8_t
@@ -341,7 +344,6 @@ boolean matrix_scan_blobs() {
     &blobs,             // list_t
     &outputBlobs        // list_t
   );
-  return true;
 }
 
 // Set the threshold
@@ -384,12 +386,9 @@ void matrix_interp_data_bin_get(OSCMessage & msg) {
   SLIPSerial.endPacket();    // Mark the end of the OSC Packet
 }
 
-
 void matrix_blobs_get(OSCMessage & msg) {
 
   OSCBundle OSCbundle;
-
-  //while (!matrix_scan_blobs()); // Waiting for scanning & blob tracking compleet
 
   // Send all blobs in OCS bundle
   for (blob_t* blob = ITERATOR_START_FROM_HEAD(&outputBlobs); blob != NULL; blob = ITERATOR_NEXT(blob)) {
@@ -408,5 +407,5 @@ void matrix_blobs_get(OSCMessage & msg) {
   SLIPSerial.beginPacket();     //
   OSCbundle.send(SLIPSerial);   // Send the bytes to the SLIP stream
   SLIPSerial.endPacket();       // Mark the end of the OSC Packet
-  scan = true;
+  scanning = true;
 }

@@ -89,6 +89,8 @@ typedef struct xylr xylr_t;   // Forward declaration
     _a < _b ? _a : _b; \
   })
 
+//static int sum_m_to_n(int m, int n);
+
 ////////////// Image stuff //////////////
 
 typedef struct image {
@@ -133,8 +135,6 @@ typedef struct blob {
 void blob_raz(blob_t* node);
 void blob_copy(blob_t* dst, blob_t* src);
 
-static int sum_m_to_n(int m, int n);
-
 void BLOB_SETUP(
   image_t* inputFrame_ptr,
   image_t* bitmap_ptr,
@@ -158,5 +158,7 @@ void find_blobs(
   llist_t*  inputBlobs_ptr,
   llist_t*  outputBlobs_ptr
 );
+
+float point_distance(blob_t* blobA, blob_t* blobB);
 
 #endif /*__BLOB_H__*/
