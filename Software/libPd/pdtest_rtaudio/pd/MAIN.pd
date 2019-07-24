@@ -56,7 +56,7 @@
 #X obj 550 447 *~ 0.3;
 #X obj 619 447 *~ 0.3;
 #X obj 81 696 pack f f f f f f f f;
-#X obj 82 331 clone ./libs/E256_input_filters 8;
+#X obj 82 331 clone E256_input_filters 8;
 #X connect 0 0 25 0;
 #X connect 1 0 25 0;
 #X connect 2 0 25 0;
