@@ -54,22 +54,25 @@ void ofApp::setup(void) {
   //sender.setup(HOST, UDP_OUTPUT_PORT); // OSC - UDP config
   //receiver.setup(UDP_INPUT_PORT); // SLIP-OSC via wifi
 
+  FreeSansBold.load("./Data/FreeSansBold.ttf", 13, true, true);
+
   setCalirationButton.addListener(this, &ofApp::E256_setCaliration);
   setTresholdSlider.addListener(this, &ofApp::E256_setTreshold);
-  getRawDataToggle.addListener(this, &ofApp::E256_getRawDataStart);
-  getInterpDataToggle.addListener(this, &ofApp::E256_getInterpDataStart);
-  getBinDataToggle.addListener(this, &ofApp::E256_getBinDataStart);
-  getBlobsToggle.addListener(this, &ofApp::E256_getBlobsStart);
+  getRawDataToggle.addListener(this, &ofApp::E256_rawDataRequestStart);
+  getInterpDataToggle.addListener(this, &ofApp::E256_interpDataRequestStart);
+  getBinDataToggle.addListener(this, &ofApp::E256_binDataRequestStart);
+  getBlobsToggle.addListener(this, &ofApp::E256_blobsRequestStart);
 
   gui.setup("E256 - Parameters");
   gui.add(setCalirationButton.setup("Calibrate"));
-  gui.add(setTresholdSlider.setup("Threshold", 10, 0, 100));
+  gui.add(setTresholdSlider.setup("Threshold", 20, 0, 100));
   gui.add(getRawDataToggle.setup("getRawData", true));
   gui.add(getInterpDataToggle.setup("getInterpData", false));
   gui.add(getBinDataToggle.setup("getBinData", false));
   gui.add(getBlobsToggle.setup("getBlobs", false));
 
   ofBackground(0);
+
   // 16 * 16
   for (int y=0; y<RAW_ROWS; y++) {
         for (int x=0; x<RAW_COLS; x++) {
@@ -105,18 +108,19 @@ void ofApp::setup(void) {
         interpDataMesh.addTriangle(i1, i3, i4);
     }
   }
-	FreeSansBold.load("FreeSansBold.ttf", 14, true, true);
+  //setMaximumBufferSize
 }
 
 /////////////////////// SERIAL EVENT ///////////////////////
 void ofApp::onSerialBuffer(const ofxIO::SerialBufferEventArgs& args) {
 
-  if (getRawData){
+  if (getRawData) {
+  //if (getRawDataToggle.getParameter() == true){
     int offset = 12;
     std::copy(args.buffer().begin(), args.buffer().end(), inputFrameBuffer);
     //ofLogNotice("ofApp::onSerialBuffer") << "E256 - Serial message size : "<< message.OSCmessage.size();
     //ofLogNotice("ofApp::onSerialBuffer") << "E256 - Serial message : " << message.OSCmessage;
-    for (int i=0; i<RAW_FRAME; i++){
+    for (int i=0; i<RAW_FRAME; i++) {
       rawValues[i] = inputFrameBuffer[i + offset];
       //ofLogNotice("ofApp::onSerialBuffer") << "INDEX_" << i << " val_" << rawValues[i];
     }
@@ -127,10 +131,11 @@ void ofApp::onSerialBuffer(const ofxIO::SerialBufferEventArgs& args) {
         rawDataMesh.setVertex(index, p);             // Set the new coordinates
         rawDataMesh.setColor(index, ofColor(rawValues[index], 0, 255));    // Change vertex color
     }
-    E256_getRawData();
+    E256_dataRequest = false;
   }
 
-  if (getInterpData){
+  if (getInterpData) {
+  //if (getInterpDataToggle.getParameter() == true){
     int offset = 12;
     std::copy(args.buffer().begin(), args.buffer().end(), inputFrameBuffer);
     //ofLogNotice("ofApp::onSerialBuffer") << "E256 - Serial message size : "<< message.OSCmessage.size();
@@ -141,27 +146,17 @@ void ofApp::onSerialBuffer(const ofxIO::SerialBufferEventArgs& args) {
     }
     // Update vertices with the E256 interpolated sensor values
     for (int index=0; index<NEW_FRAME; index++) {
-        ofPoint p = interpDataMesh.getVertex(index);    // Get the point coordinates
-        p.z = interpValues[index];                      // Change the z-coordinates
-        interpDataMesh.setVertex(index, p);             // Set the new coordinates
-        interpDataMesh.setColor(index, ofColor(interpValues[index], 0, 255));    // Change vertex color
+      ofPoint p = interpDataMesh.getVertex(index);    // Get the point coordinates
+      p.z = interpValues[index];                      // Change the z-coordinates
+      interpDataMesh.setVertex(index, p);             // Set the new coordinates
+      interpDataMesh.setColor(index, ofColor(interpValues[index], 0, 255));    // Change vertex color
     }
-    E256_getInterpData();
+    E256_dataRequest = false;
   }
 
-  if (getBinData){
-    int offset = 12;
-    std::copy(args.buffer().begin(), args.buffer().end(), inputFrameBuffer);
-    //ofLogNotice("ofApp::onSerialBuffer") << "E256 - Serial message size : "<< message.OSCmessage.size();
-    //ofLogNotice("ofApp::onSerialBuffer") << "E256 - Serial message : " << message.OSCmessage;
-    for (int i=0; i<RAW_FRAME; i++){
-      binValues[i] = inputFrameBuffer[i + offset];
-      //ofLogNotice("ofApp::onSerialBuffer") << "INDEX_" << i << " val_" << interpValues[i];
-    }
-    E256_getBinData();
-  }
+  if (getBlobs) {
+  //if (getBlobsToggle.getParameter() == true){
 
-  if (getBlobs){
     message.OSCmessage = args.buffer().toString();
     int offset = 12;
     int stringOffset = 0;
@@ -189,11 +184,11 @@ void ofApp::onSerialBuffer(const ofxIO::SerialBufferEventArgs& args) {
       oscMessage.addIntArg(msg[offset + 3]); // Ycentroid
       oscMessage.addIntArg(msg[offset + 4]); // boxW
       oscMessage.addIntArg(msg[offset + 5]); // boxH
-      oscMessage.addIntArg((uint8_t)msg[offset + 6]); // boxD
+      oscMessage.addIntArg(msg[offset + 6]); // boxD
       blobs.push_back(oscMessage);
       stringOffset = theMatch.offset + theMatch.length;
     }
-    E256_getBlobs();
+    E256_dataRequest = false;
   }
 }
 
@@ -223,9 +218,9 @@ void ofApp::draw(void) {
   //const int y = 0;  // Y ofset FIXME : dont afect the matrix graph
   const int SCALE_H = 50; // Scale 14
   const int SCALE_V = 50; // Scale 14
-  const int BLOB_SCALE = 10;
+  const int BLOB_SCALE = 5;
 
-  if (getRawData){
+  if (getRawData) {
     ofPushMatrix();
     ofSetLineWidth(1);    // set line width to 1
     ofRotateDeg(30, 1, 0, 0);
@@ -233,9 +228,13 @@ void ofApp::draw(void) {
     ofScale(SCALE_H, SCALE_V, 1);
     rawDataMesh.drawWireframe(); // draws lines
     ofPopMatrix();
+
+    if (E256_dataRequest == false){
+      E256_rawDataRequest();
+    }
   }
 
-  if (getInterpData){
+  if (getInterpData) {
     ofPushMatrix();
     ofSetLineWidth(1);    // set line width to 1
     ofRotateDeg(30, 1, 0, 0);
@@ -243,23 +242,35 @@ void ofApp::draw(void) {
     ofScale(SCALE_H/4, SCALE_V/4, 1);
     interpDataMesh.drawWireframe(); // draws lines
     ofPopMatrix();
+
+    if (E256_dataRequest == false){
+      E256_interpDataRequest();
+    }
   }
 
-  if (getBinData){
-    int SCALE = 10;
+  // Work in progress!
+  if (getBinData) {
+    int space_X = 60;
+    int space_Y = 70;
+
     ofPushMatrix();
-    ofTranslate(ofGetWindowWidth()/2, ofGetWindowHeight()/10);
+    ofTranslate(ofGetWindowWidth()/3, ofGetWindowHeight()/10);
     ofSetColor(245, 58, 135); // Pink
-    for (uint8_t col = 0; col < RAW_COLS; col++) {
-      for (uint8_t row = 0; row < RAW_ROWS; row++) {
-        uint16_t index = col * RAW_COLS + row;          // Compute 1D array index
-        FreeSansBold.drawString(ofToString(binValues[index]), col*SCALE*2, row*SCALE);
+    for (uint8_t posY = 0; posY < RAW_COLS; posY++) {
+      //uint8_t* bmp_row = COMPUTE_BINARY_IMAGE_ROW_PTR (&binValues, posY);
+      for (uint8_t posX = 0; posX < RAW_ROWS; posX++) {
+        uint16_t index = posX * RAW_COLS + posY; // Compute 1D array index
+        FreeSansBold.drawString(ofToString(ofToBinary(binValues[index])), posX*space_X, posY*space_Y);
       }
     }
     ofPopMatrix();
+
+    if (E256_dataRequest == false){
+      E256_binDataRequest();
+    }
   }
 
-  if (getBlobs){
+  if (getBlobs) {
     ofPushMatrix();
     ofRotateDeg(30, 1, 0, 0);
 
@@ -283,13 +294,16 @@ void ofApp::draw(void) {
         ofSetLineWidth(2);    // set line width to 1
         //ofTranslate(ofGetWindowWidth()/4, ofGetWindowHeight()/8);
         //ofScale(.6, .6, .6);
-        ofSetColor(255);
 
         if (alive > 0){
+          ofSetColor(245, 58, 135); // Pink
+          FreeSansBold.drawString(std::to_string(blobID), (int)Xcentroid+boxW, (int)Ycentroid);
+
+          ofSetColor(255);
           box.setMode(OF_PRIMITIVE_TRIANGLES);
           box.setResolution(1);
           box.set((float)boxW, (float)boxH, (float)boxD);
-          box.setPosition(Xcentroid - boxW*0.5, Ycentroid - boxH*0.5, 0);
+          box.setPosition(Xcentroid, Ycentroid, boxD/2);
           box.drawWireframe();
           // box.draw();
           }
@@ -300,6 +314,10 @@ void ofApp::draw(void) {
     }
     blobs.clear();
     ofPopMatrix();
+
+    if (E256_dataRequest == false){
+      E256_blobsRequest();
+    }
   }
 }
 
@@ -335,29 +353,29 @@ void ofApp::E256_setTreshold(int & tresholdValue) {
 
 // E256 matrix sensor - MATRIX RAW DATA REQUEST START
 // 16*16 matrix row data request
-void ofApp::E256_getRawDataStart(bool & val) {
+void ofApp::E256_rawDataRequestStart(bool & val) {
+  if (val == true) E256_rawDataRequest();
   getRawData = val;
-  E256_getRawData();
 }
 // E256 matrix sensor - INTERPOLATED DATA REQUEST START
-void ofApp::E256_getInterpDataStart(bool & val) {
+void ofApp::E256_interpDataRequestStart(bool & val) {
+  if (val == true) E256_interpDataRequest();
   getInterpData = val;
-  E256_getInterpData();
 }
 // E256 matrix sensor - BIN DATA REQUEST START
-void ofApp::E256_getBinDataStart(bool & val) {
+void ofApp::E256_binDataRequestStart(bool & val) {
+  if (val == true) E256_binDataRequest();
   getBinData = val;
-  E256_getBinData();
 }
 // E256 matrix sensor - BLOBS REQUEST START
-void ofApp::E256_getBlobsStart(bool & val) {
+void ofApp::E256_blobsRequestStart(bool & val) {
+  if (val == true) E256_binDataRequest();
   getBlobs = val;
-  E256_getBlobs();
 }
 
 // E256 matrix sensor - MATRIX DATA REQUEST
 // 16*16 matrix row data request
-void ofApp::E256_getRawData(void) {
+void ofApp::E256_rawDataRequest(void) {
   ofxOscMessage OSCmsg;
   OSCmsg.setAddress("/r"); //rowData
   osc::OutboundPacketStream packet(requestBuffer, 1024);
@@ -365,11 +383,12 @@ void ofApp::E256_getRawData(void) {
   packet << osc::BeginMessage(OSCmsg.getAddress().data());
   packet << osc::EndMessage;
   serialDevice.send(ByteBuffer(packet.Data(), packet.Size()));
+  E256_dataRequest = true;
 }
 
 // E256 matrix sensor - MATRIX DATA REQUEST
 // 64*64 matrix interpolated data request
-void ofApp::E256_getInterpData(void) {
+void ofApp::E256_interpDataRequest(void) {
   ofxOscMessage OSCmsg;
   OSCmsg.setAddress("/i"); //rowData
   osc::OutboundPacketStream packet(requestBuffer, 1024);
@@ -377,11 +396,12 @@ void ofApp::E256_getInterpData(void) {
   packet << osc::BeginMessage(OSCmsg.getAddress().data());
   packet << osc::EndMessage;
   serialDevice.send(ByteBuffer(packet.Data(), packet.Size()));
+  E256_dataRequest = true;
 }
 
 // E256 matrix sensor - MATRIX DATA REQUEST
 // 64*64 matrix interpolated data request
-void ofApp::E256_getBinData(void) {
+void ofApp::E256_binDataRequest(void) {
   ofxOscMessage OSCmsg;
   OSCmsg.setAddress("/x"); //rowData
   osc::OutboundPacketStream packet(requestBuffer, 1024);
@@ -389,10 +409,11 @@ void ofApp::E256_getBinData(void) {
   packet << osc::BeginMessage(OSCmsg.getAddress().data());
   packet << osc::EndMessage;
   serialDevice.send(ByteBuffer(packet.Data(), packet.Size()));
+  E256_dataRequest = true;
 }
 
 // E256 matrix sensor - BLOBS REQUEST
-void ofApp::E256_getBlobs(void) {
+void ofApp::E256_blobsRequest(void) {
   ofxOscMessage OSCmsg;
   OSCmsg.setAddress("/b"); // Blobs
   osc::OutboundPacketStream packet(requestBuffer, 1024);
@@ -400,6 +421,7 @@ void ofApp::E256_getBlobs(void) {
   packet << osc::BeginMessage(OSCmsg.getAddress().data());
   packet << osc::EndMessage;
   serialDevice.send(ByteBuffer(packet.Data(), packet.Size()));
+  E256_dataRequest = true;
 }
 
 // E256 matrix sensor - Toggle full screen mode
@@ -407,9 +429,6 @@ void ofApp::keyPressed(int key) {
   switch(key) {
     case 'f':
     ofToggleFullscreen();
-    break;
-    case 'b':
-    getBinData = 1; // TODO
     break;
     default:
     break;
@@ -419,9 +438,9 @@ void ofApp::keyPressed(int key) {
 void ofApp::exit(void) {
   setCalirationButton.removeListener(this, &ofApp::E256_setCaliration);
   setTresholdSlider.removeListener(this, &ofApp::E256_setTreshold);
-  getRawDataToggle.removeListener(this, &ofApp::E256_getRawDataStart);
-  getInterpDataToggle.removeListener(this, &ofApp::E256_getInterpDataStart);
-  getBinDataToggle.removeListener(this, &ofApp::E256_getBinDataStart);
-  getBlobsToggle.removeListener(this, &ofApp::E256_getBlobsStart);
+  getRawDataToggle.removeListener(this, &ofApp::E256_rawDataRequestStart);
+  getInterpDataToggle.removeListener(this, &ofApp::E256_interpDataRequestStart);
+  getBinDataToggle.removeListener(this, &ofApp::E256_binDataRequestStart);
+  getBlobsToggle.removeListener(this, &ofApp::E256_blobsRequestStart);
   serialDevice.unregisterAllEvents(this);
 }

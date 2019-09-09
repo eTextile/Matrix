@@ -70,9 +70,9 @@ public:
     ofxToggle                     getBinDataToggle;
 
     uint8_t                       inputFrameBuffer[IN_BUFFER_SIZE];
-    uint8_t                       rawValues[RAW_FRAME];    // 1D array
-    uint8_t                       interpValues[NEW_FRAME]; // 1D array
-    uint8_t                       binValues[NEW_FRAME];    // 1D array
+    uint8_t                       rawValues[RAW_FRAME];    // 1D array (16*16)
+    uint8_t                       interpValues[NEW_FRAME]; // 1D array (64*64)
+    uint8_t                       binValues[NEW_FRAME];    // 1D array (64*64)
 
     void                          E256_setCaliration(void);
     void                          E256_setTreshold(int & sliderValue);
@@ -82,15 +82,16 @@ public:
     bool                          getBinData;
     bool                          getBlobs;
 
-    void                          E256_getRawDataStart(bool & val);
-    void                          E256_getInterpDataStart(bool & val);
-    void                          E256_getBinDataStart(bool & val);
-    void                          E256_getBlobsStart(bool & val);
+    void                          E256_rawDataRequestStart(bool & val);
+    void                          E256_interpDataRequestStart(bool & val);
+    void                          E256_binDataRequestStart(bool & val);
+    void                          E256_blobsRequestStart(bool & val);
 
-    void                          E256_getRawData(void);
-    void                          E256_getInterpData(void);
-    void                          E256_getBinData(void);
-    void                          E256_getBlobs(void);
+    bool                          E256_dataRequest;
+    void                          E256_rawDataRequest(void);
+    void                          E256_interpDataRequest(void);
+    void                          E256_binDataRequest(void);
+    void                          E256_blobsRequest(void);
 
     ofMesh                        rawDataMesh;
     ofMesh                        interpDataMesh;
@@ -98,4 +99,14 @@ public:
 		ofTrueTypeFont	              FreeSansBold;
     void                          keyPressed(int key);
     //std::vector<ofboxPrimitive>  boxe;
+
+/*
+    #define COMPUTE_BINARY_IMAGE_ROW_PTR(pBitmap, y) \
+    ({ \
+      __typeof__ (pBitmap) _pBitmap = (pBitmap); \
+      __typeof__ (y) _y = (y); \
+      ((uint8_t*)_pBitmap->pData) + (((_pBitmap->numCols + UINT8_T_MASK) >> UINT8_T_SHIFT) * _y); \
+    })
+*/
+
   };
