@@ -86,9 +86,9 @@ void setup() {
   //attachInterrupt(BUTTON_PIN, calib, RISING); // Attach interrrupt on button PIN // FIXME - NO BUTTON_PIN ON the E256
 
   SPI_SETUP();
-  
+
   ADC_SETUP();
-  
+
   INTERP_SETUP(
     &inputFrame,          // image_t*
     &frameArray[0],       // uint8_t*
@@ -113,6 +113,27 @@ void setup() {
 
 //////////////////// LOOP
 void loop() {
+
+#ifdef E256_RUN
+
+  OSCMessage OSCmsg;
+
+  int size;
+  while (!SLIPSerial.endofPacket()) {
+    if ((size = SLIPSerial.available()) > 0) {
+      while (size--)
+        OSCmsg.fill(SLIPSerial.read());
+    }
+  }
+  if (!OSCmsg.hasError()) {
+    OSCmsg.dispatch("/c", matrix_calibration_set);
+    OSCmsg.dispatch("/t", matrix_threshold_set);
+    OSCmsg.dispatch("/r", matrix_raw_data_get);
+    OSCmsg.dispatch("/i", matrix_interp_data_get);
+    OSCmsg.dispatch("/x", matrix_interp_data_bin_get);
+    OSCmsg.dispatch("/b", matrix_blobs_get);
+  }
+#endif /*__E256_RUN__*/
 
 #ifdef DEBUG_ADC
   matrix_scan(&frameArray[0]);
@@ -147,7 +168,17 @@ void loop() {
   if (calibrate) matrix_calibrate(&minValsArray[0]);
   matrix_scan(&frameArray[0]);
   matrix_interp(&interpolatedFrame, &inputFrame, &interp);
-  matrix_scan_blobs();
+  find_blobs(
+    threshold,          // uint8_t
+    &interpolatedFrame, // image_t (uint8_t array[NEW_FRAME] - 64*64 1D array)
+    &bitmap,            // image_t (uint8_t array[NEW_FRAME] - 64*64 1D array)
+    &lifo_stack,        // lifo_t
+    &lifo,              // lifo_t
+    &blobs_stack,       // list_t
+    &blobs,             // list_t
+    &outputBlobs        // list_t
+  );
+
   for (uint8_t posY = 0; posY < NEW_COLS; posY++) {
     uint8_t* bmp_row = COMPUTE_BINARY_IMAGE_ROW_PTR (&bitmap, posY);
     for (uint8_t posX = 0; posX < NEW_ROWS; posX++) {
@@ -163,7 +194,17 @@ void loop() {
   if (calibrate) matrix_calibrate(&minValsArray[0]);
   matrix_scan(&frameArray[0]);
   matrix_interp(&interpolatedFrame, &inputFrame, &interp);
-  matrix_scan_blobs();
+  find_blobs(
+    threshold,          // uint8_t
+    &interpolatedFrame, // image_t (uint8_t array[NEW_FRAME] - 64*64 1D array)
+    &bitmap,            // image_t (uint8_t array[NEW_FRAME] - 64*64 1D array)
+    &lifo_stack,        // lifo_t
+    &lifo,              // lifo_t
+    &blobs_stack,       // list_t
+    &blobs,             // list_t
+    &outputBlobs        // list_t
+  );
+
   for (blob_t* blob = ITERATOR_START_FROM_HEAD(&outputBlobs); blob != NULL; blob = ITERATOR_NEXT(blob)) {
     Serial.print (blob->UID);        // uint8_t unique session ID
     Serial.print(" ");
@@ -181,34 +222,6 @@ void loop() {
     Serial.println();
   }
 #endif /*__DEBUG_BLOBS_OSC__*/
-
-#ifdef BLOBS_OSC
-
-  OSCMessage OSCmsg;
-  int size;
-  while (!SLIPSerial.endofPacket()) {
-    if ((size = SLIPSerial.available()) > 0) {
-      while (size--)
-        OSCmsg.fill(SLIPSerial.read());
-    }
-  }
-  if (!OSCmsg.hasError()  && !scanning) {
-    OSCmsg.dispatch("/c", matrix_calibration_set);
-    OSCmsg.dispatch("/t", matrix_threshold_set);
-    OSCmsg.dispatch("/r", matrix_raw_data_get);
-    OSCmsg.dispatch("/i", matrix_interp_data_get);
-    OSCmsg.dispatch("/x", matrix_interp_data_bin_get);
-    OSCmsg.dispatch("/b", matrix_blobs_get);
-  }
-  if (calibrate) matrix_calibrate(&minValsArray[0]);
-  if (scanning) {
-    matrix_scan(&frameArray[0]);
-    matrix_interp(&interpolatedFrame, &inputFrame, &interp);
-    matrix_scan_blobs();
-    scanning = false;
-  }
-
-#endif /*__BLOBS_OSC__*/
 }
 
 //////////////////////////////////////////////////// FONCTIONS
@@ -318,20 +331,6 @@ void matrix_calibrate(uint8_t* outputFrame) {
   calibrate = false;
 }
 
-void matrix_scan_blobs(void) {
-
-  find_blobs(
-    threshold,          // uint8_t
-    &interpolatedFrame, // image_t (uint8_t array[NEW_FRAME] - 64*64 1D array)
-    &bitmap,            // image_t (uint8_t array[NEW_FRAME] - 64*64 1D array)
-    &lifo_stack,        // lifo_t
-    &lifo,              // lifo_t
-    &blobs_stack,       // list_t
-    &blobs,             // list_t
-    &outputBlobs        // list_t
-  );
-}
-
 // Set the threshold
 void matrix_threshold_set(OSCMessage & msg) {
   threshold = msg.getInt(0) & 0xFF; // Get the first uint8_t of the int32_t
@@ -339,6 +338,8 @@ void matrix_threshold_set(OSCMessage & msg) {
 
 // Send raw frame values in SLIP-OSC formmat
 void matrix_raw_data_get(OSCMessage & msg) {
+
+  if (calibrate) matrix_calibrate(&minValsArray[0]);
   matrix_scan(&frameArray[0]);
   OSCMessage m("/r");
   m.add(frameArray, RAW_FRAME);
@@ -349,6 +350,8 @@ void matrix_raw_data_get(OSCMessage & msg) {
 
 // Send interpolated frame values in SLIP-OSC formmat
 void matrix_interp_data_get(OSCMessage & msg) {
+
+  if (calibrate) matrix_calibrate(&minValsArray[0]);
   matrix_scan(&frameArray[0]);
   matrix_interp(&interpolatedFrame, &inputFrame, &interp);
   OSCMessage m("/i");
@@ -360,9 +363,20 @@ void matrix_interp_data_get(OSCMessage & msg) {
 
 // Send interpolated frame values in SLIP-OSC formmat
 void matrix_interp_data_bin_get(OSCMessage & msg) {
+
+  if (calibrate) matrix_calibrate(&minValsArray[0]);
   matrix_scan(&frameArray[0]);
   matrix_interp(&interpolatedFrame, &inputFrame, &interp);
-  matrix_scan_blobs();
+  find_blobs(
+    threshold,          // uint8_t
+    &interpolatedFrame, // image_t (uint8_t array[NEW_FRAME] - 64*64 1D array)
+    &bitmap,            // image_t (uint8_t array[NEW_FRAME] - 64*64 1D array)
+    &lifo_stack,        // lifo_t
+    &lifo,              // lifo_t
+    &blobs_stack,       // list_t
+    &blobs,             // list_t
+    &outputBlobs        // list_t
+  );
   OSCMessage m("/x");
   m.add(&bitmapArray[0], RAW_FRAME);
   SLIPSerial.beginPacket();
@@ -371,6 +385,20 @@ void matrix_interp_data_bin_get(OSCMessage & msg) {
 }
 
 void matrix_blobs_get(OSCMessage & msg) {
+
+  if (calibrate) matrix_calibrate(&minValsArray[0]);
+  matrix_scan(&frameArray[0]);
+  matrix_interp(&interpolatedFrame, &inputFrame, &interp);
+  find_blobs(
+    threshold,          // uint8_t
+    &interpolatedFrame, // image_t (uint8_t array[NEW_FRAME] - 64*64 1D array)
+    &bitmap,            // image_t (uint8_t array[NEW_FRAME] - 64*64 1D array)
+    &lifo_stack,        // lifo_t
+    &lifo,              // lifo_t
+    &blobs_stack,       // list_t
+    &blobs,             // list_t
+    &outputBlobs        // list_t
+  );
 
   OSCBundle OSCbundle;
 
@@ -391,5 +419,4 @@ void matrix_blobs_get(OSCMessage & msg) {
   SLIPSerial.beginPacket();     //
   OSCbundle.send(SLIPSerial);   // Send the bytes to the SLIP stream
   SLIPSerial.endPacket();       // Mark the end of the OSC Packet
-  scanning = true;
 }

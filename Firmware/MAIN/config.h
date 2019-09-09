@@ -15,7 +15,7 @@
 //#define E256_X0 -1        // TODO: select X-axis origine [-1:1]
 //#define E256_Y0 -1        // TODO: select Y-axis origine [-1:1]
 
-#define BLOBS_OSC
+#define E256_RUN
 
 //#define DEBUG_ADC
 //#define DEBUG_INTERP
@@ -39,7 +39,7 @@
 #define NEW_ROWS              (RAW_ROWS * SCALE_Y)
 #define NEW_FRAME             (NEW_COLS * NEW_ROWS)
 #define MAX_NODES             40       // Set the maximum nodes number
-#define LIFO_MAX_NODES        255      // Set the maximum nodes number
+#define LIFO_MAX_NODES        127      // Set the maximum nodes number
 #define X_STRIDE              4
 #define Y_STRIDE              1
 #define MIN_BLOB_PIX          16       // Set the minimum blob pixels

@@ -53,7 +53,6 @@ typedef struct xylr xylr_t;   // Forward declaration
     _row_ptr[_x]; \
   })
 
-
 #define IMAGE_SET_BINARY_PIXEL_FAST(row_ptr, x) \
   ({ \
     __typeof__ (row_ptr) _row_ptr = (row_ptr); \
@@ -159,6 +158,6 @@ void find_blobs(
   llist_t*  outputBlobs_ptr
 );
 
-float point_distance(blob_t* blobA, blob_t* blobB);
+float distance(blob_t* blobA, blob_t* blobB);
 
 #endif /*__BLOB_H__*/

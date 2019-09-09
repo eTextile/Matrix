@@ -224,6 +224,7 @@ void find_blobs(
 
           blob->centroid.X = (uint8_t)round(blob_cx / ((float) blob_pixels));
           blob->centroid.Y = (uint8_t)round(blob_cy / ((float) blob_pixels));
+
           blob->box.W = (blob_x2 - blob_x1);
           blob->box.H = blob_height;
           blob->box.D = blob_depth;
@@ -282,7 +283,7 @@ void find_blobs(
 #endif /*__DEBUG_BLOBS_ID__*/
     for (blob_t* blobB = ITERATOR_START_FROM_HEAD(outputBlobs_ptr); blobB != NULL; blobB = ITERATOR_NEXT(blobB)) {
 
-      float dist = point_distance(blobA, blobB);
+      float dist = distance(blobA, blobB);
 
 #ifdef DEBUG_BLOBS_ID
       Serial.printf("\n DEBUG_BLOBS_ID / Distance between input & output blobs positions: %f ", dist);
@@ -307,14 +308,6 @@ void find_blobs(
 #ifdef DEBUG_BLOBS_ID
       Serial.print("\n DEBUG_BLOBS_ID / Found new blob without ID");
 #endif /*__DEBUG_BLOBS_ID__*/
-
-      /*
-        // Test if there is more than two blobs in the linked list (-1 is empty)
-        if (outputBlobs_ptr->index > 0) {
-        // Sorting outputBlobs linked list
-        llist_sort(outputBlobs_ptr);
-        }
-      */
 
       // Find the smallest missing UID in the sorted linked list
       uint8_t minID = 0;
@@ -391,12 +384,18 @@ void bitmap_clear(image_t* bitmap_ptr) {
   }
 */
 
-float point_distance(blob_t* blobA, blob_t* blobB) {
+float distance(blob_t* blobA, blob_t* blobB) {
   float sum = 0.0f;
   sum += (blobA->centroid.X - blobB->centroid.X) * (blobA->centroid.X - blobB->centroid.X);
   sum += (blobA->centroid.Y - blobB->centroid.Y) * (blobA->centroid.Y - blobB->centroid.Y);
   return sqrtf(sum);;
 }
+
+/* DO NOT WORK!
+  void blob_copy(blob_t* dst, blob_t* src) {
+  memcpy(dst, src, sizeof(blob_t));
+  }
+*/
 
 // FIXME: can be optimized
 void blob_copy(blob_t* dst, blob_t* src) {
@@ -410,12 +409,6 @@ void blob_copy(blob_t* dst, blob_t* src) {
   dst->box.D = src->box.D;
   dst->pixels = src->pixels;
 }
-
-/* DO NOT WORK!
-  void blob_copy(blob_t* dst, blob_t* src) {
-  memcpy(dst, src, sizeof(blob_t));
-  }
-*/
 
 // FIXME: can be optimized
 void blob_raz(blob_t* node) {
