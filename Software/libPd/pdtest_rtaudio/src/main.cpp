@@ -63,7 +63,7 @@ void init(){
    lpd.computeAudio(true);
 
    // load the patch
-   pd::Patch patch = lpd.openPatch("test.pd", "./pd");
+   pd::Patch patch = lpd.openPatch("MAIN.pd", "./pd");
    std::cout << patch << std::endl;
 
    // use the RtAudio API to connect to the default audio device
