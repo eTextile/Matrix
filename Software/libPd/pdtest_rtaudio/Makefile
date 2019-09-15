@@ -32,11 +32,12 @@ else
   endif
 endif
 
-LIBPD_DIR = ../../..
+LIBPD_DIR = /home/maurin/Applications/Github/libpd
 LIBPD = $(LIBPD_DIR)/libs/libpd.$(SOLIB_EXT)
 
 SRC_FILES = src/PdObject.cpp src/main.cpp src/RtAudio.cpp
-TARGET = pdtest_rtaudio
+#TARGET = pdtest_rtaudio
+TARGET = e256
 
 CXXFLAGS += -I$(LIBPD_DIR)/pure-data/src -I$(LIBPD_DIR)/libpd_wrapper \
             -I$(LIBPD_DIR)/libpd_wrapper/util -I$(LIBPD_DIR)/cpp \
