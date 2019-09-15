@@ -66,8 +66,8 @@ void ofApp::setup(void) {
   gui.setup("E256 - Parameters");
   gui.add(setCalirationButton.setup("Calibrate"));
   gui.add(setTresholdSlider.setup("Threshold", 20, 0, 100));
-  gui.add(getRawDataToggle.setup("getRawData", true));
-  gui.add(getInterpDataToggle.setup("getInterpData", false));
+  gui.add(getRawDataToggle.setup("getRawData", false));
+  gui.add(getInterpDataToggle.setup("getInterpData", true));
   gui.add(getBinDataToggle.setup("getBinData", false));
   gui.add(getBlobsToggle.setup("getBlobs", false));
 
@@ -260,7 +260,7 @@ void ofApp::draw(void) {
       //uint8_t* bmp_row = COMPUTE_BINARY_IMAGE_ROW_PTR (&binValues, posY);
       for (uint8_t posX = 0; posX < RAW_ROWS; posX++) {
         uint16_t index = posX * RAW_COLS + posY; // Compute 1D array index
-        FreeSansBold.drawString(ofToString(ofToBinary(binValues[index])), posX*space_X, posY*space_Y);
+        FreeSansBold.drawString(ofToString(ofToBinary(binValues[index])), posX*space_X, posY*space_Y); //FIXME
       }
     }
     ofPopMatrix();
