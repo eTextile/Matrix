@@ -1,4 +1,4 @@
-#N canvas 822 410 1036 625 10;
+#N canvas 600 270 1036 625 10;
 #X obj 438 37 r THRESHOLD;
 #X obj 423 81 - 0;
 #X obj 327 37 select 0;
