@@ -1,0 +1,38 @@
+#N canvas 1060 152 532 383 10;
+#X obj 10 33 inlet;
+#X obj 402 220 bang;
+#X obj 402 241 float;
+#X obj 363 177 moses 0;
+#X obj 402 199 moses 0;
+#X obj 402 130 r mapping_circle-\$1;
+#X floatatom 380 96 5 0 0 0 - - -;
+#X floatatom 425 96 5 0 0 0 - - -;
+#X obj 51 33 r blobs_values;
+#X obj 51 63 unpack float float float float float float float float
+float;
+#X obj 51 317 pack float float float float float float float float
+;
+#X obj 51 343 s circle-\$1;
+#X obj 402 154 unpack f f;
+#X floatatom 60 90 5 0 0 0 - - -;
+#X obj 402 262 t b f;
+#X connect 1 0 2 0;
+#X connect 2 0 14 0;
+#X connect 3 1 4 0;
+#X connect 4 0 1 0;
+#X connect 5 0 12 0;
+#X connect 8 0 9 0;
+#X connect 9 1 10 1;
+#X connect 9 2 10 2;
+#X connect 9 3 10 3;
+#X connect 9 4 10 4;
+#X connect 9 5 10 5;
+#X connect 9 6 10 6;
+#X connect 9 7 3 0;
+#X connect 9 7 6 0;
+#X connect 9 8 2 1;
+#X connect 10 0 11 0;
+#X connect 12 0 3 1;
+#X connect 12 1 4 1;
+#X connect 14 0 10 0;
+#X connect 14 1 10 7;
