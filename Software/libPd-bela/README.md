@@ -6,6 +6,7 @@ Patches made to work with the E256 eTextile matrix sensor connected via USB to a
   - Add the following library with the board manager (menu->...)
     - comport
     - mrpeach
+  - You will need to add the location of tos externals to the Pd path (FIle -> Preferences -> Path)
  
   - Connect the Bela to your computer (Bela usb-mini -> USB PC)
   - Wait for the boot
@@ -13,7 +14,6 @@ Patches made to work with the E256 eTextile matrix sensor connected via USB to a
     - ssh root@192.168.6.2
 	- root@bela:~/Bela/scripts# (Very useful scripts to compile and setup all what you need)
     - root@bela:~/Bela/projects# (Place to store all your projects)
-
 
 ## Load your new patch on the Bela
   - Open a terminal on your computer and navigate to the place you have your project
