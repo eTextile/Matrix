@@ -1,3 +1,0 @@
-#N canvas 6 82 450 300 12;
-#X declare -path patch_editor_abs;
-#X obj 119 138 declare -path patch_editor_abs;
