@@ -3,7 +3,7 @@ Patches made to work with the E256 eTextile matrix sensor connected via USB to a
 
 ## Hardware
  - [Raspbeary-PI 3](https://www.raspberrypi.org)
- - ...
+ - [I2S sound card] ...
 
 ## To make your own patches you can follow this instructions
   - Cloning Puredata on your Raspberry
@@ -21,5 +21,4 @@ Patches made to work with the E256 eTextile matrix sensor connected via USB to a
 
 ## Auto start your project at boot
   - vim /etc/rc.local
-  - Add (just before exit 0) pd /path_to_your_pdFile.pd 
-
+  - Add (just before exit 0) pd -nogui -alsa -nomidi -path /home/pi/Documents/Pd/externals/ /path_to_your_pdFile.pd &
