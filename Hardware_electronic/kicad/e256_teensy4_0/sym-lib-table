@@ -1,0 +1,6 @@
+(sym_lib_table
+  (lib (name teensy)(type Legacy)(uri /home/maurin/Bureau/eTextile.org/matrix/Hardware_electronic/kicad/library/teensy_library/teensy.lib)(options "")(descr ""))
+  (lib (name e256)(type Legacy)(uri /home/maurin/Bureau/eTextile.org/matrix/Hardware_electronic/kicad/library/e256_library/e256.lib)(options "")(descr ""))
+  (lib (name SparkFun-IC-Logic)(type Legacy)(uri /home/maurin/Applications/Github/kicad_lib/SparkFun-KiCad-Libraries/Libraries/SparkFun-IC-Logic.lib)(options "")(descr ""))
+  (lib (name e256_teensy4_0-rescue)(type Legacy)(uri ${KIPRJMOD}/e256_teensy4_0-rescue.lib)(options "")(descr ""))
+)
