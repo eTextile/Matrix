@@ -1,7 +1,7 @@
 /*
-  ** E256 Firmware v1.1 ** (DO NOT WORK!)
+  ** E256 Firmware v1.1 **
   This file is part of the eTextile-matrix-sensor project - http://matrix.eTextile.org
-  Copyright (c) 2014-2019 Maurin Donneaud <maurin@etextile.org>
+  Copyright (c) 2014- Maurin Donneaud <maurin@etextile.org>
   This work is licensed under Creative Commons Attribution-ShareAlike 4.0 International license, see the LICENSE file for details.
 */
 
@@ -245,21 +245,21 @@ void ADC_SETUP(void) {
   pinMode(ADC0_PIN, INPUT);              // Teensy PIN A9
   pinMode(ADC1_PIN, INPUT);              // Teensy PIN A3
 
-  adc->setAveraging(1, ADC_0);                                           // Set number of averages
-  adc->setResolution(8, ADC_0);                                          // Set bits of resolution
-  adc->setConversionSpeed(ADC_CONVERSION_SPEED::VERY_HIGH_SPEED, ADC_0); // Change the conversion speed
-  //adc->setConversionSpeed(ADC_CONVERSION_SPEED::HIGH_SPEED, ADC_0);    // Change the conversion speed
-  adc->setSamplingSpeed(ADC_SAMPLING_SPEED::VERY_HIGH_SPEED, ADC_0);     // Change the sampling speed
-  //adc->setSamplingSpeed(ADC_SAMPLING_SPEED::HIGH_SPEED, ADC_0);        // Change the sampling speed
-  //adc->enableCompare(1.0 / 3.3 * adc->getMaxValue(ADC_0), 0, ADC_0);   // Measurement will be ready if value < 1.0V
+  adc->adc0->setAveraging(1);                                           // Set number of averages
+  adc->adc0->setResolution(8);                                          // Set bits of resolution
+  adc->adc0->setConversionSpeed(ADC_CONVERSION_SPEED::VERY_HIGH_SPEED); // Change the conversion speed
+  //adc->adc0->setConversionSpeed(ADC_CONVERSION_SPEED::HIGH_SPEED);    // Change the conversion speed
+  adc->adc0->setSamplingSpeed(ADC_SAMPLING_SPEED::VERY_HIGH_SPEED);     // Change the sampling speed
+  //adc->adc0->setSamplingSpeed(ADC_SAMPLING_SPEED::HIGH_SPEED);        // Change the sampling speed
+  //adc->adc0->enableCompare(1.0 / 3.3 * adc->adc0->getMaxValue(), 0);   // Measurement will be ready if value < 1.0V
 
-  adc->setAveraging(1, ADC_1);                                           // Set number of averages
-  adc->setResolution(8, ADC_1);                                          // Set bits of resolution
-  adc->setConversionSpeed(ADC_CONVERSION_SPEED::VERY_HIGH_SPEED, ADC_1); // Change the conversion speed
-  // adc->setConversionSpeed(ADC_CONVERSION_SPEED::HIGH_SPEED, ADC_1);   // Change the conversion speed
-  adc->setSamplingSpeed(ADC_SAMPLING_SPEED::VERY_HIGH_SPEED, ADC_1);     // Change the sampling speed
-  //adc->setSamplingSpeed(ADC_SAMPLING_SPEED::HIGH_SPEED, ADC_1);        // Change the sampling speed
-  //adc->enableCompare(1.0 / 3.3 * adc->getMaxValue(ADC_1), 0, ADC_1);   // Measurement will be ready if value < 1.0V
+  adc->adc1->setAveraging(1);                                           // Set number of averages
+  adc->adc1->setResolution(8);                                          // Set bits of resolution
+  adc->adc1->setConversionSpeed(ADC_CONVERSION_SPEED::VERY_HIGH_SPEED); // Change the conversion speed
+  // adc->adc1->setConversionSpeed(ADC_CONVERSION_SPEED::HIGH_SPEED);   // Change the conversion speed
+  adc->adc1->setSamplingSpeed(ADC_SAMPLING_SPEED::VERY_HIGH_SPEED);     // Change the sampling speed
+  //adc->adc1->setSamplingSpeed(ADC_SAMPLING_SPEED::HIGH_SPEED);        // Change the sampling speed
+  //adc->adc1->enableCompare(1.0 / 3.3 * adc->adc1->getMaxValue(), 0);   // Measurement will be ready if value < 1.0V
 }
 
 // Columns are digital OUTPUT PINS - We supply them one by one sequentially
