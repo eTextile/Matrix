@@ -14,6 +14,7 @@
 
 #include <SPI.h>                    // https://www.pjrc.com/teensy/td_libs_SPI.html
 #include <ADC.h>                    // https://github.com/pedvide/ADC
+
 #include <OSCBoards.h>              // https://github.com/CNMAT/OSC
 #include <OSCMessage.h>             // https://github.com/CNMAT/OSC
 #include <OSCBundle.h>              // https://github.com/CNMAT/OSC
@@ -57,10 +58,9 @@ llist_t  outputBlobs;        // Output blobs linked list
 
 SLIPEncodedUSBSerial SLIPSerial(thisBoardsSerialUSB);
 
-uint8_t threshold = 25;
+uint8_t threshold = 20;
 uint8_t calibration_cycles = 20;
 boolean calibrate = true;
-boolean scanning = true;
 
 void setup() {
 
@@ -114,8 +114,6 @@ void setup() {
 //////////////////// LOOP
 void loop() {
 
-#ifdef E256_RUN
-
   OSCMessage OSCmsg;
 
   int size;
@@ -131,9 +129,8 @@ void loop() {
     OSCmsg.dispatch("/r", matrix_raw_data_get);
     OSCmsg.dispatch("/i", matrix_interp_data_get);
     OSCmsg.dispatch("/x", matrix_interp_data_bin_get);
-    OSCmsg.dispatch("/b", matrix_blobs_get);
+    OSCmsg.dispatch("/b", matrix_blobs_get_OSC);
   }
-#endif /*__E256_RUN__*/
 
 #ifdef DEBUG_ADC
   matrix_scan(&frameArray[0]);
@@ -384,7 +381,7 @@ void matrix_interp_data_bin_get(OSCMessage & msg) {
   SLIPSerial.endPacket();    // Mark the end of the OSC Packet
 }
 
-void matrix_blobs_get(OSCMessage & msg) {
+void matrix_blobs_get_OSC(OSCMessage & msg) {
 
   if (calibrate) matrix_calibrate(&minValsArray[0]);
   matrix_scan(&frameArray[0]);

@@ -15,7 +15,7 @@
 //#define E256_X0 -1        // TODO: select X-axis origine [-1:1]
 //#define E256_Y0 -1        // TODO: select Y-axis origine [-1:1]
 
-#define E256_RUN
+#define E256_SLIP_OSC
 
 //#define DEBUG_ADC
 //#define DEBUG_INTERP
