@@ -1,0 +1,3 @@
+[submodule "Software/Supercollider/SLIPDecoder"]
+	path = Software/Supercollider/SLIPDecoder
+	url = https://github.com/madamdata/SLIPDecoder.git

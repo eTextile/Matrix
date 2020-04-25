@@ -51,7 +51,7 @@ void ofApp::setup(void) {
   else {
     ofLogNotice("ofApp::setup") << "No devices connected!";
   }
-  //sender.setup(HOST, UDP_OUTPUT_PORT); // OSC - UDP config
+  sender.setup(HOST, UDP_OUTPUT_PORT); // OSC - UDP config
   //receiver.setup(UDP_INPUT_PORT); // SLIP-OSC via wifi
 
   FreeSansBold.load("./Data/FreeSansBold.ttf", 13, true, true);
@@ -174,6 +174,7 @@ void ofApp::onSerialBuffer(const ofxIO::SerialBufferEventArgs& args) {
 
     // Expand SLIP-OSC serial message to OSC messages
     // https://en.cppreference.com/w/cpp/regex
+    ofxOscBundle bundle;
     while (regex.match(message.OSCmessage, stringOffset, theMatch)){
       std::string msg = std::string(message.OSCmessage, theMatch.offset, theMatch.length);
       ofxOscMessage oscMessage;
@@ -186,8 +187,10 @@ void ofApp::onSerialBuffer(const ofxIO::SerialBufferEventArgs& args) {
       oscMessage.addIntArg(msg[offset + 5]); // boxH
       oscMessage.addIntArg(msg[offset + 6]); // boxD
       blobs.push_back(oscMessage);
+      bundle.addMessage(oscMessage);
       stringOffset = theMatch.offset + theMatch.length;
     }
+    sender.sendBundle(bundle);
     E256_dataRequest = false;
   }
 }
@@ -260,7 +263,7 @@ void ofApp::draw(void) {
       //uint8_t* bmp_row = COMPUTE_BINARY_IMAGE_ROW_PTR (&binValues, posY);
       for (uint8_t posX = 0; posX < RAW_ROWS; posX++) {
         uint16_t index = posX * RAW_COLS + posY; // Compute 1D array index
-        FreeSansBold.drawString(ofToString(ofToBinary(binValues[index])), posX*space_X, posY*space_Y); //FIXME
+        //FreeSansBold.drawString(ofToString(ofToBinary(binValues[index])), posX*space_X, posY*space_Y); // FIXME
       }
     }
     ofPopMatrix();

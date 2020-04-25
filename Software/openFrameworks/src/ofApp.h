@@ -4,6 +4,7 @@
 #include "ofxSerial.h"
 #include "ofxOsc.h"
 #include "ofxGui.h"
+#include "ofxOsc.h"
 
 #define USB_PORT              "/dev/ttyACM0"
 #define BAUD_RATE             230400  // With Teensy, it's always the same native speed. The baud rate setting is ignored.
@@ -21,8 +22,9 @@
 #define IN_BUFFER_SIZE        65535
 
 //#define HOST                "10.42.0.255"
-//#define UDP_OUTPUT_PORT     7771
-//#define UDP_INPUT_PORT      1234
+#define HOST                "localhost"
+#define UDP_OUTPUT_PORT     7771
+#define UDP_INPUT_PORT      1234
 
 struct blob {
   uint8_t UID;
@@ -98,6 +100,7 @@ public:
 
 		ofTrueTypeFont	              FreeSansBold;
     void                          keyPressed(int key);
+   ofxOscSender                   sender;
     //std::vector<ofboxPrimitive>  boxe;
 
 /*
