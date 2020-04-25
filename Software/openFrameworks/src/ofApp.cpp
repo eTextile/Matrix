@@ -188,6 +188,7 @@ void ofApp::onSerialBuffer(const ofxIO::SerialBufferEventArgs& args) {
       oscMessage.addIntArg(msg[offset + 6]); // boxD
       blobs.push_back(oscMessage);
       bundle.addMessage(oscMessage);
+
       stringOffset = theMatch.offset + theMatch.length;
     }
     sender.sendBundle(bundle);
@@ -288,8 +289,8 @@ void ofApp::draw(void) {
         uint8_t boxD      = blobs[index].getArgAsInt(6) & 0xFF;
         //ofLog(OF_LOG_VERBOSE,"E256_INPUT: UID:%d ALIVE:%d CX:%f CY:%f BW:%d BH:%d BD:%d",blobID, alive, Xcentroid, Ycentroid, boxW, boxH, boxD);
 
-        Xcentroid = (Xcentroid / NEW_COLS) * ofGetWindowWidth();
-        Ycentroid = (Ycentroid / NEW_ROWS) * ofGetWindowHeight();
+        Xcentroid = (Xcentroid / NEW_COLS) * (ofGetWindowWidth());
+        Ycentroid = (Ycentroid / NEW_ROWS) * (ofGetWindowHeight());
         boxW = boxW * BLOB_SCALE;
         boxH = boxH * BLOB_SCALE;
 

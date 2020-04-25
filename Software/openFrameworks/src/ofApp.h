@@ -21,10 +21,10 @@
 #define OUT_BUFFER_SIZE       1024
 #define IN_BUFFER_SIZE        65535
 
-//#define HOST                "10.42.0.255"
-#define HOST                "localhost"
-#define UDP_OUTPUT_PORT     7771
-#define UDP_INPUT_PORT      1234
+//#define HOST                "192.168.0.101"
+#define HOST                  "localhost"
+#define UDP_OUTPUT_PORT       7771
+#define UDP_INPUT_PORT        1234
 
 struct blob {
   uint8_t UID;
