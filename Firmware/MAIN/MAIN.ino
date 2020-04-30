@@ -58,7 +58,7 @@ llist_t  outputBlobs;        // Output blobs linked list
 
 SLIPEncodedUSBSerial SLIPSerial(thisBoardsSerialUSB);
 
-uint8_t threshold = 20;
+uint8_t threshold = 10;
 uint8_t calibration_cycles = 20;
 boolean calibrate = true;
 
@@ -407,7 +407,7 @@ void matrix_blobs_get_OSC(OSCMessage & msg) {
     blobPacket[3] = blob->centroid.Y; // uint8_t
     blobPacket[4] = blob->box.W;      // uint8_t
     blobPacket[5] = blob->box.H;      // uint8_t
-    blobPacket[6] = blob->box.D;      // uint8_t
+    blobPacket[6] = (blob->box.D - threshold);      // uint8_t
 
     OSCMessage msg("/b");
     msg.add(blobPacket, BLOB_PACKET_SIZE);
