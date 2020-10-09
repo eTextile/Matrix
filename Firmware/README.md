@@ -23,14 +23,25 @@
     git clone https://github.com/sudar/Arduino-Makefile.git
 
 ## Program Synopsis
-- Teensy and E256 brekout communicate via SPI (Hardware).
+- Teensy and E256 breakout communicate via SPI (Hardware).
 - The Arduio sketch implemant rows and columns scaning algorithm with synchronous **dual ADC sampling**.
   - COLS = Two 8_Bits shift registers connected directly to the matrix columns.
   - ROWS = One 8_Bits shift register connected to two analog multiplexers that sens the matrix rows.
 - The 16x16 Analog sensors values are interpolated into 64x64 with a bilinear algorithm.
 - The blob tracking algorithm (connected component labeling) is applyed onto the interpolated matrix.
 - Each blob are tracked with persistent ID (this is done with linked list implementation).
-- The blobs coordinates, size and presure are transmit via SLIP-OSC communication protocol.
+- The blobs coordinates, size and presure are transmit via SLIP-OSC communication protocol, and won't be visible with the Arduino serial monitor.
+
+### OSC Messages
+
+The host application is pulling the values from the Teensy :
+- `/b` : get blobs values
+- `/r` : get raw datas (16 * 16 Analog values)
+- `/i` : get interpolated datas (64 * 64 Analog values)
+
+The host application can also set parameters :
+- `/c value` : calibrate the sensor (vallue = how many iteration to avrage)
+- `/t value` : set the thresold value
 
 ## SLIP-OSC data paket
 ### on_touch_pressed
