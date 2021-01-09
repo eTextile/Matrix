@@ -109,6 +109,7 @@ void setup() {
     &blobArray[0],        // blob_t*
     &outputBlobs          // list_t*
   );
+  
 }
 
 //////////////////// LOOP
