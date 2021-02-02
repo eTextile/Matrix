@@ -1,9 +1,8 @@
 # E256 - eTextile matrix sensor
-
 ### Transforming textiles into an intuitive way to interact with computers
 This project is still in a beta phase, where drastic changes may occur and backwards compatibility is not guaranteed until the final release.
 
-![eTextile matrix sensor - teensy_matrix](https://farm6.staticflickr.com/5572/30306414062_22bba76566_z_d.jpg) ![eTextile matrix sensor - E256](https://farm1.staticflickr.com/798/40904680852_d5c9b1b35d_z_d.jpg)
+![eTextile matrix sensor - teensy_matrix](https://farm6.staticflickr.com/5572/30306414062_22bba76566_z_d.jpg)
 
 ## About The project
 Using a fabric to sense the touch is now possible with the E256 - eTextile matrix sensor.
@@ -20,7 +19,7 @@ From the beginning, this project stimulates the development of technologies in a
 * **Web page:** [http://matrix.eTextile.org/](http://matrix.eTextile.org "Web page")
 * **Repository:** [https://github.com/eTextile/Matrix/tree/master](https://github.com/eTextile/Matrix/tree/master "Project repository")
 * **License:** [CC-BY-SA](https://github.com/eTextile/Matrix/tree/Blob/LICENSE "E256 Matrix license")
-* **Mail:** [matrix@etextile.org](mailto:lulu@etextile.org "eMail")
+* **Mail:** [matrix@etextile.org](mailto:contact@etextile.org "eMail")
 * **Pictures:** [flickr.com](https://www.flickr.com/photos/maurin/albums/72157673740361510/ "Share your pictures with us")
 
 ## Project content
@@ -34,9 +33,9 @@ From the beginning, this project stimulates the development of technologies in a
 - [MOCO17](http://moco17.movementcomputing.org/) - Music Skin: Fabric Interface for Expressive Music Control / [Paper](https://github.com/eTextile/Matrix/blob/teensy_matrix/docs/publications/MOCO17-MusicSkin.pdf)
 
 ## Copyright
-Except as otherwise noted, all files in the resistiveMatrix project folder
+Except as otherwise noted, all files in the **E256 eTextile-matrix-sensor** project folder
 
-    Copyright (c) 2014-2018 Maurin Donneaud and others.
+    Copyright (c) 2014-2020 Maurin Donneaud
 
 For information on usage and redistribution, and for a DISCLAIMER OF ALL
 WARRANTIES, see LICENSE.txt included in the resistiveMatrix project folder.
@@ -45,5 +44,4 @@ WARRANTIES, see LICENSE.txt included in the resistiveMatrix project folder.
 Thanks to Vincent Roudaut, Hannah Perner Willson, Cedric Honnet, Antoine Meisso, Paul Strohmeier
 
 ## Docs
-- [Video made by ARTE 2018](https://www.youtube.com/watch?v=jWTeH4bodww)
 - [Video made at Schmiede 2014](http://www.kobakant.at/DIY/?p=4305/)
