@@ -1,12 +1,12 @@
 /*
-  FORKED FROM https://github.com/openmv/openmv/tree/master/src/omv/img
+  FORKED FROM https://github.com/openmv/openmv/blob/master/src/omv/imlib/blob.c
     - This file is part of the OpenMV project.
-    - Copyright (c) 2013-2019 Ibrahim Abdelkader <iabdalkader@openmv.io> & Kwabena W. Agyeman <kwagyeman@openmv.io>
+    - Copyright (c) 2013- Ibrahim Abdelkader <iabdalkader@openmv.io> & Kwabena W. Agyeman <kwagyeman@openmv.io>
     - This work is licensed under the MIT license, see the file LICENSE for details.
 
   Added custom blob détection algorithm to keep track of the blobs ID's
-    - This patch is part of the eTextile-matrix-sensor project - http://matrix.eTextile.org
-    - Copyright (c) 2014-2019 Maurin Donneaud <maurin@etextile.org>
+    - This patch is part of the eTextile-Synthesizer project - http://synth.eTextile.org
+    - Copyright (c) 2014- Maurin Donneaud <maurin@etextile.org>
     - This work is licensed under Creative Commons Attribution-ShareAlike 4.0 International license, see the LICENSE file for details.
 */
 
@@ -15,11 +15,9 @@
 
 #include "config.h"
 #include "llist.h"
-#include "lifo.h"
 
-typedef struct llist llist_t; // Forward declaration
-typedef struct lifo lifo_t;   // Forward declaration
-typedef struct xylr xylr_t;   // Forward declaration
+typedef struct lnode lnode_t;          // Forward declaration
+typedef struct llist llist_t;          // Forward declaration
 
 #define IM_LOG2_2(x)    (((x) &                0x2ULL) ? ( 2                        ) :             1) // NO ({ ... }) !
 #define IM_LOG2_4(x)    (((x) &                0xCULL) ? ( 2 +  IM_LOG2_2((x) >>  2)) :  IM_LOG2_2(x)) // NO ({ ... }) !
@@ -32,6 +30,8 @@ typedef struct xylr xylr_t;   // Forward declaration
 #define UINT8_T_MASK    (UINT8_T_BITS - 1)
 #define UINT8_T_SHIFT   IM_LOG2(UINT8_T_MASK)
 
+#define SIZEOF_FRAME    (NEW_FRAME * sizeof(uint8_t))
+
 #define COMPUTE_IMAGE_ROW_PTR(pImage, y) \
   ({ \
     __typeof__ (pImage) _pImage = (pImage); \
@@ -39,11 +39,11 @@ typedef struct xylr xylr_t;   // Forward declaration
     ((uint8_t*)_pImage->pData) + (_pImage->numCols * _y); \
   })
 
-#define COMPUTE_BINARY_IMAGE_ROW_PTR(pBitmap, y) \
+#define COMPUTE_BINARY_IMAGE_ROW_PTR(bitmap, y) \
   ({ \
-    __typeof__ (pBitmap) _pBitmap = (pBitmap); \
+    __typeof__ (bitmap) _bitmap = (bitmap); \
     __typeof__ (y) _y = (y); \
-    ((uint8_t*)_pBitmap->pData) + (((_pBitmap->numCols + UINT8_T_MASK) >> UINT8_T_SHIFT) * _y); \
+    ((uint8_t*)_bitmap) + (((NEW_COLS + UINT8_T_MASK) >> UINT8_T_SHIFT) * _y); \
   })
 
 #define IMAGE_GET_PIXEL_FAST(row_ptr, x) \
@@ -88,76 +88,78 @@ typedef struct xylr xylr_t;   // Forward declaration
     _a < _b ? _a : _b; \
   })
 
-//static int sum_m_to_n(int m, int n);
-
-////////////// Image stuff //////////////
-
-typedef struct image {
+typedef struct image image_t;
+struct image {
+  uint8_t* pData;
   uint8_t numCols;
   uint8_t numRows;
-  uint8_t* pData;
-} image_t;
+};
 
-void bitmap_clear(image_t* bitmap_ptr);
+typedef struct xylr xylr_t;
+struct xylr {
+  lnode_t node;
+  uint8_t x;
+  uint8_t y;
+  uint8_t l;
+  uint8_t r;
+  uint8_t t_l;
+  uint8_t b_l;
+};
 
-typedef struct {
-  uint8_t X;
-  uint8_t Y;
-} point_t;
+typedef struct point point_t;
+struct point {
+  float X;
+  float Y;
+};
 
-typedef struct {
-  uint8_t W; // Width
-  uint8_t H; // Height
-  uint8_t D; // Depth
-} bbox_t;
+typedef struct box box_t;
+struct box {
+  uint8_t W; // TODO Make it as float
+  uint8_t H; // TODO Make it as float
+  uint8_t D; // TODO Make it as float
+};
 
-// Blob states
-typedef enum {
+typedef enum status {
   FREE,
-  TO_ADD,
-  TO_UPDATE,
+  NOT_FOUND,
   TO_REMOVE
-} state_t;
+} status_t;
 
-// What about the TUIO 1.1 Protocol Specification
-// http://www.tuio.org/?specification
-typedef struct blob {
-  uint16_t pixels;
+typedef struct blob blob_t;
+struct blob {
+  lnode_t node;
   uint8_t UID;
-  uint8_t alive;
-  state_t state;
+  status_t status;
+  uint32_t timeTag;
+  uint16_t pixels;
+  boolean state;
+  boolean lastState;
+  box_t box;
   point_t centroid;
-  bbox_t box;
-  struct blob* next_ptr;
-} blob_t;
+};
 
-void blob_raz(blob_t* node);
-void blob_copy(blob_t* dst, blob_t* src);
+void lifo_llist_init(llist_t *list, xylr_t* nodesArray);
+void blob_llist_init(llist_t *list, blob_t* nodesArray);
 
-void BLOB_SETUP(
-  image_t* inputFrame_ptr,
-  image_t* bitmap_ptr,
-  uint8_t* bitmapArray_ptr,
-  lifo_t*  lifo_ptr,
-  lifo_t*  lifo_stack_ptr,
-  xylr_t*  lifoArray_ptr,
-  llist_t* blobs_ptr,
-  llist_t* blobs_stack_ptr,
-  blob_t*  blobArray_ptr,
-  llist_t* outputBlobs_ptr
-);
+void BLOB_SETUP(llist_t* outputBlobs_ptr);
+void find_blobs(uint8_t zThreshold, image_t* inputFrame_ptr, llist_t* outputBlobs_ptr);
 
-void find_blobs(
-  uint8_t   Threshold,
-  image_t*  inputFrame_ptr,
-  image_t*  bitmap_ptr,
-  lifo_t*   lifo_stack_ptr,
-  lifo_t*   lifo_ptr,
-  llist_t*  blobs_stack_ptr,
-  llist_t*  inputBlobs_ptr,
-  llist_t*  outputBlobs_ptr
-);
+typedef struct velocity velocity_t;
+struct velocity {
+  point_t lastPos;
+  float vxy;
+  float vz;
+  float lvz;
+};
 
-float distance(blob_t* blobA, blob_t* blobB);
+void getBlobsVelocity(llist_t* blobs_ptr);
+
+typedef struct polar polar_t;
+struct polar {
+  float r;
+  float phi;
+};
+
+void getPolarCoordinates(llist_t* blobs_ptr);
 
 #endif /*__BLOB_H__*/
